@@ -21,14 +21,23 @@ public class MemberController {
 	public ResultVO regMember(@RequestBody MemberVO memberVO) {
 		ResultVO result = new ResultVO();
 	
-		if(!memberService.checkFindUserId(memberVO)) {
-			result.setErrCode(-9);
-			result.setMsg("이미 등록된 아이디 입니다.");
-		}
+		try {
 			
-		memberService.regMember(memberVO);
-		result.setErrCode(0);
-		result.setMsg("사용자 등록이 완료되었습니다.");
+			if(!memberService.checkFindUserId(memberVO)) {
+				result.setErrCode(-9);
+				result.setMsg("이미 등록된 아이디 입니다.");
+				return result;
+			}
+				
+			memberService.regMember(memberVO);
+			result.setErrCode(0);
+			result.setMsg("사용자 등록이 완료되었습니다.");
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			result.setErrCode(-1);
+			result.setMsg("올바른 요청이 아닙니다.");
+		}
 		
 		return result;
 	}

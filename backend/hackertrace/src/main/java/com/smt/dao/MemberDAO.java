@@ -6,10 +6,10 @@ import java.util.List;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.smt.vo.MemberVO;
 
@@ -18,26 +18,23 @@ public class MemberDAO {
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
-
-	private String colName = "MEMBER";
-
+	
 	public List<Document> findUserId(MemberVO vo) {
-		List<Document> list = new ArrayList<Document>();
-		MongoCollection<Document> collection = mongoTemplate.getCollection(colName);
+		MongoCollection<Document> memCol = mongoTemplate.getCollection("MEMBER");
 
 		BasicDBObject findQuery = new BasicDBObject("userId", vo.getUserId());
-		FindIterable<Document> iterDoc = collection.find(findQuery);
-		while (iterDoc.iterator().hasNext()) {
-			list.add(iterDoc.iterator().next());
-			break;
-		}
+		List<Document> docList = memCol.find(findQuery).into(new ArrayList<>());
 
-		return list;
+		return docList;
 	}
 
 	public void regMember(MemberVO vo) {
-
-		mongoTemplate.save(vo);
+		MongoCollection<Document> memCol = mongoTemplate.getCollection("MEMBER");
+		
+		Document doc = new Document();
+		doc.put("userId", vo.getUserId());
+		doc.put("password", vo.getPassword());
+		memCol.insertOne(doc);
 	}
 
 }
