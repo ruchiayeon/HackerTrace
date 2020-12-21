@@ -1,7 +1,9 @@
 package com.smt.vo;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
 
@@ -9,9 +11,12 @@ import lombok.Setter;
 @Setter
 public class MemberVO  {
 	
-	@NonNull
+	@NotNull
+	@NotBlank
 	private String userId;
-	@NonNull
+	
+	@NotNull
+	@NotBlank
 	private String password;
 
 }

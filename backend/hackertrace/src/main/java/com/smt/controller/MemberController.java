@@ -1,5 +1,7 @@
 package com.smt.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +20,7 @@ public class MemberController {
 	private MemberService memberService;
 	
 	@RequestMapping(value="/register", method = RequestMethod.POST)
-	public ResultVO regMember(@RequestBody MemberVO memberVO) {
+	public ResultVO regMember(final @Valid @RequestBody MemberVO memberVO) {
 		ResultVO result = new ResultVO();
 	
 		try {
@@ -35,8 +37,6 @@ public class MemberController {
 			
 		}catch(Exception e) {
 			e.printStackTrace();
-			result.setErrCode(-1);
-			result.setMsg("올바른 요청이 아닙니다.");
 		}
 		
 		return result;

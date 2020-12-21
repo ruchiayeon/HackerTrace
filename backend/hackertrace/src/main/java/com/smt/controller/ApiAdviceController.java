@@ -1,9 +1,14 @@
 package com.smt.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.converter.HttpMessageConversionException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,5 +28,15 @@ public class ApiAdviceController {
         return vo;
     }
     
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResultVO handleValidationExceptions(MethodArgumentNotValidException ex){
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors()
+                .forEach(c -> errors.put(((FieldError) c).getField(), c.getDefaultMessage()));
+        ResultVO vo = new ResultVO();
+    	vo.setErrCode(-1);
+    	vo.setMsg(String.valueOf(errors));
+    	return vo;
+    }
     
 }
