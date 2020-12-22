@@ -12,8 +12,11 @@ import com.smt.service.MemberService;
 import com.smt.vo.MemberVO;
 import com.smt.vo.ResultVO;
 
+import io.swagger.annotations.Api;
+
 @RestController
 @RequestMapping("/member")
+@Api(value = "MemberController", description = "회워가입 관련 API")
 public class MemberController {
 	
 	@Autowired

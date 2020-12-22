@@ -5,8 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.ComponentScan;
 
+import springfox.documentation.oas.annotations.EnableOpenApi;
+
 @ServletComponentScan
 @SpringBootApplication
+@EnableOpenApi
 @ComponentScan("com.smt")
 public class DemoApplication {
 
@@ -14,12 +17,5 @@ public class DemoApplication {
 		SpringApplication.run(DemoApplication.class, args);
 	}
 
-//	@Bean
-//	public Docket productApi() {
-//		return new Docket(DocumentationType.SWAGGER_2).select()
-//				.apis(RequestHandlerSelectors.basePackage("com.smt.controller"))
-//				.paths(PathSelectors.any())
-//				.build();
-//	}
 
 }
