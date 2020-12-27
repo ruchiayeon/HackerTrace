@@ -6,25 +6,30 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.smt.service.MitreAttackService;
+import com.smt.vo.ResultVO;
 
 import io.swagger.annotations.Api;
 
 @RestController
 @RequestMapping("/mitre")
-@Api(value = "MitreController", description = "ATT&CK Mitre Attack Info 관련")
+@Api(value = "MitreController", description = "ATT&CK Mitre Attack 관련")
 public class MitreController {
 
 	@Autowired
 	MitreAttackService mitreAttackService;
+	
+	private String _mitreFilePath ="C:\\hackertrace\\enterprise-attack.json";
 
 	@RequestMapping(value = "/read/file", method = RequestMethod.GET)
-	public String readFileMitre() {
-		String result = "성공";
+	public ResultVO readFileMitre() {
+		ResultVO result = new ResultVO();
 		try {
-			String path = "C:\\hackertrace\\enterprise-attack.json";
-			mitreAttackService.saveMitreAttackInFile(path);
+			mitreAttackService.saveMitreAttackInFile(_mitreFilePath);
+			result.setErr_code(0);
+			result.setMsg("마이터 공격 정보 DB 저장이 완료되었습니다.");
 		} catch (Exception e) {
-			result = "실패";
+			result.setErr_code(1);
+			result.setMsg("마이터 공격 정보 DB 저장에 실패하였습니다.");
 		}
 		return result;
 	}

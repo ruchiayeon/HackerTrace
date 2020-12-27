@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class ResultVO {
 
-	private Integer errCode;
+	private Integer err_code;
 	private String msg;
+	
 }

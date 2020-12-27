@@ -8,7 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MitreAttackVO {
-	
 
 	private String name;
 	private String description;
