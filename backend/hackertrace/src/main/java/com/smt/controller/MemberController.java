@@ -29,13 +29,13 @@ public class MemberController {
 		try {
 			
 			if(!memberService.checkFindUserId(memberVO)) {
-				result.setErr_code(-9);
+				result.setReturn_code(-9);
 				result.setMsg("이미 등록된 아이디 입니다.");
 				return result;
 			}
 				
 			memberService.regMember(memberVO);
-			result.setErr_code(0);
+			result.setReturn_code(0);
 			result.setMsg("사용자 등록이 완료되었습니다.");
 			
 		}catch(Exception e) {
