@@ -45,7 +45,7 @@ export default function RTLNavbarLinks() {
             className: classes.margin + " " + classes.search
           }}
           inputProps={{
-            placeholder: "جستجو...",
+            placeholder: "dlrjdus",
             inputProps: {
               "aria-label": "Search"
             }
