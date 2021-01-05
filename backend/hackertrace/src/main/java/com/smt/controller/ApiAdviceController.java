@@ -1,8 +1,17 @@
 package com.smt.controller;
 
-//@RestControllerAdvice
-public class ApiAdviceController {
+import java.util.HashMap;
+import java.util.Map;
 
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.smt.vo.ResultVO;
+
+@RestControllerAdvice
+public class ApiAdviceController {
 
 //    @ExceptionHandler(Exception.class) 
 //    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -13,15 +22,17 @@ public class ApiAdviceController {
 //        return vo;
 //    }
 //    
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResultVO handleValidationExceptions(MethodArgumentNotValidException ex){
-//        Map<String, String> errors = new HashMap<>();
-//        ex.getBindingResult().getAllErrors()
-//                .forEach(c -> errors.put(((FieldError) c).getField(), c.getDefaultMessage()));
-//        ResultVO vo = new ResultVO();
-//    	vo.setErrCode(-1);
-//    	vo.setMsg(String.valueOf(errors));
-//    	return vo;
-//    }
-    
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResultVO handleValidationExceptions(MethodArgumentNotValidException ex) {
+		Map<String, String> errors = new HashMap<>();
+		ex.getBindingResult().getAllErrors().forEach(c -> errors.put(((FieldError) c).getField(), c.getDefaultMessage()));
+		
+		ResultVO vo = new ResultVO();
+		vo.setReturn_code(-1);
+		vo.setMsg(String.valueOf(errors));
+		vo.setData("");
+		
+		return vo;
+	}
+
 }

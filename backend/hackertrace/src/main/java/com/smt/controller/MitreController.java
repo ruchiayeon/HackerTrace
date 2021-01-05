@@ -13,7 +13,7 @@ import io.swagger.annotations.Api;
 
 @RestController
 @RequestMapping("/mitre")
-@Api(value = "MitreController", description = "ATT&CK Mitre Attack 관련")
+@Api(value = "MitreController", description = "상관분석 관련(ATT&CK Mitre Attack)")
 public class MitreController {
 
 	@Autowired
@@ -30,7 +30,7 @@ public class MitreController {
 			result.setMsg("마이터 공격 정보 DB 저장이 완료되었습니다.");
 		} catch (Exception e) {
 			result.setReturn_code(1);
-			result.setMsg("마이터 공격 정보 DB 저장에 실패하였습니다.");
+			result.setMsg(e.getMessage());
 		}
 		return result;
 	}

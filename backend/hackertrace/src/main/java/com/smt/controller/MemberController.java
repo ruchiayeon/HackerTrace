@@ -16,7 +16,7 @@ import io.swagger.annotations.Api;
 
 @RestController
 @RequestMapping("/member")
-@Api(value = "MemberController", description = "회원가입 관련 API")
+@Api(value = "MemberController", description = "회원가입 관련")
 public class MemberController {
 	
 	@Autowired
@@ -39,6 +39,8 @@ public class MemberController {
 			result.setMsg("사용자 등록이 완료되었습니다.");
 			
 		}catch(Exception e) {
+//			result.setReturn_code(1);
+//			result.setMsg(e.get);
 			e.printStackTrace();
 		}
 		
