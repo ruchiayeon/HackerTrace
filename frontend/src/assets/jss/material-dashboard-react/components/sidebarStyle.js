@@ -167,20 +167,13 @@ const sidebarStyle = theme => ({
     verticalAlign: "middle",
     color: "rgba(" + hexToRgb(whiteColor) + ", 0.8)"
   },
-  itemIconRTL: {
-    marginRight: "3px",
-    marginLeft: "15px",
-    float: "right"
-  },
   itemText: {
     ...defaultFont,
     margin: "0",
+    fontWeight: 600,
     lineHeight: "30px",
-    fontSize: "14px",
+    fontSize: "1rem",
     color: whiteColor
-  },
-  itemTextRTL: {
-    textAlign: "right"
   },
   whiteFont: {
     color: whiteColor
