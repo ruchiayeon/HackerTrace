@@ -1,5 +1,9 @@
 package com.smt.vo;
 
+import java.util.List;
+
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,11 +14,12 @@ public class AuditLogVO {
 	private String type;
 	private String node;
 	private String msg;
+	private String time;
 	private String arch;
 	private Integer syscall;
 	private String success;
 	private Integer exit; 
-	private String[] arguments; //a0 ~ aN°³ 
+	private List<String> arguments; //a0 ~ aN°³ 
 	private Integer items; 
 	private Integer ppid; 
 	private Integer pid; 
@@ -33,5 +38,7 @@ public class AuditLogVO {
 	private String exe; 
 	private String subj; 
 	private String key;
+	private String proctitle;
+	private String name;
 	
 }

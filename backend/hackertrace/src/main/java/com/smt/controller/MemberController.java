@@ -16,7 +16,7 @@ import io.swagger.annotations.Api;
 
 @RestController
 @RequestMapping("/member")
-@Api(value = "MemberController", description = "È¸¿ø°¡ÀÔ °ü·Ã")
+@Api(value = "MemberController", description = "íšŒì›ê°€ì…ê´€ë ¨")
 public class MemberController {
 	
 	@Autowired
@@ -30,17 +30,15 @@ public class MemberController {
 			
 			if(!memberService.checkFindUserId(memberVO)) {
 				result.setReturn_code(-9);
-				result.setMsg("ÀÌ¹Ì µî·ÏµÈ ¾ÆÀÌµğ ÀÔ´Ï´Ù.");
+				result.setMsg("ì´ë¯¸ ë“±ë¡ëœ ì•„ì´ë””ê°€ ì¡´ì¬í•©ë‹ˆë‹¤.");
 				return result;
 			}
 				
 			memberService.regMember(memberVO);
 			result.setReturn_code(0);
-			result.setMsg("»ç¿ëÀÚ µî·ÏÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.");
+			result.setMsg("ì‚¬ìš©ì ë“±ë¡ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.");
 			
 		}catch(Exception e) {
-//			result.setReturn_code(1);
-//			result.setMsg(e.get);
 			e.printStackTrace();
 		}
 		

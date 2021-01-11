@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.annotations.Api;
 
 @RestController
-@Api(value = "MainController", description = "�׽�Ʈ API")
+@Api(value = "MainController", description = "테스트 API")
 public class MainController {
 
 //	@RequestMapping(value = "/index", method = RequestMethod.GET)
