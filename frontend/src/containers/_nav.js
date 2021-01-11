@@ -3,97 +3,102 @@ import CIcon from '@coreui/icons-react'
 
 const _nav =  [
   {
+    _tag: 'CSidebarNavTitle',
+    _children: ['Dashboard']
+  },
+  {
     _tag: 'CSidebarNavItem',
     name: 'Dashboard',
     to: '/dashboard',
     icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    }
+  //  badge: {
+   //   color: 'info',
+    //  text: 'NEW',
+   // }
   },
   {
     _tag: 'CSidebarNavTitle',
-    _children: ['Theme']
-  },
-  {
-    _tag: 'CSidebarNavItem',
-    name: 'Colors',
-    to: '/theme/colors',
-    icon: 'cil-drop',
-  },
-  {
-    _tag: 'CSidebarNavItem',
-    name: 'Typography',
-    to: '/theme/typography',
-    icon: 'cil-pencil',
-  },
-  {
-    _tag: 'CSidebarNavTitle',
-    _children: ['Components']
+    _children: ['형상관리']
   },
   {
     _tag: 'CSidebarNavDropdown',
-    name: 'Base',
+    name: '형상관리',
     route: '/base',
     icon: 'cil-puzzle',
     _children: [
       {
         _tag: 'CSidebarNavItem',
-        name: 'Breadcrumb',
+        name: '/etc/',
+        to: '/base/breadcrumbs',
+      }
+    ]
+  },
+  {
+    _tag: 'CSidebarNavTitle',
+    _children: ['이상행위']
+  },
+  {
+    _tag: 'CSidebarNavDropdown',
+    name: '이상행위',
+    route: '/base',
+    icon: 'cil-puzzle',
+    _children: [
+      {
+        _tag: 'CSidebarNavItem',
+        name: 'Initial Access',
         to: '/base/breadcrumbs',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Cards',
+        name: 'Execution',
         to: '/base/cards',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Carousel',
+        name: 'Persistence',
         to: '/base/carousels',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Collapse',
+        name: 'Privilege Escalation',
         to: '/base/collapses',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Forms',
+        name: 'Defense Evasion',
         to: '/base/forms',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Jumbotron',
+        name: 'Credential Access',
         to: '/base/jumbotrons',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'List group',
+        name: 'Discovery',
         to: '/base/list-groups',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Navs',
+        name: 'Lateral Movement',
         to: '/base/navs',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Navbars',
+        name: 'Collection',
         to: '/base/navbars',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Pagination',
+        name: 'Command and Control',
         to: '/base/paginations',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Popovers',
+        name: 'Exfiltration',
         to: '/base/popovers',
       },
-      {
+      /*{
         _tag: 'CSidebarNavItem',
         name: 'Progress',
         to: '/base/progress-bar',
@@ -117,10 +122,20 @@ const _nav =  [
         _tag: 'CSidebarNavItem',
         name: 'Tooltips',
         to: '/base/tooltips',
-      },
+      },*/
     ],
   },
   {
+    _tag: 'CSidebarNavItem',
+    name: '상관분석',
+    to: '/dashboard',
+    icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
+  //  badge: {
+   //   color: 'info',
+    //  text: 'NEW',
+   // }
+  },
+  /*{
     _tag: 'CSidebarNavDropdown',
     name: 'Buttons',
     route: '/buttons',
@@ -306,7 +321,7 @@ const _nav =  [
   {
     _tag: 'CSidebarNavDivider',
     className: 'm-2'
-  }
+  }*/
 ]
 
 export default _nav

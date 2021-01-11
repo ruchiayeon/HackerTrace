@@ -7,12 +7,12 @@ import {
   CSidebarNav,
   CSidebarNavDivider,
   CSidebarNavTitle,
-  CSidebarMinimizer,
   CSidebarNavDropdown,
   CSidebarNavItem,
 } from '@coreui/react'
 
-import CIcon from '@coreui/icons-react'
+import HackerTraceLogo from '../assets/icons/HackerTraceLogo.png'
+
 
 // sidebar nav config
 import navigation from './_nav'
@@ -27,16 +27,7 @@ const TheSidebar = () => {
       onShowChange={(val) => dispatch({type: 'set', sidebarShow: val })}
     >
       <CSidebarBrand className="d-md-down-none" to="/">
-        <CIcon
-          className="c-sidebar-brand-full"
-          name="logo-negative"
-          height={35}
-        />
-        <CIcon
-          className="c-sidebar-brand-minimized"
-          name="sygnet"
-          height={35}
-        />
+       <img src={HackerTraceLogo} alt="Hacker Trace logo" width="150"/>
       </CSidebarBrand>
       <CSidebarNav>
 
@@ -50,7 +41,7 @@ const TheSidebar = () => {
           }}
         />
       </CSidebarNav>
-      <CSidebarMinimizer className="c-d-md-down-none"/>
+      
     </CSidebar>
   )
 }
