@@ -13,7 +13,7 @@ import io.swagger.annotations.Api;
 
 @RestController
 @RequestMapping("/mitre")
-@Api(value = "MitreController", description = "»ó°üºĞ¼® °ü·Ã(ATT&CK Mitre Attack)")
+@Api(value = "MitreController", description = "ìƒê´€ ë¶„ì„ ê´€ë ¨(ATT&CK Mitre Attack)")
 public class MitreController {
 
 	@Autowired
@@ -27,7 +27,7 @@ public class MitreController {
 		try {
 			mitreAttackService.saveMitreAttackInFile(_mitreFilePath);
 			result.setReturn_code(0);
-			result.setMsg("¸¶ÀÌÅÍ °ø°İ Á¤º¸ DB ÀúÀåÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.");
+			result.setMsg("ë§ˆì´í„° ê³µê²© ì •ë³´ë¥¼ DBì— ì €ì¥í•˜ì˜€ìŠµë‹ˆë‹¤.");
 		} catch (Exception e) {
 			result.setReturn_code(1);
 			result.setMsg(e.getMessage());
@@ -43,12 +43,12 @@ public class MitreController {
 		
 		try {
 			result.setReturn_code(0);
-			result.setMsg("¸¶ÀÌÅÍ ¸ŞÆ®¸¯½º Á¤º¸ Á¶È¸°¡ ¿Ï·áµÇ¾ú½À´Ï´Ù.");
+			result.setMsg("ë§ˆì´í„° ê³µê²© ì •ë³´ ì¡°íšŒê°€ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.");
 			result.setData(mitreAttackService.selectMitreAttackIdsByKillChainPhases(isSubT));
 		}catch(Exception e) {
 			e.printStackTrace();
 			result.setReturn_code(1);
-			result.setMsg("¸¶ÀÌÅÍ ¸ŞÆ®¸¯½º Á¤º¸ Á¶È¸°¡ ½ÇÆĞµÇ¾ú½À´Ï´Ù.");
+			result.setMsg("ë§ˆì´í„° ê³µê²© ì •ë³´ ì¡°íšŒê°€ ì‹¤íŒ¨í•˜ì˜€ìŠµë‹ˆë‹¤.");
 		}
 	
 		return result;

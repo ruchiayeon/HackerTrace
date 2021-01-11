@@ -8,7 +8,7 @@ import io.swagger.annotations.Api;
 
 @RestController
 @RequestMapping("/dashboard")
-@Api(value = "DashboardController", description = "´ë½Ãº¸µå °ü·Ã")
+@Api(value = "DashboardController", description = "ëŒ€ì‹œë³´ë“œ ê´€ë ¨")
 public class DashboardController {
 
 	@RequestMapping(value = "/list", method = RequestMethod.GET)

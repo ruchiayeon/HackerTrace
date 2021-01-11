@@ -5,6 +5,14 @@ plugins {
 	id 'war'
 }
 
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8' 
+
+bootWar{
+	archiveBaseName="ht"
+	archiveFileName="ht.war"
+	archiveVersion="0.0.1"
+}
+
 group = 'com.smt'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'

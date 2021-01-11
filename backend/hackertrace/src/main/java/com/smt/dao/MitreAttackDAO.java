@@ -29,7 +29,7 @@ public class MitreAttackDAO {
 		doc.put("external_ids", vo.getExternalIds());
 		doc.put("kill_chain_phases", vo.getKillChainPhases());
 		doc.put("platforms", vo.getPlatforms());
-		mongoTemplate.insert(doc, "MITRE_ATTACK");
+		mongoTemplate.insert(vo, "MITRE_ATTACK");
 	}
 	
 	public List<Document> getMitreInfoByKillChainPhase(String phases, String isSubT){
@@ -42,6 +42,7 @@ public class MitreAttackDAO {
 			doc.remove("platforms");
 			doc.remove("_id");
 			doc.remove("kill_chain_phases");
+			
 			if(isSubT.equals("F")) {
 				List<String> externalIds = (List<String>) doc.get("external_ids");
 				if(externalIds.get(0).split("\\.").length>1)

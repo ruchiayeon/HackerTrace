@@ -8,7 +8,7 @@ import io.swagger.annotations.Api;
 
 @RestController
 @RequestMapping("/config")
-@Api(value = "ConfigurationController", description = "Çü»ó °ü¸® °ü·Ã")
+@Api(value = "ConfigurationController", description = "í˜•ìƒê´€ë¦¬ ê´€ë ¨")
 public class ConfigurationController {
 
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
