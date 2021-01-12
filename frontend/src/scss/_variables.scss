@@ -1,0 +1,38 @@
+// Variable overrides
+.matrixtotal{
+    overflow:scroll;
+    max-height: 500px;
+    
+}
+
+.table-responsive{
+    text-align: center;
+}
+.matrixtable{
+  //  padding: 10px!important;
+    font-size: 0.4rem;
+}
+.matrixtable div{
+    padding: 1rem 0.4rem;
+    border: 1px solid #eee;
+    &:hover{
+        background: #cde0fd;
+    }
+}
+
+.matrixtable h5{
+    font-size: 0.9rem!important;
+    height: 50px;
+}
+
+.c-sidebar {
+    background: #0247b9!important;
+}
+.c-sidebar-nav-link.c-active{
+    color: #fff;
+    background:#321fdb!important;
+}
+.c-header-nav-link{
+    font-size: 1rem;
+    font-weight: 600;
+}

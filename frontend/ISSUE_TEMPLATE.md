@@ -1,13 +1,20 @@
-<!--
- IMPORTANT: Please use the following link to create a new issue:
+Before opening an issue:
 
-  https://www.creative-tim.com/new-issue/material-dashboard-react
+- [Search for duplicate or closed issues](https://github.com/coreui/coreui-free-react-admin-template/issues?utf8=%E2%9C%93&q=is%3Aissue)
+- Prepare a [reduced test case](https://css-tricks.com/reduced-test-cases/) for any bugs
 
-**If your issue was not created using the app above, it will be closed immediately.**
--->
 
-<!--
-Love Creative Tim? Do you need Angular, React, Vuejs or HTML? You can visit:
-👉  https://www.creative-tim.com/bundles
-👉  https://www.creative-tim.com
--->
+When asking general "how to" questions:
+
+- Please do not open an issue here
+
+When reporting a bug, include:
+
+- Operating system and version (Windows, Mac OS X, Android, iOS, Win10 Mobile)
+- Browser and version (Chrome, Firefox, Safari, IE, MS Edge, Opera, Android Browser)
+- Reduced test cases and potential fixes using [CodePen](https://codepen.io/) or [JS Bin](https://jsbin.com/)
+
+When suggesting a feature, include:
+
+- As much detail as possible for what we should add and why it's important to CoreUI Admin Template
+- Relevant links to prior art, screenshots, or live demos whenever possible

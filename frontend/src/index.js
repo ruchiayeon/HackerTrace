@@ -1,22 +1,27 @@
+import 'react-app-polyfill/ie11'; // For IE 11 support
+import 'react-app-polyfill/stable';
+import 'core-js';
+import './polyfill'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import * as serviceWorker from './serviceWorker';
 
-import React from "react";
-import ReactDOM from "react-dom";
-import { createBrowserHistory } from "history";
-import { Router, Route, Switch, Redirect } from "react-router-dom";
+import { icons } from './assets/icons'
 
-// core components
-import Admin from "layouts/Admin.js";
+import { Provider } from 'react-redux'
+import store from './store'
 
-import "assets/css/material-dashboard-react.css?v=1.9.0";
-
-const hist = createBrowserHistory();
+React.icons = icons
 
 ReactDOM.render(
-  <Router history={hist}>
-    <Switch>
-      <Route path="/admin" component={Admin} />
-      <Redirect from="/" to="/admin/dashboard" />
-    </Switch>
-  </Router>,
-  document.getElementById("root")
+  <Provider store={store}>
+    <App/>
+  </Provider>,
+  document.getElementById('root')
 );
+
+// If you want your app to work offline and load faster, you can change
+// unregister() to register() below. Note this comes with some pitfalls.
+// Learn more about service workers: http://bit.ly/CRA-PWA
+serviceWorker.unregister();
