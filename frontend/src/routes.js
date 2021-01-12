@@ -38,7 +38,7 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'));
 const Users = React.lazy(() => import('./views/users/Users'));
 const User = React.lazy(() => import('./views/users/User'));
 
-//Custom UI
+//Custom routes
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
 const ConfigManage = React.lazy(() => import('./views/configMange/ConfigManage'));
 const AbnormalManage = React.lazy(() => import('./views/Abnormal/AbnormalManage'));
@@ -46,9 +46,24 @@ const Correlation = React.lazy(() => import('./views/Correlation/Correlation'));
 const LoginPage = React.lazy(() => import('./views/pages/login/Login'));
 const Myprofile = React.lazy(() => import('./views/pages/myprofile/Myprofile'));
 
+//Abnormal Sub Page
+
+const InitialAccess = React.lazy(() => import('./views/Abnormal/subPages/InitialAccess'));
+const Execution = React.lazy(() => import('./views/Abnormal/subPages/Execution'));
+const Persistence = React.lazy(() => import('./views/Abnormal/subPages/Persistence'));
+const PrivilegeEscalation = React.lazy(() => import('./views/Abnormal/subPages/PrivilegeEscalation'));
+const DefenseEvasion = React.lazy(() => import('./views/Abnormal/subPages/DefenseEvasion'));
+const CredentialAccess = React.lazy(() => import('./views/Abnormal/subPages/CredentialAccess'));
+const Discovery = React.lazy(() => import('./views/Abnormal/subPages/Discovery'));
+const LateralMovement = React.lazy(() => import('./views/Abnormal/subPages/LateralMovement'));
+const Collection = React.lazy(() => import('./views/Abnormal/subPages/Collection'));
+const CommandAndControl = React.lazy(() => import('./views/Abnormal/subPages/CommandAndControl'));
+const Exfiltration = React.lazy(() => import('./views/Abnormal/subPages/Exfiltration'));
+const Impact = React.lazy(() => import('./views/Abnormal/subPages/Impact'));
+
 const routes = [
   //MainPage 
-  { path: '/', exact: true, name: 'Dashboard' },
+  { path: '/', exact: true, name: 'HOME' },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/config', name: 'ConfigManage', component: ConfigManage },
   { path: '/abnormal', name: 'AbnormalManage', component: AbnormalManage },
@@ -60,18 +75,19 @@ const routes = [
   { path: '/logoutPage', name: 'LogoutPage', component: LoginPage },
 
   //subPage
-  { path: '/abnormal/initial', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/execution', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/persistence', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/privilege', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/defense', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/credential', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/discovery', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/lateral', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/collection', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/command', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/exfiltration', name: 'AbnormalManage', component: AbnormalManage },
-  { path: '/abnormal/impact', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/initial', name: 'initial', component: InitialAccess },
+  { path: '/abnormal/execution', name: 'execution', component: Execution },
+  { path: '/abnormal/persistence', name: 'persistence', component: Persistence },
+  { path: '/abnormal/privilege', name: 'privilege', component: PrivilegeEscalation },
+  { path: '/abnormal/defense', name: 'defense', component: DefenseEvasion },
+  { path: '/abnormal/credential', name: 'credential', component: CredentialAccess },
+  { path: '/abnormal/discovery', name: 'discovery', component: Discovery },
+  { path: '/abnormal/lateral', name: 'lateral', component: LateralMovement },
+  
+  { path: '/abnormal/collection', name: 'collection', component: Collection },
+  { path: '/abnormal/command', name: 'command', component: CommandAndControl },
+  { path: '/abnormal/exfiltration', name: 'exfiltration', component: Exfiltration },
+  { path: '/abnormal/impact', name: 'impact', component: Impact },
   
 
 

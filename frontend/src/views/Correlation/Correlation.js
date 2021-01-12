@@ -11,16 +11,24 @@ import MatrixTable from './MatrixTable'
 const Correlation = () => {
   return (
     <>
-     <CRow>
+      <CRow>
         <CCol>
           <CCard>
             <CCardBody>
-            <h2>상관분석</h2>
-             <MatrixTable/>
+              <div>table</div>
+              {/*Attack Mattrix tempalte */}
+              <CRow>
+                <CCol md={10}>
+                  <MatrixTable/>
+                </CCol>
+                <CCol md={2}>
+                  TOP 3 Matching
+                </CCol>
+              </CRow>
             </CCardBody>
-            </CCard>
-            </CCol>
-            </CRow>
+          </CCard>
+        </CCol>
+      </CRow>
 
     </>
   )

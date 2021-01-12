@@ -4,11 +4,11 @@ import CIcon from '@coreui/icons-react'
 const _nav =  [
   {
     _tag: 'CSidebarNavTitle',
-    _children: ['Dashboard']
+    _children: ['대시보드']
   },
   {
     _tag: 'CSidebarNavItem',
-    name: 'Dashboard',
+    name: '대시보드',
     to: '/dashboard',
     icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
   //  badge: {
@@ -23,7 +23,6 @@ const _nav =  [
   {
     _tag: 'CSidebarNavDropdown',
     name: '형상관리',
-    route: '/config',
     icon: 'cil-puzzle',
     _children: [
       {
@@ -133,7 +132,7 @@ const _nav =  [
   {
     _tag: 'CSidebarNavItem',
     name: '상관분석',
-    to: '/dashboard',
+    to: '/correlation',
     icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
   //  badge: {
    //   color: 'info',

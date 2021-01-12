@@ -1,7 +1,40 @@
 // Variable overrides
-.matrixtable{
-  font-size: 0.4rem
-}
 .matrixtotal{
-    max-width:1200px
+    overflow: auto;
+    max-height: 500px;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+.matrixtotal::-webkit-scrollbar {
+    width: 10px;
+    background-color: rgb(255, 255, 255);
+}
+
+.matrixtable{
+    font-size: 0.4rem;
+    padding: 0 1rem 0 0;
+}
+.matrixtable div{
+    padding: 1rem 0.4rem;
+    border: 1px solid #eee;
+    &:hover{
+        background: #cde0fd;
+    }
+}
+
+.matrixtable h5{
+    font-size: 0.9rem!important;
+    height: 50px;
+}
+
+.c-sidebar {
+    background: #0247b9!important;
+}
+.c-sidebar-nav-link.c-active{
+    color: #fff;
+    background:#321fdb!important;
+}
+.c-header-nav-link{
+    font-size: 1rem;
+    font-weight: 600;
 }

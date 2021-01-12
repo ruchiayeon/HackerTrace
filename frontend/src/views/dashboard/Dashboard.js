@@ -39,7 +39,7 @@ const Dashboard = () => {
         <CCardBody>
           <CRow>
             <CCol sm="5">
-              <h4 id="traffic" className="card-title mb-0">형상변경</h4>
+              <h4 id="traffic" className="card-title mb-0">형상관리</h4>
               <div className="small text-muted"><Clock/></div>
             </CCol>
           </CRow>
