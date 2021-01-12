@@ -1,18 +1,16 @@
 // Variable overrides
 .matrixtotal{
-    overflow: auto;
+    overflow:scroll;
     max-height: 500px;
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-}
-.matrixtotal::-webkit-scrollbar {
-    width: 10px;
-    background-color: rgb(255, 255, 255);
+    
 }
 
+.table-responsive{
+    text-align: center;
+}
 .matrixtable{
+  //  padding: 10px!important;
     font-size: 0.4rem;
-    padding: 0 1rem 0 0;
 }
 .matrixtable div{
     padding: 1rem 0.4rem;

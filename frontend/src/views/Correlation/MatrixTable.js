@@ -10,7 +10,7 @@ function MatrixTable()  {
         <div className="matrixtotal">
             <CRow>
 
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5 value="initial-access">Initial<br/>Access</h5>
                 <div value="T1189">Drive-by Compromise</div>
                 <div value="T1190">Exploit Public-Facing Application</div>
@@ -22,7 +22,7 @@ function MatrixTable()  {
                 <div value="T1078">Valid Accounts</div>
 
             </CCol>
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5 value="execution">Execution</h5>
                 <div value="T1059">Command and Scripting Interpreter</div>
                 <div value="T1203">Exploitation for Client Execution</div>
@@ -34,7 +34,7 @@ function MatrixTable()  {
                 <div value="T1153">Source</div>
                 <div value="T1204">User Execution</div>
             </CCol>
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5 value="persistence">Persistence</h5>
                 <div value="T1098">Account Manipulation</div>
                 <div value="T1547">Drive-by Compromise</div>
@@ -58,7 +58,7 @@ function MatrixTable()  {
                 <div value="T1078">Drive-by Compromise</div>
 
             </CCol>
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5>Privilege<br/>Escalation</h5>
                 <div value="T1189">Drive-by Compromise</div>
                 <div value="T1189">Drive-by Compromise</div>
@@ -70,7 +70,7 @@ function MatrixTable()  {
                 <div value="T1189">Drive-by Compromise</div>
 
             </CCol>
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5>Defense<br/>Evasion</h5>
                 <div value="T1189">Drive-by Compromise</div>
                 <div value="T1189">Drive-by Compromise</div>
@@ -82,7 +82,7 @@ function MatrixTable()  {
                 <div value="T1189">Drive-by Compromise</div>
 
             </CCol>
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5>Credential<br/>Access</h5>
                 <div value="T1189">Drive-by Compromise</div>
                 <div value="T1189">Drive-by Compromise</div>
@@ -94,7 +94,9 @@ function MatrixTable()  {
                 <div value="T1189">Drive-by Compromise</div>
 
             </CCol>
-            <CCol className="matrixtable">
+            </CRow>
+            <CRow>
+            <CCol sm={2} className="matrixtable">
                 <h5>Discovery</h5>
                 <div value="T1189">Drive-by Compromise</div>
                 <div value="T1189">Drive-by Compromise</div>
@@ -106,7 +108,7 @@ function MatrixTable()  {
                 <div value="T1189">Drive-by Compromise</div>
 
             </CCol>
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5>Collection</h5>
                 <div value="T1189">Drive-by Compromise</div>
                 <div value="T1189">Drive-by Compromise</div>
@@ -118,7 +120,7 @@ function MatrixTable()  {
                 <div value="T1189">Drive-by Compromise</div>
 
             </CCol>
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5>Command<br/>and Control</h5>
                 <div value="T1189">Drive-by Compromise</div>
                 <div value="T1189">Drive-by Compromise</div>
@@ -130,7 +132,7 @@ function MatrixTable()  {
                 <div value="T1189">Drive-by Compromise</div>
 
             </CCol>
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5>Exfiltration</h5>
                 <div value="T1189">Drive-by Compromise</div>
                 <div value="T1189">Drive-by Compromise</div>
@@ -142,7 +144,7 @@ function MatrixTable()  {
                 <div value="T1189">Drive-by Compromise</div>
 
             </CCol>
-            <CCol className="matrixtable">
+            <CCol sm={2} className="matrixtable">
                 <h5>Impact</h5>
                 <div value="T1189">Drive-by Compromise</div>
                 <div value="T1189">Drive-by Compromise</div>
