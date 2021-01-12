@@ -2,6 +2,8 @@ package com.smt.vo;
 
 import java.util.List;
 
+import javax.validation.constraints.Pattern;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Getter;
@@ -11,6 +13,8 @@ import lombok.Setter;
 @Setter
 public class AuditLogVO {
 
+	@Pattern(regexp = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
+	private String hostIp;
 	private String type;
 	private String node;
 	private String msg;
@@ -19,7 +23,7 @@ public class AuditLogVO {
 	private Integer syscall;
 	private String success;
 	private Integer exit; 
-	private List<String> arguments; //a0 ~ aN°³ 
+	private List<String> arguments; //a0 ~ aN
 	private Integer items; 
 	private Integer ppid; 
 	private Integer pid; 
@@ -33,7 +37,7 @@ public class AuditLogVO {
 	private Integer sgid;
 	private Integer fsgind; 
 	private String tty; 
-	private Integer ses; 
+	private String ses; 
 	private String comm; 
 	private String exe; 
 	private String subj; 

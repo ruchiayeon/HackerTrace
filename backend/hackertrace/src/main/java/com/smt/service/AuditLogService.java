@@ -76,7 +76,15 @@ public class AuditLogService {
 						
 						aLVO.setKey(keyValSplit[1].replaceAll("\\\"", ""));
 						
-					} 
+					} else if(keyValSplit[0].equals("uid")) {
+						
+						aLVO.setUid(Integer.valueOf(keyValSplit[1]));
+						
+					} else if(keyValSplit[0].equals("ses")) {
+						
+						aLVO.setSes(keyValSplit[1]);
+						
+					}
 					
 					for(int i = 0 ; i<80; i++) {
 						String keyName = "a"+i;
@@ -90,13 +98,14 @@ public class AuditLogService {
 						aLVO.setArguments(arguments);
 				}
 				
+				aLVO.setHostIp("127.0.0.1");
 				dao.insertAuditLog(aLVO);
 				
-				if(index == 1000)
+				if(index == 3000)
 					break;
 
 			}
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -105,7 +114,6 @@ public class AuditLogService {
 	public List<Document> getAuditLogList(AuditLogListVO param){
 		List<Document> result = new ArrayList<>();
 		for(Document doc : dao.getAuditLogList(param)) {
-			doc.remove("_id");
 			doc.remove("_class");
 			result.add(doc);
 		}

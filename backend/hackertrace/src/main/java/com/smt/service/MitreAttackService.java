@@ -3,7 +3,10 @@ package com.smt.service;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import com.google.gson.JsonSyntaxException;
 import com.smt.dao.MitreAttackDAO;
 import com.smt.util.KillChainPhases;
 import com.smt.vo.MitreAttackVO;
+import com.smt.vo.MitreAuditVO;
 
 @Service
 public class MitreAttackService {
@@ -53,7 +57,7 @@ public class MitreAttackService {
 						platFormList.add(ele.getAsString());
 					}
 
-					if (platFormList.contains("Linux")) { // �������� ��쿡 ��
+					if (platFormList.contains("Linux")) { // 리눅스의 경우만
 
 						MitreAttackVO vo = new MitreAttackVO();
 						vo.setName(jsonObject.get("name").getAsString());
@@ -117,5 +121,103 @@ public class MitreAttackService {
 		return resultDoc;
 
 	}
+	
+	public List<Document> selectMitreAuditList(MitreAuditVO vo){
+		
+		List<Document> resultDocList = new ArrayList<>();
+		
+		//선택한 사용자 감사로그의 T값 목록
+		List<Document> mitreAuditList = dao.selectMitreAuditList(vo);
+
+		List<String> userAuditTList = new ArrayList<String>();
+		List<Document> auditLogTList = new ArrayList<Document>();
+		for(Document doc : mitreAuditList) {
+			Document auditLogDoc = new Document();
+			auditLogDoc.put("_id",  doc.get("_id").toString());
+			auditLogDoc.put("key", doc.get("key"));
+			userAuditTList.add(doc.getString("key"));
+			auditLogTList.add(auditLogDoc);
+		}
+		
+		//사용자 audit 로그 중복 T값 제거
+		List<String> userAuditOnlyTList = userAuditTList.stream().distinct().collect(Collectors.toList());
+		
+		//해커그룹 별 일치율 계산
+		List<Document> attackGroupMatchingList = new ArrayList<Document>();
+		List<Document> attackGroupList = dao.selectAttackGroupList();
+		for(Document attackGroup:attackGroupList) {
+			Document attGTValue = dao.selectTValueByGroupName(attackGroup.getString("_id"));
+			
+			List<String> attackGroupTList = (List<String>) attGTValue.get("external_ids");
+
+			int matchCnt = 0;
+			for(String auditLogT: userAuditOnlyTList) {
+				if(attackGroupTList.contains(auditLogT))
+					matchCnt++;
+			}
+			
+			if(matchCnt != 0 ) {
+				int groupTCnt = attackGroupTList.size();
+				double matching = (double)matchCnt/(double)groupTCnt*100.0;
+				attGTValue.put("user_external_ids", userAuditOnlyTList);
+				attGTValue.put("match_count", matchCnt);
+				attGTValue.put("group_t_count", groupTCnt);
+				attGTValue.put("matching_value", matching);
+				attGTValue.put("matching_rate", Math.round(matching)+"%");
+				attackGroupMatchingList.add(attGTValue);
+			}
+		}
+		
+		//공격 그룹 별 일치율 오름 차순
+		sortAttackGroupMatchList(attackGroupMatchingList);
+		
+		resultDocList.add(new Document("attack_group_matching", attackGroupMatchingList));
+		
+		//att&ck matrix T, user audit log T 비교
+		List<Document> userAuditMatchList = new ArrayList<Document>();
+		List<String> mitreAttackMatirxTList = dao.selectMitreAttackMatrixTList();
+		for(String matrixT: mitreAttackMatirxTList) {
+				
+				int tCnt = 0;
+				Document doc = new Document();
+				List<Object> idList = new ArrayList<Object>();
+				for(Document auditT : auditLogTList) {
+					if(matrixT.equals(auditT.get("key"))) {
+						idList.add(auditT.get("_id"));
+						tCnt++;
+					}
+				}
+				
+				if(tCnt == 0)
+					continue;
+				
+				doc.put("external_ids", matrixT);
+				doc.put("count", tCnt);
+				doc.put("_ids", idList);
+				userAuditMatchList.add(doc);
+		}
+		
+		resultDocList.add(new Document("user_audit_match_t", userAuditMatchList));
+		return resultDocList;
+	}
+
+	private void sortAttackGroupMatchList(List<Document> attackGroupMatchingList) {
+		Collections.sort(attackGroupMatchingList, new Comparator<Document>() {
+			@Override
+			public int compare(Document o1, Document o2) {
+				  if (o1.getDouble("matching_value") < o2.getDouble("matching_value") ) {
+	                    return 1;
+	                } else if (o1.getDouble("matching_value")> o2.getDouble("matching_value")) {
+	                    return -1;
+	                }
+	                return 0;
+			}
+
+		});
+	}
+	
 
 }
+
+
+

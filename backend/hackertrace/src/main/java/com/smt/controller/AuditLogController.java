@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.smt.service.AuditLogService;
+import com.smt.util.APIUtil;
 import com.smt.vo.AuditLogListVO;
 import com.smt.vo.ResultVO;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping("/audit-daemon")
@@ -22,41 +24,31 @@ public class AuditLogController {
 	@Autowired
 	AuditLogService service;
 	
+	@ApiOperation(value = "로그파일에서 audit 로그를 DB에 저장함")
 	@RequestMapping(value = "/import", method = RequestMethod.GET)
 	public ResultVO importAuditLog() {
-
-		ResultVO result = new ResultVO();
 
 		try {
 
 			String auditLogPath = "C:\\Users\\ji\\Desktop\\HITT\\audit.log";
 			service.insertAuditLogByLogFile(auditLogPath);
 
-			result.setReturn_code(0);
-			result.setMsg("audit log import과 완료되었습니다.");
-			result.setData("");
+			return APIUtil.resResult(0, "audit log import과 완료되었습니다.", null);
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			return APIUtil.resResult(1, "audit log import과 실패되었습니다.", null);
 		}
-		return result;
+		
 	}
 
+	@ApiOperation(value = "audit 이상행위 로그를 조회함")
 	@RequestMapping(value = "/log/list", method = RequestMethod.POST)
 	public ResultVO getAuditLogList(@Valid @RequestBody AuditLogListVO auditLogListVO) {
-
-		ResultVO result = new ResultVO();
-
 		try {
-			result.setReturn_code(0);
-			result.setMsg("조회가 완료되었습니다.");
-			result.setData(service.getAuditLogList(auditLogListVO));
+			return APIUtil.resResult(0, "조회가 완료되었습니다.", service.getAuditLogList(auditLogListVO));
 		} catch (Exception e) {
-			e.printStackTrace();
+			return APIUtil.resResult(1, "조회가 실패되었습니다.", null);
 		}
-
-		return result;
-
 	}
 
 }
