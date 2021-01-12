@@ -23,13 +23,13 @@ const _nav =  [
   {
     _tag: 'CSidebarNavDropdown',
     name: '형상관리',
-    route: '/base',
+    route: '/config',
     icon: 'cil-puzzle',
     _children: [
       {
         _tag: 'CSidebarNavItem',
         name: '/etc/',
-        to: '/base/breadcrumbs',
+        to: '/config',
       }
     ]
   },
@@ -40,63 +40,68 @@ const _nav =  [
   {
     _tag: 'CSidebarNavDropdown',
     name: '이상행위',
-    route: '/base',
+    route: '/AbnormalManage',
     icon: 'cil-puzzle',
     _children: [
       {
         _tag: 'CSidebarNavItem',
         name: 'Initial Access',
-        to: '/base/breadcrumbs',
+        to: '/abnormal/initial',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Execution',
-        to: '/base/cards',
+        to: '/abnormal/execution',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Persistence',
-        to: '/base/carousels',
+        to: '/abnormal/persistence',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Privilege Escalation',
-        to: '/base/collapses',
+        to: '/abnormal/privilege',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Defense Evasion',
-        to: '/base/forms',
+        to: '/abnormal/defense',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Credential Access',
-        to: '/base/jumbotrons',
+        to: '/abnormal/credential',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Discovery',
-        to: '/base/list-groups',
+        to: '/abnormal/discovery',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Lateral Movement',
-        to: '/base/navs',
+        to: '/abnormal/lateral',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Collection',
-        to: '/base/navbars',
+        to: '/abnormal/collection',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Command and Control',
-        to: '/base/paginations',
+        to: '/abnormal/command',
       },
       {
         _tag: 'CSidebarNavItem',
         name: 'Exfiltration',
-        to: '/base/popovers',
+        to: '/abnormal/exfiltration',
+      },
+      {
+        _tag: 'CSidebarNavItem',
+        name: 'Impact',
+        to: '/abnormal/impact',
       },
       /*{
         _tag: 'CSidebarNavItem',

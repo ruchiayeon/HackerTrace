@@ -25,7 +25,7 @@ const ButtonDropdowns = React.lazy(() => import('./views/buttons/button-dropdown
 const ButtonGroups = React.lazy(() => import('./views/buttons/button-groups/ButtonGroups'));
 const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'));
 const Charts = React.lazy(() => import('./views/charts/Charts'));
-const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
+
 const CoreUIIcons = React.lazy(() => import('./views/icons/coreui-icons/CoreUIIcons'));
 const Flags = React.lazy(() => import('./views/icons/flags/Flags'));
 const Brands = React.lazy(() => import('./views/icons/brands/Brands'));
@@ -38,9 +38,48 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'));
 const Users = React.lazy(() => import('./views/users/Users'));
 const User = React.lazy(() => import('./views/users/User'));
 
+//Custom UI
+const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
+const ConfigManage = React.lazy(() => import('./views/configMange/ConfigManage'));
+const AbnormalManage = React.lazy(() => import('./views/Abnormal/AbnormalManage'));
+const Correlation = React.lazy(() => import('./views/Correlation/Correlation'));
+const LoginPage = React.lazy(() => import('./views/pages/login/Login'));
+const Myprofile = React.lazy(() => import('./views/pages/myprofile/Myprofile'));
+
 const routes = [
+  //MainPage 
   { path: '/', exact: true, name: 'Dashboard' },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/config', name: 'ConfigManage', component: ConfigManage },
+  { path: '/abnormal', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/correlation', name: 'Correlation', component: Correlation },
+  
+  //User Login & Setting
+  { path: '/loginPage', name: 'LoginPage', component: LoginPage },
+  { path: '/myprofile', name: 'Myprofile', component: Myprofile },
+  { path: '/logoutPage', name: 'LogoutPage', component: LoginPage },
+
+  //subPage
+  { path: '/abnormal/initial', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/execution', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/persistence', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/privilege', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/defense', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/credential', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/discovery', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/lateral', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/collection', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/command', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/exfiltration', name: 'AbnormalManage', component: AbnormalManage },
+  { path: '/abnormal/impact', name: 'AbnormalManage', component: AbnormalManage },
+  
+
+
+
+
+
+
+
   { path: '/theme', name: 'Theme', component: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', component: Colors },
   { path: '/theme/typography', name: 'Typography', component: Typography },

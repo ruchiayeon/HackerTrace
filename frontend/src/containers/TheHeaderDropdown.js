@@ -4,7 +4,8 @@ import {
   CDropdownItem,
   CDropdownMenu,
   CDropdownToggle,
-  CImg
+  CImg,
+
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 
@@ -33,10 +34,11 @@ const TheHeaderDropdown = () => {
         >
           <strong>사용자 이름</strong>
         </CDropdownItem>
-        <CDropdownItem>
-          <CIcon name="cil-user" className="mfe-2" />Profile
+        <CDropdownItem to="/myprofile">
+          <CIcon name="cil-user" className="mfe-2"/>
+          Profile
         </CDropdownItem>
-        <CDropdownItem>
+        <CDropdownItem to="/loginPage">
           <CIcon name="cil-lock-locked" className="mfe-2" />
           Lock Account
         </CDropdownItem>

@@ -9,9 +9,12 @@ import {
   CHeaderNavLink,
   CSubheader,
   CBreadcrumbRouter,
-  CLink
+  CLink,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem
 } from '@coreui/react'
-//import CIcon from '@coreui/icons-react'
 
 // routes config
 import routes from '../routes'
@@ -55,13 +58,13 @@ const TheHeader = () => {
           <CHeaderNavLink to="/dashboard">Dashboard</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem  className="px-3">
-          <CHeaderNavLink to="/users">형상관리</CHeaderNavLink>
+          <CHeaderNavLink to="/config">형상관리</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem className="px-3">
-          <CHeaderNavLink >이상행위</CHeaderNavLink>
+          <CHeaderNavLink to="/abnormal">이상행위</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem className="px-3">
-          <CHeaderNavLink>상관분석</CHeaderNavLink>
+          <CHeaderNavLink to="/correlation">상관분석</CHeaderNavLink>
         </CHeaderNavItem>
       </CHeaderNav>
 
@@ -76,17 +79,27 @@ const TheHeader = () => {
         />
           <div className="d-md-down-none mfe-2 c-subheader-nav">
             <CLink className="c-subheader-nav-link"href="#">
-            {/*<CIcon name="cil-speech" alt="Settings" />*/}
-            </CLink>
-            <CLink 
-              className="c-subheader-nav-link" 
-              aria-current="page" 
-              to="/dashboard"
-            >
-             {/* <CIcon name="cil-graph" alt="Dashboard" />&nbsp;Dashboard*/}
-            </CLink>
-            <CLink className="c-subheader-nav-link" href="#">
-             {/* <CIcon name="cil-settings" alt="Settings" />&nbsp;Settings*/}
+           
+            <CHeaderNavItem>HOST NAME {"&"} IP</CHeaderNavItem>
+        
+        <CDropdown >
+          <CDropdownToggle caret>
+             HOST 목록  
+          </CDropdownToggle>
+          <CDropdownMenu>
+         
+           {/* <CDropdownItem disabled>Action Disabled</CDropdownItem>*/}
+            <CDropdownItem>Host Name<br/> {"&"} IP</CDropdownItem>
+            <CDropdownItem divider />
+            <CDropdownItem>Host Name<br/> {"&"} IP</CDropdownItem>
+            <CDropdownItem divider />
+            <CDropdownItem>Host Name<br/> {"&"} IP</CDropdownItem>
+            <CDropdownItem divider />
+            <CDropdownItem>Host Name<br/> {"&"} IP</CDropdownItem>
+            
+          </CDropdownMenu>
+        </CDropdown>
+     
             </CLink>
           </div>
       </CSubheader>

@@ -1,26 +1,37 @@
 import React, { lazy } from 'react'
 import {
-
+  CBadge,
   CCard,
   CCardBody,
-  CCardHeader,
   CCol,
-
+  CDataTable,
   CRow,
-
 } from '@coreui/react'
 
-
+import usersData from '../../views/users/UsersData'
 import Clock from '../Clock/Clock'
-
 import MainChartExample from '../charts/MainChartExample.js'
 
+
+const fields = ['TIME','Initial_Access', 'Execution', 'Persistence','Privilege_Escalation',
+'Defense_Evasion','Credential_Access','Discovery','Lateral_Movement','Collection','Command_and_Control','Exfiltration','Impact']
+
+const getBadge = status => {
+  switch (status) {
+    case 'Active': return 'success'
+    case 'Inactive': return 'secondary'
+    case 'Pending': return 'warning'
+    case 'Banned': return 'danger'
+    default: return 'primary'
+  }
+}
 const WidgetsDropdown = lazy(() => import('../widgets/WidgetsDropdown.js'))
 
 
 const Dashboard = () => {
   return (
     <>
+    
       {/*첫번째 숫자위젯 */}
       <WidgetsDropdown />
       {/*형상관리 template */}
@@ -36,83 +47,32 @@ const Dashboard = () => {
         </CCardBody>
       </CCard>
 
-     
-
-
 
       <CRow>
         <CCol>
           <CCard>
-            <CCardHeader>
-              Traffic {' & '} Sales
-            </CCardHeader>
             <CCardBody>
               <CRow>
                 <CCol >
+                <h4 id="traffic" className="card-title mb-0">이상행위</h4>
+                <div className="small text-muted"><Clock/></div>
+                  <CDataTable
+                    items={usersData}
+                    fields={fields}
+                   
+                   
+                    scopedSlots = {{
+                      'status':
+                        (item)=>(
+                          <td>
+                            <CBadge color={getBadge(item.status)}>
+                              {item.status}
+                            </CBadge>
+                          </td>
+                        )
 
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Initial Access</th>
-                        <th>Execution</th>
-                        <th>Persistence</th>
-                        <th>Privilege Escalation</th>
-                        <th>Defense Evasion</th>
-                        <th>Credential Access</th>
-                        <th>Discovery</th>
-                        <th>Lateral Movement</th>
-                        <th>Collection</th>
-                        <th>Command and Control</th>
-                        <th>Exfiltration</th>
-                        <th>Impact</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                      </tr>
-                      <tr>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                      </tr>
-                      <tr>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1</td>
-                      </tr>
-                    </tbody>
-                  </table>
-
+                    }}
+                  />
                 </CCol>
 
               </CRow>

@@ -3,14 +3,16 @@ import {
   CWidgetDropdown,
   CRow,
   CCol,
+ 
 } from '@coreui/react'
 
 
 const WidgetsDropdown = () => {
   // render
   return (
+    
     <CRow>
-      <CCol>
+      <CCol md="4">
         <CWidgetDropdown
           color="gradient-primary"
           header="823"
@@ -20,7 +22,7 @@ const WidgetsDropdown = () => {
         </CWidgetDropdown>
       </CCol>
 
-      <CCol >
+      <CCol  md="4">
         <CWidgetDropdown
           color="gradient-info"
           header="823"
@@ -30,16 +32,19 @@ const WidgetsDropdown = () => {
         </CWidgetDropdown>
       </CCol>
 
-      <CCol>
+      <CCol md="4">
         <CWidgetDropdown
           color="gradient-warning"
           header="823"
           text="월[MONTH]"
           footerSlot={<br/>}
         >
+    
         </CWidgetDropdown>
+        
       </CCol>
-
+      
+     
     </CRow>
   )
 }
