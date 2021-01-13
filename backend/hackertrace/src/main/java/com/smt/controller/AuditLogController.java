@@ -43,7 +43,7 @@ public class AuditLogController {
 
 	@ApiOperation(value = "audit 이상행위 로그를 조회함")
 	@RequestMapping(value = "/log/list", method = RequestMethod.POST)
-	public ResultVO getAuditLogList(@Valid @RequestBody AuditLogListVO auditLogListVO) {
+	public ResultVO getAuditLogList(final @Valid @RequestBody AuditLogListVO auditLogListVO) {
 		try {
 			return APIUtil.resResult(0, "조회가 완료되었습니다.", service.getAuditLogList(auditLogListVO));
 		} catch (Exception e) {

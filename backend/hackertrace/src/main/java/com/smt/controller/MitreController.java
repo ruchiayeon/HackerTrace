@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.smt.service.MitreAttackService;
 import com.smt.util.APIUtil;
+import com.smt.vo.MitreAuditConditionVO;
 import com.smt.vo.MitreAuditVO;
 import com.smt.vo.ResultVO;
 
@@ -52,6 +53,19 @@ public class MitreController {
 		}
 
 	}
+	
+	@RequestMapping(value = "/condition", method = RequestMethod.POST)
+	@ApiOperation(value = "기간에 해당하는 검색 조건들을 조회")
+	public ResultVO getSearchCondition(@Valid @RequestBody MitreAuditConditionVO mitreAuditConditionVO) {
+
+		try {
+			Document mitreAuditCondtion = mitreAttackService.selectMitreAuditCondition(mitreAuditConditionVO);
+			return APIUtil.resResult(0, "검색 조건 목록 조회가 완료되었습니다.", mitreAuditCondtion);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return APIUtil.resResult(0, "검색 조건 목록 조회가 실패되었습니다.", null);
+		}
+	}
 
 	// 날짜 선택 -> 호스트 선택(ip) -> 사용자 선택(uid) -> 세션 선택(ses)
 	@RequestMapping(value = "/list", method = RequestMethod.POST)
@@ -66,4 +80,18 @@ public class MitreController {
 			return APIUtil.resResult(0, "상관 분석 목록 조회가 실패되었습니다.", null);
 		}
 	}
+	
+	@RequestMapping(value = "/phase", method = RequestMethod.GET)
+	@ApiOperation(value = "T값이 해당하는 공격 단계")
+	public ResultVO getKillChainPhaseByT(@RequestParam("external_id") String externalId) {
+		
+		try {
+			return APIUtil.resResult(0, "공격 단계 조회가 완료되었습니다.", mitreAttackService.getKillChainPhaseByT(externalId));
+		} catch (Exception e) {
+			return APIUtil.resResult(1, "공격 단계 조회가 실패되었습니다.", null);
+		}
+		
+	}
+	
+	
 }

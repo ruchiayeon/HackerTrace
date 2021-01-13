@@ -22,6 +22,7 @@ import com.google.gson.JsonSyntaxException;
 import com.smt.dao.MitreAttackDAO;
 import com.smt.util.KillChainPhases;
 import com.smt.vo.MitreAttackVO;
+import com.smt.vo.MitreAuditConditionVO;
 import com.smt.vo.MitreAuditVO;
 
 @Service
@@ -41,7 +42,6 @@ public class MitreAttackService {
 
 			jsonobject = element.getAsJsonObject();
 			JsonArray objArray = (JsonArray) jsonobject.get("objects");
-			int index = 0;
 
 			for (JsonElement jObj : objArray) {
 
@@ -83,7 +83,6 @@ public class MitreAttackService {
 						vo.setPlatforms(platFormList);
 
 						dao.insertMitreAttackInfo(vo);
-						index++;
 
 					}
 				}
@@ -122,34 +121,35 @@ public class MitreAttackService {
 
 	}
 	
+	public Document selectMitreAuditCondition(MitreAuditConditionVO vo){
+		return dao.selectMitreAuditCondition(vo);
+	}
+	
 	public List<Document> selectMitreAuditList(MitreAuditVO vo){
 		
 		List<Document> resultDocList = new ArrayList<>();
 		
-		//선택한 사용자 감사로그의 T값 목록
-		List<Document> mitreAuditList = dao.selectMitreAuditList(vo);
+		//선택한 사용자 감사로그의 T값 초기화
+		List<Document> mitreUserAuditList = dao.selectUserAuditLogList(vo);
 
-		List<String> userAuditTList = new ArrayList<String>();
-		List<Document> auditLogTList = new ArrayList<Document>();
-		for(Document doc : mitreAuditList) {
-			Document auditLogDoc = new Document();
-			auditLogDoc.put("_id",  doc.get("_id").toString());
-			auditLogDoc.put("key", doc.get("key"));
-			userAuditTList.add(doc.getString("key"));
-			auditLogTList.add(auditLogDoc);
-		}
-		
 		//사용자 audit 로그 중복 T값 제거
+		List<String> userAuditTList = new ArrayList<String>();
+		for(Document doc : mitreUserAuditList) {
+			userAuditTList.add(doc.getString("key"));
+		}
 		List<String> userAuditOnlyTList = userAuditTList.stream().distinct().collect(Collectors.toList());
 		
 		//해커그룹 별 일치율 계산
 		List<Document> attackGroupMatchingList = new ArrayList<Document>();
-		List<Document> attackGroupList = dao.selectAttackGroupList();
+		//공격 그룹 목록 조회
+		List<Document> attackGroupList = dao.selectAttackGroupList(); 
 		for(Document attackGroup:attackGroupList) {
 			Document attGTValue = dao.selectTValueByGroupName(attackGroup.getString("_id"));
 			
+			//공격 그룹이 사용한 T값 목록
 			List<String> attackGroupTList = (List<String>) attGTValue.get("external_ids");
 
+			//일치 검사
 			int matchCnt = 0;
 			for(String auditLogT: userAuditOnlyTList) {
 				if(attackGroupTList.contains(auditLogT))
@@ -175,15 +175,17 @@ public class MitreAttackService {
 		
 		//att&ck matrix T, user audit log T 비교
 		List<Document> userAuditMatchList = new ArrayList<Document>();
+		//Linux Platfoms에서 사용하는 T 목록 조회
 		List<String> mitreAttackMatirxTList = dao.selectMitreAttackMatrixTList();
 		for(String matrixT: mitreAttackMatirxTList) {
 				
 				int tCnt = 0;
 				Document doc = new Document();
-				List<Object> idList = new ArrayList<Object>();
-				for(Document auditT : auditLogTList) {
-					if(matrixT.equals(auditT.get("key"))) {
-						idList.add(auditT.get("_id"));
+				List<Object> auditLogObjIdList = new ArrayList<Object>();
+				for(Document auditLogDoc : mitreUserAuditList) {
+					if(matrixT.equals(auditLogDoc.get("key"))) {
+						//추후 상세 분석 기능 요구 시 사용
+						auditLogObjIdList.add(auditLogDoc.get("_id").toString()); 
 						tCnt++;
 					}
 				}
@@ -193,14 +195,16 @@ public class MitreAttackService {
 				
 				doc.put("external_ids", matrixT);
 				doc.put("count", tCnt);
-				doc.put("_ids", idList);
+				doc.put("_ids", auditLogObjIdList);
 				userAuditMatchList.add(doc);
 		}
 		
 		resultDocList.add(new Document("user_audit_match_t", userAuditMatchList));
+		
 		return resultDocList;
 	}
 
+	//일치율에 따른 sorting
 	private void sortAttackGroupMatchList(List<Document> attackGroupMatchingList) {
 		Collections.sort(attackGroupMatchingList, new Comparator<Document>() {
 			@Override
@@ -214,6 +218,20 @@ public class MitreAttackService {
 			}
 
 		});
+	}
+	
+	public Document getKillChainPhaseByT(String t) {
+		
+		Document result = dao.getKillChainPhaseByT(t);
+		if(result != null) {
+			result.remove("_id");
+			result.remove("name");
+			result.remove("description");
+			result.remove("external_ids");
+			result.remove("platforms");
+		}
+		
+		return result;
 	}
 	
 

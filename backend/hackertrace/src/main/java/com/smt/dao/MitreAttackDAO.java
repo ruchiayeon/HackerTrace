@@ -2,17 +2,17 @@ package com.smt.dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
+import com.smt.util.MogoDBUtil;
 import com.smt.vo.MitreAttackVO;
+import com.smt.vo.MitreAuditConditionVO;
 import com.smt.vo.MitreAuditVO;
 
 @Repository
@@ -59,16 +59,66 @@ public class MitreAttackDAO {
 		
 	}
 	
-	public List<Document> selectMitreAuditList(MitreAuditVO vo){
+	public Document selectMitreAuditCondition(MitreAuditConditionVO vo){
+		MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
+		
+		BasicDBObject dateTermQuery = MogoDBUtil.getDateTermFindQuery("time", vo.getStartDate(), vo.getEndDate());
+		 
+		List<BasicDBObject> hostIpQueryList = new ArrayList<BasicDBObject>();
+		List<BasicDBObject> uidQueryList = new ArrayList<BasicDBObject>();
+		List<BasicDBObject> sesQueryList = new ArrayList<BasicDBObject>();
+		
+		BasicDBObject matchQuery = new BasicDBObject("$match", dateTermQuery);
+		
+		BasicDBObject groupHostIpQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$hostIp"));
+		BasicDBObject groupUidQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$uid"));
+		BasicDBObject groupSesQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$ses"));
+		
+		hostIpQueryList.add(matchQuery);
+		hostIpQueryList.add(groupHostIpQuery);
+		
+		uidQueryList.add(matchQuery);
+		uidQueryList.add(groupUidQuery);
+		
+		sesQueryList.add(matchQuery);
+		sesQueryList.add(groupSesQuery);
+		
+		List<Document> hostIpList = auditLogCol.aggregate(hostIpQueryList).into(new ArrayList<>());
+		List<String> hostIps = new ArrayList<>();
+		getGroupResults(hostIpList, hostIps);
+		
+		List<Document> uidList = auditLogCol.aggregate(uidQueryList).into(new ArrayList<>());
+		List<String> uids = new ArrayList<>();
+		getGroupResults(uidList, uids);
+		
+		List<Document> sesList = auditLogCol.aggregate(sesQueryList).into(new ArrayList<>());
+		List<String> sess = new ArrayList<>();
+		getGroupResults(sesList, sess);
+		
+		Document resultDoc = new Document();
+		resultDoc.put("host_ip_list", hostIps);
+		resultDoc.put("uid_list", uids);
+		resultDoc.put("ses_list", sess);
+		
+		return resultDoc;
+		
+	}
+
+	private void getGroupResults(List<Document> docList, List<String> idValList) {
+		
+		for(Document doc : docList) {
+			String idVal = String.valueOf(doc.get("_id"));
+			if(idVal != "null") 
+				idValList.add(idVal);
+		}
+		
+	}
+	
+	public List<Document> selectUserAuditLogList(MitreAuditVO vo){
 		
 		MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
-		String startDate = vo.getStartDate()+" 00:00:00";
-		String endDate = vo.getEndDate()+" 23:59:59";
-		
-		BasicDBObject findQuery = new BasicDBObject("time"
-				, new BasicDBObject("$gte", startDate)
-				.append( "$lte" , endDate ) );
+		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("time",vo.getStartDate(), vo.getEndDate());
 		
 		findQuery.put("hostIp", vo.getHostIp());
 		findQuery.put("uid", Integer.parseInt(vo.getUid()));
@@ -76,12 +126,12 @@ public class MitreAttackDAO {
 		findQuery.put("key", new BasicDBObject("$regex", "T.*"));
 		
 		List<Document> docList = auditLogCol.find(findQuery)
-//												.limit(vo.getPageSize())
-//												.skip(vo.getPageNumber()-1)
 												.into(new ArrayList<>());
 		
 		return docList;
 	}
+
+	
 	
 	public List<Document> selectAttackGroupList(){
 		
@@ -90,6 +140,7 @@ public class MitreAttackDAO {
 		BasicDBObject aggregateQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$attack_group") );
 		aggregateList.add(aggregateQuery);
 		return mitreAttackGroup.aggregate(aggregateList).into(new ArrayList<>());
+		
 	}
 	
 	public Document selectTValueByGroupName(String attackGroupName){
@@ -126,6 +177,45 @@ public class MitreAttackDAO {
 		return tList;
 		
 	}
+	
+	//메트릭스에서 공격 단계 정보 -> 해당 t목록 return
+	public List<String> selectMitreAttackTValueByPhases(String phases){
+		
+		List<String> tValByPhases = new ArrayList<String>();
+		MongoCollection<Document> mitreAttackCol = mongoTemplate.getCollection("MITRE_ATTACK");
+		
+		BasicDBObject findQuery = new BasicDBObject();
+		String[] platformsArr = {"Linux"};
+		String[] phasesArr = {phases};
+		findQuery.put("platforms"
+				, new BasicDBObject("$in", platformsArr ));
+		
+		findQuery.put("kill_chain_phases"
+				, new BasicDBObject("$in", phasesArr));
+		
+		System.out.println(findQuery.toJson());
+		List<Document> docList = mitreAttackCol.find(findQuery).into(new ArrayList<>());
+		for(Document doc:docList) {
+			List<String> tValArr = (List<String>) doc.get("external_ids");
+			tValByPhases.add(tValArr.get(0));
+		}
+		
+		return tValByPhases;
+	}
+	
+	public Document getKillChainPhaseByT(String tVal) {
+		MongoCollection<Document> mitreAttackCol = mongoTemplate.getCollection("MITRE_ATTACK");
+		
+		BasicDBObject findQuery = new BasicDBObject();
+		String[] tArr = {tVal};
+		findQuery.put("external_ids", new BasicDBObject("$in", tArr));
+		System.out.println(findQuery.toJson());
+		List<Document> docList = mitreAttackCol.find(findQuery).into(new ArrayList<>());
+		
+		return (docList.size()<1)?null:docList.get(0);
+		
+	}
+
 	
 
 }

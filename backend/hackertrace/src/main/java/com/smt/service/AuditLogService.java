@@ -27,7 +27,7 @@ public class AuditLogService {
 		Scanner fileLine;
 		try {
 			fileLine = new Scanner(auditLogFile);
-			dao.dropAuditLogColleciton();
+			dao.dropAuditLogCollection();
 			
 			int index = 0;
 			while (fileLine.hasNextLine()) {
@@ -101,7 +101,7 @@ public class AuditLogService {
 				aLVO.setHostIp("127.0.0.1");
 				dao.insertAuditLog(aLVO);
 				
-				if(index == 3000)
+				if(index == 4000)
 					break;
 
 			}
@@ -111,12 +111,7 @@ public class AuditLogService {
 
 	}
 	
-	public List<Document> getAuditLogList(AuditLogListVO param){
-		List<Document> result = new ArrayList<>();
-		for(Document doc : dao.getAuditLogList(param)) {
-			doc.remove("_class");
-			result.add(doc);
-		}
-		return result;
+	public List<Document> getAuditLogList(AuditLogListVO vo){
+		return dao.getAuditLogList(vo);
 	}
 }
