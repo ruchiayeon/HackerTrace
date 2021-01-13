@@ -39,7 +39,7 @@ const _nav =  [
   {
     _tag: 'CSidebarNavDropdown',
     name: '이상행위',
-    route: '/AbnormalManage',
+    route: '/abnormal/initial',
     icon: 'cil-puzzle',
     _children: [
       {

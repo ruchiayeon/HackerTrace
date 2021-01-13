@@ -1,10 +1,25 @@
-// Variable overrides
+
+
+//side bar style
 .matrixtotal{
     overflow:scroll;
     max-height: 500px;
-    
+    padding: 1rem 1rem;
 }
-
+::-webkit-scrollbar {
+    width: 5px;  /* 세로축 스크롤바 길이 */
+    height: 0px;  /* 가로축 스크롤바 길이 */
+}
+::-webkit-scrollbar-track {
+    background-color: lightblue;
+}
+::-webkit-scrollbar-track-piece {
+    background-color:#eee;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background-color: rgba(161, 161, 161, 0.486);
+}
 .table-responsive{
     text-align: center;
 }
@@ -14,17 +29,55 @@
 }
 .matrixtable div{
     padding: 1rem 0.4rem;
-    border: 1px solid #eee;
+    margin: 0.7rem 0rem;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0px 0px 8px 0px #00000011;
+    transition: 0.3s ease-in-out;
     &:hover{
-        background: #cde0fd;
+        background: #0065ff3d;
+        transition: 0.3s ease-in-out;
+        box-shadow: 0px 0px 0px 0px #00000054
+        //box-shadow: 0px 0px 12px 0px#2762bbbd;
+        
     }
 }
-
-.matrixtable h5{
+.btn-info{
+    background: #321fdb!important;
+    border-color: #321fdb!important;
+}
+.form-group{
+    margin-bottom:0!important;
+}
+.matrixtable section{
+    height: 4rem;
+    border-bottom: 2px solid #321fdb94;
+}
+.matrixtable section p{
+    margin: 0;
+    position: absolute;
+    color:#040027;
+}
+.matrixtable section h5{
     font-size: 0.9rem!important;
-    height: 50px;
+    color:#040027;
+    font-weight: bold;
+}
+hr{
+    opacity: 0.5;
+    margin: 2rem 1rem!important;
 }
 
+
+//correlation table 
+.tableTopMargin{
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    opacity: 0.3;
+}
+
+
+//side bar style
 .c-sidebar {
     background: #0247b9!important;
 }
@@ -35,4 +88,9 @@
 .c-header-nav-link{
     font-size: 1rem;
     font-weight: 600;
+}
+
+.c-datatable-filter,.c-datatable-filter.div{
+    display:none!important;
+    margin:0!important;
 }

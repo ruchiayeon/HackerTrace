@@ -10,10 +10,9 @@ import {
   CSubheader,
   CBreadcrumbRouter,
   CLink,
-  CDropdown,
-  CDropdownToggle,
-  CDropdownMenu,
-  CDropdownItem
+  CFormGroup,
+  CSelect,
+  CCol
 } from '@coreui/react'
 
 // routes config
@@ -61,7 +60,7 @@ const TheHeader = () => {
           <CHeaderNavLink to="/config">형상관리</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem className="px-3">
-          <CHeaderNavLink to="/abnormal">이상행위</CHeaderNavLink>
+          <CHeaderNavLink to="/abnormal/initial">이상행위</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem className="px-3">
           <CHeaderNavLink to="/correlation">상관분석</CHeaderNavLink>
@@ -81,25 +80,20 @@ const TheHeader = () => {
             <CLink className="c-subheader-nav-link"href="#">
            
             <CHeaderNavItem>HOST NAME {"&"} IP</CHeaderNavItem>
-        
-        <CDropdown >
-          <CDropdownToggle caret>
-             HOST 목록  
-          </CDropdownToggle>
-          <CDropdownMenu>
-         
-           {/* <CDropdownItem disabled>Action Disabled</CDropdownItem>*/}
-            <CDropdownItem>Host Name<br/> {"&"} IP</CDropdownItem>
-            <CDropdownItem divider />
-            <CDropdownItem>Host Name<br/> {"&"} IP</CDropdownItem>
-            <CDropdownItem divider />
-            <CDropdownItem>Host Name<br/> {"&"} IP</CDropdownItem>
-            <CDropdownItem divider />
-            <CDropdownItem>Host Name<br/> {"&"} IP</CDropdownItem>
-            
-          </CDropdownMenu>
-        </CDropdown>
-     
+            <CCol md="8">
+            <CFormGroup>
+              <CSelect custom name="ccyear" id="ccyear">
+                <option selected>호스트 목록</option>
+                <option>HOST NAME <br/>IP</option>
+                <option>HOST NAME <br/>IP</option>
+                <option>HOST NAME <br/>IP</option>
+                <option>HOST NAME <br/>IP</option>
+                <option>HOST NAME <br/>IP</option>
+                <option>HOST NAME <br/>IP</option>
+
+              </CSelect>
+            </CFormGroup>
+            </CCol>
             </CLink>
           </div>
       </CSubheader>
