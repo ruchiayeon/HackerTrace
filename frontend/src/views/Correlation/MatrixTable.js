@@ -1,28 +1,94 @@
-import React from 'react'
+import React,{useEffect, useState} from 'react'
+import axios from 'axios'
 import {
     CRow,
     CCol,
-  } from '@coreui/react'
+} from '@coreui/react'
 
-function MatrixTable()  {
+//에러 페이지
+import Page404 from '../pages/page404/Page404'
+
+function MatrixTableAxios() {
+    //실패/ 로딩중 메세지 --> 로딩 성공시 넘어가게 
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    //Att&CK map info
+    const [attackMatrixs, setMiterData] = useState(null);
+    const [attackMatrixTitle, setMiterTitleData] = useState(null);
+    const [version, setMiterVerData] = useState(null);
+    const [spec, setMiterSpecData] = useState(null);
     
-    return (
-        <div className="matrixtotal">
-            <CRow>
+    useEffect(()=>{
+        const matrixResData = async() => {
+        try{
+            //요청이 왔을때 원래 있던 값을 초기화해준다.
+            //miterData(null);
+            //setError(null);
 
+            setLoading(true);
+            //axios를 이용하여 해당 url에서 갑을 받아온다.
+            const response = await axios.get(
+                'http://210.114.18.175:8080/ht/mitre/matrix?isSubT=T'
+            )
+            //받아온 값을 setMiterData에 넣어준다.
+            
+            setMiterTitleData(response.data.data.kill_chain_phases);
+            setMiterVerData(response.data.data.version)
+            setMiterSpecData(response.data.data.spec_version)
+            setMiterData(response.data.data.attack_matrix);
+           
+
+        }catch(e){
+            //에러시 flag를 달아서 이동
+            setError(e);
+            console.log(e)
+        }
+            //로딩 실패시 flag를 달아서 이동
+            setLoading(false);
+       };
+        matrixResData();
+    }, []);
+
+    //로딩관련 예외처리를 해준다. --> 페이지 만들어졌을때 변경 하기 
+    if(loading) return <div>로딩중</div>;
+    if(error) return <Page404/>;
+    if(!attackMatrixs) return <div>일치하는 데이터가 없습니다.</div>;
+    if(!attackMatrixTitle) return <div>일치하는 데이터가 없습니다.</div>;
+    if(!version) return <div>일치하는 데이터가 없습니다.</div>;
+    if(!spec) return <div>일치하는 데이터가 없습니다.</div>;
+
+    //Axios로 불러온 값을 뿌려주는 부분이다.  
+    //console.log('data is ' + JSON.stringify(data)); 이렇게 사용하면  json형으로 사용이 가능하다고 하는데 
+    //DB 연결후 확인을 해봐야 한다.
+   
+  
+    //진짜 드럽다.. 방법 바꿀시간 있으면 바꾸기
+    const initialAccess = attackMatrixs[0]
+    const Execution = attackMatrixs[1]
+    const Persistence = attackMatrixs[2]
+    const Privilege = attackMatrixs[3]
+    const Defense = attackMatrixs[4]
+    const Credential = attackMatrixs[5]
+    const Discovery = attackMatrixs[6]
+    const Collection = attackMatrixs[7]
+    const Command = attackMatrixs[8]
+    const Exfiltration = attackMatrixs[9]
+    const Impact = attackMatrixs[10]
+
+    return (
+        
+        <>
+          <div className="matrixtotal">
+            <CRow> 
             <CCol sm={2} className="matrixtable">
                 <section>
-                    <h5 value="initial-access">Initial<br/>Access</h5>
+                    <h5 value="initial-access">initial-access</h5>
                     <p>초기 접근</p>
                 </section>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1190">Exploit Public-Facing Application</div>
-                <div value="T1133">External Remote Services</div>
-                <div value="T1200">Hardware Additions</div>
-                <div value="T1566">Phishing</div>
-                <div value="T1195">Supply Chain Compromise</div> 
-                <div value="T1199">Trusted Relationship</div>
-                <div value="T1078">Valid Accounts</div>
+                {initialAccess.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
             <CCol sm={2} className="matrixtable">
@@ -31,15 +97,9 @@ function MatrixTable()  {
                     <br/>
                     <p>실행</p>
                 </section>
-                <div value="T1059">Command and Scripting Interpreter</div>
-                <div value="T1203">Exploitation for Client Execution</div>
-                <div value="T1061">Graphical User Interface</div>
-                <div value="T1106">Native API</div>
-                <div value="T1053">Scheduled Task/Job</div>
-                <div value="T1064">Scripting</div> 
-                <div value="T1072">Software Deployment Tools</div>
-                <div value="T1153">Source</div>
-                <div value="T1204">User Execution</div>
+                {Execution.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
             </CCol>
             <CCol sm={2} className="matrixtable">
                 <section>
@@ -47,22 +107,9 @@ function MatrixTable()  {
                     <br/>
                     <p>지속성 행위</p>
                 </section>
-                <div value="T1098">Account Manipulation</div>
-                <div value="T1547">Drive-by Compromise</div>
-                <div value="T1037">Drive-by Compromise</div>
-                <div value="T1176">Drive-by Compromise</div>
-                <div value="T1554">Drive-by Compromise</div>
-                <div value="T1136">Drive-by Compromise</div> 
-                <div value="T1543">Drive-by Compromise</div>
-                <div value="T1546">Drive-by Compromise</div>
-                <div value="T1133">Drive-by Compromise</div> 
-                <div value="T1574">Drive-by Compromise</div>
-                <div value="T1542">Drive-by Compromise</div>
-                <div value="T1108">Drive-by Compromise</div> 
-                <div value="T1108">Drive-by Compromise</div>
-                <div value="T1505">Drive-by Compromise</div>
-                <div value="T1205">Drive-by Compromise</div>
-                <div value="T1078">Drive-by Compromise</div>
+                {Persistence.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
             <CCol sm={2} className="matrixtable">
@@ -70,14 +117,9 @@ function MatrixTable()  {
                     <h5>Privilege<br/>Escalation</h5>
                     <p>권한 상승 행위</p>
                 </section>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div> 
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
+                {Privilege.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
             <CCol sm={2} className="matrixtable">
@@ -85,14 +127,9 @@ function MatrixTable()  {
                     <h5>Defense<br/>Evasion</h5>
                     <p>방어 회피</p>
                 </section>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div> 
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
+                {Defense.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
             <CCol sm={2} className="matrixtable">
@@ -100,14 +137,9 @@ function MatrixTable()  {
                     <h5>Credential<br/>Access</h5>
                     <p>자격증명 접근</p>
                 </section>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div> 
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
+                {Credential.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
          
@@ -120,14 +152,9 @@ function MatrixTable()  {
                     <br/>
                     <p>뭐라고 이야기하지</p>
                 </section>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div> 
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
+                {Discovery.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
             <CCol sm={2} className="matrixtable">
@@ -136,14 +163,9 @@ function MatrixTable()  {
                     <br/>
                     <p>수집행위</p>
                 </section>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div> 
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
+                {Collection.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
             <CCol sm={2} className="matrixtable">
@@ -151,14 +173,9 @@ function MatrixTable()  {
                     <h5>Command<br/>and Control</h5>
                     <p>CLI 접근 및 조작행위</p>
                 </section>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div> 
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
+                {Command.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
             <CCol sm={2} className="matrixtable">
@@ -167,14 +184,9 @@ function MatrixTable()  {
                     <br/>
                     <p>유출 행위</p>
                 </section>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div> 
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
+                {Exfiltration.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
             <CCol sm={2} className="matrixtable">
@@ -183,23 +195,22 @@ function MatrixTable()  {
                     <br/>
                     <p>뭐라고 할까..</p>
                 </section>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div> 
-                <div value="T1189">Drive-by Compromise</div>
-                <div value="T1189">Drive-by Compromise</div>
+                {Impact.map((item, index) => {
+                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                })}
 
             </CCol>
 
             
             </CRow>
         </div>
-
+        </>
     )
+    
 }
 
 
-export default MatrixTable
+
+export default MatrixTableAxios
+
+
