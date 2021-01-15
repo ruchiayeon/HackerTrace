@@ -1,63 +1,169 @@
-import React,{useEffect, useState} from 'react'
-import axios from 'axios'
+import React, { useState } from 'react'
+import {
+  CCard,
+  CCardBody,
+  CCol,
+  CDataTable,
+  CRow,
+  CFormGroup,
+  CInput,
+  CInputGroup,
+  CInputGroupAppend,
+  CButton,
+  CSelect,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle
+} from '@coreui/react'
 
-//예외처리
-import Page404 from '../pages/page404/Page404'
+import usersData from './configData'
+import Clock from '../Clock/Clock'
 
 
 
-function ConfigManageAxios() {
-    //실패/ 로딩중 메세지 --> 로딩 성공시 넘어가게 
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
 
-    //config Data info
-    const [configData, setConfigData] = useState(null);
-    
-    useEffect(()=>{
-        const setConfigResData = async()=>{
-        try{
-            //요청이 왔을때 원래 있던 값을 초기화해준다.
-            configData(null);
-            setError(null);
+const fields = [
+  {key:'Logid',_style:{width:'10%'}},
+  {key:'TIME',_style:{width:'20%'}},
+  {key:'IP',_style:{width:'10%'}}, 
+  {key:'File_Path',_style:{width:'30%'}},
+  {key:'UUID',_style:{width:'10%'}},
+  {key:'History',_style:{width:'10%'}, lable:''}
+]
 
-            setLoading(true);
-            //axios를 이용하여 해당 url에서 갑을 받아온다.
-            const response = await axios.get(
-                '127.0.0.1'
-            );
-            //받아온 값을 setMiterData에 넣어준다.
-            setConfigData(JSON.stringify(response.data));
-        }catch(e){
+function ConfigManage() {
 
-            //에러시 flag를 달아서 이동
-            setError(e);
-        }
-            //로딩 실패시 flag를 달아서 이동
-            setLoading(false);
-       };
-       setConfigResData();
-    }, []);
+    const [modal, setModal] = useState(false)
 
-    //로딩관련 예외처리를 해준다. --> 페이지 만들어졌을때 변경 하기 
-    if(loading) return <div>로딩중</div>;
-    if(error) return <Page404/>;
-    if(!configData) return <div>일치하는 데이터가 없습니다.</div>;
+    const[inputs, setInputs] =useState({
+      search:'',
+      startDate:'',
+      endDate:'',
+      selectColum:''
+    });
 
-    //Axios로 불러온 값을 뿌려주는 부분이다.  
-    //console.log('data is ' + JSON.stringify(data)); 이렇게 사용하면  json형으로 사용이 가능하다고 하는데 
-    //DB 연결후 확인을 해봐야 한다.
+    const { search, startDate,endDate,selectColum } = inputs;
 
-    return (
-        <div>
-            {configData.map(configData =>(
-                {configData}
-            ))} 
-        </div>
-    )
-    
+    function handlerChange(e){
+       const { value, name } = e.target;  
+       
+       setInputs({
+        ...inputs,
+        [name]:value
+       });
+    };
+
+    function submitValue(){
+      alert(`searchValue: ${search} & startValue: ${startDate} & endValue: ${endDate} & selectColum:${selectColum}`)
+    };
+
+   
+
+  return (
+    <>
+      
+      <CRow>
+        <CCol>
+          <CCard>
+            <CCardBody>
+              <Clock/>
+                <CRow>
+                 
+                  <CCol md="2">
+                    <CFormGroup row>
+                      <CCol xs="12" md="12">
+                        <CInput type="date" id="startDate" placeholder="start_date"  onChange={handlerChange} value={startDate} name='startDate'/>
+                      </CCol>
+                    </CFormGroup>
+                  </CCol>
+                  <CCol md="2">
+                    <CFormGroup row>
+                      <CCol xs="12" md="12">
+                        <CInput type="date" id="endDate" placeholder="end_date" onChange={handlerChange} value={endDate} name='endDate'/>
+                      </CCol>
+                    </CFormGroup>
+                  </CCol>
+                  <CCol md="4"></CCol>
+                  <CCol md="4">
+                    <CRow>
+                      <CCol md="4">
+                      <CFormGroup>
+                        <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="ccyear">
+                          <option selected>colum</option>
+                          <option>IP</option>
+                          <option>File Path</option>
+                          <option>UUID</option>
+                        </CSelect>
+                      </CFormGroup>
+                      </CCol>
+                      <CCol md="8">
+                        <CInputGroup className="input-prepend">
+                          <CInput size="100" type="text" placeholder="search" onChange={handlerChange} value={search} name='search' />
+                          <CInputGroupAppend>
+                            <CButton color="info" onClick={submitValue}>Search</CButton>
+                          </CInputGroupAppend>
+                        </CInputGroup>
+                      </CCol>
+                    </CRow>
+                  </CCol>
+                </CRow>
+                  <CDataTable
+                    items={usersData}
+                    fields={fields}
+                    //columnFilter
+                    itemsPerPage= {10}
+                    hover
+                    tableFilter
+                    pagination
+                    scopedSlots = {{
+                      'History':
+                      (item, index)=>{
+                        return (
+                          <td className="py-2">
+                            <CButton 
+                            color="primary"
+                            variant="outline"
+                            shape="square"
+                            size="sm"
+                            onClick={() => setModal(!modal)}>
+                              Detail
+                            </CButton>
+                          </td>
+                          )
+                      }
+
+                    }}
+                  />
+
+              <CModal show={modal} onClose={setModal}>
+                <CModalHeader closeButton>
+                  <CModalTitle>형상 변경 내용</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
+                  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+                  aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+                  culpa qui officia deserunt mollit anim id est laborum.
+                </CModalBody>
+                <CModalFooter>
+                  <CButton 
+                    color="secondary" 
+                    onClick={() => setModal(false)}
+                  >Cancel</CButton>
+                </CModalFooter>
+              </CModal>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
+    </>
+  )
 }
 
-export default ConfigManageAxios
+export default ConfigManage
 
 
+ 

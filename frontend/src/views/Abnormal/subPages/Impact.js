@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CCard,
   CCardBody,
@@ -12,60 +12,126 @@ import {
   CButton,
   CSelect
 } from '@coreui/react'
-
-import usersData from './abnormalData'
+import axios from 'axios'
 import Clock from '../../Clock/Clock'
+import Page404 from '../../pages/page404/Page404'
 
-
-
-
-const fields = [
-  {key:'Logid',_style:{width:'10%'}},
-  {key:'TIME',_style:{width:'20%'}},
-  {key:'IP',_style:{width:'10%'}}, 
-  {key:'File_Path',_style:{width:'30%'}},
-  {key:'UUID',_style:{width:'10%'}},
-  {key:'Detail',_style:{width:'10%'}, lable:''}
-]
 
 function Impact() {
 
-    const[inputs, setInputs] =useState({
-      search:'',
-      startDate:'',
-      endDate:'',
-      selectColum:''
-    });
+  const[inputs, setInputs] = useState({
+    search:'',
+    startDate:'2020-01-01',
+    endDate:'2021-01-30',
+    selectColum:'uid',
+    selectHostIp:'127.0.0.1'
+  });
 
-    const { search, startDate,endDate,selectColum } = inputs;
+  const { search, startDate, endDate, selectColum, selectHostIp } = inputs;
 
-    function handlerChange(e){
-       const { value, name } = e.target;  
-       
-       setInputs({
-        ...inputs,
-        [name]:value
-       });
-    };
+  function handlerChange(e){
+      const { value, name } = e.target;  
+      
+      setInputs({
+      ...inputs,
+      [name]:value
+      });
+  };
 
-    function submitValue(){
-      alert(`searchValue: ${search} & startValue: ${startDate} & endValue: ${endDate} & selectColum:${selectColum}`)
-    };
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [impactDatas, setImpactDatas] = useState(false);
 
-    function detailShow(){
-      alert(`detail`)
+  //검색 버튼 및 Value값 넘겨주는 부분
+  function submitValue(){
+    //alert(`${selectHostIp}/${selectColum}`)
+    tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
+  };
+  
+  //host Ip받아오는 부분
+  const [hostDatas, setHostDatas] = useState(null);
+
+  //host ip 받아오기
+  useEffect(()=>{
+    const hostResData = async() => {
+      try{
+        setLoading(true);
+        //axios를 이용하여 해당 url에서 갑을 받아온다.
+        const response = await axios.get(
+            'http://210.114.18.175:8080/ht/host/list'
+        )
+        //받아온 값을 hostDatas에 넣어준다.
+        setHostDatas(response.data.data);
+        console.log(response.data.data);
+      }catch(e){
+        //에러시 flag를 달아서 이동
+        setError(e);
+        console.log(e)
+      }
+        //로딩 실패시 flag를 달아서 이동
+        setLoading(false);
+      };
+    hostResData();
+  }, []);
+
+  //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
+  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
+
+  const fields = [
+    {key:'time',_style:{width:'10%'}},
+    {key:'hostIp',_style:{width:'10%'}},
+    {key:'type',_style:{width:'10%'}}, 
+    {key:'ses',_style:{width:'10%'}},
+    {key:'uid',_style:{width:'10%'}},
+    {key:'msg',_style:{width:'40%'}},
+
+  ]
+  
+  //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
+  const tableAxiosData = async(startDate, endDate, selectColum, search, selectHostIp) => {
+    try{
+      setLoading(true);
+      //axios를 이용하여 해당 url에서 값을 받아온다.
+      const response = await axios.post(
+        'http://210.114.18.175:8080/ht/audit-daemon/log/list',
+        { 
+          startDate : startDate,
+          endDate   : endDate,
+          hostIp    : selectHostIp,
+          pageNumber: 1,
+          pageSize  : 50,
+          phases    : "impact",
+          searchType: selectColum,
+          searchWord: search, 
+        }
+      )
+      setImpactDatas(response.data.data);
+      console.log(response.data.data);
+     
+    }catch(e){
+      //에러시 flag를 달아서 이동
+      setError(e);
+      console.log(e)
+      if(!impactDatas) return <div>일치하는 데이터가 없습니다.</div>;
     }
+    //로딩 실패시 flag를 달아서 이동
+    setLoading(false);
+  };
+  if(loading) return <div>로딩중</div>;
+  if(error) return <Page404/>;
+
+  if(!impactDatas){
+    submitValue()
+  }
 
   return (
     <>
-
       <CRow>
         <CCol>
           <CCard>
             <CCardBody>
               <Clock/>
-                <CRow>
-                 
+                <CRow className="searchtoolbar"> 
                   <CCol md="2">
                     <CFormGroup row>
                       <CCol xs="12" md="12">
@@ -80,20 +146,29 @@ function Impact() {
                       </CCol>
                     </CFormGroup>
                   </CCol>
-                  <CCol md="4"></CCol>
-                  <CCol md="4">
+                  <CCol md="2"></CCol>
+                  <CCol md="6">
                     <CRow>
                       <CCol md="4">
-                      <CFormGroup>
-                        <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="ccyear">
-                          <option selected>colum</option>
-                          <option>IP</option>
-                          <option>File Path</option>
-                          <option>UUID</option>
-                        </CSelect>
-                      </CFormGroup>
+                        <CFormGroup>
+                          <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="selectColum">
+                            <option value='type'>type</option>
+                            <option value='uid'>uid</option>
+                            <option value='ses'>session</option>
+                            <option value='key'>T value</option>
+                          </CSelect>
+                        </CFormGroup>
                       </CCol>
-                      <CCol md="8">
+                      <CCol md="4">
+                        <CFormGroup>
+                          <CSelect custom name="selectHostIp" onChange={handlerChange} value={selectHostIp} id="selectHostIp">
+                            {hostDatas.map((item, index) => {
+                              return <option key={index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
+                            })}
+                          </CSelect>
+                        </CFormGroup>
+                      </CCol>
+                      <CCol md="4">
                         <CInputGroup className="input-prepend">
                           <CInput size="100" type="text" placeholder="search" onChange={handlerChange} value={search} name='search' />
                           <CInputGroupAppend>
@@ -105,32 +180,11 @@ function Impact() {
                   </CCol>
                 </CRow>
                   <CDataTable
-                    items={usersData}
+                    items={impactDatas}
                     fields={fields}
-                    //columnFilter
                     itemsPerPage= {10}
                     hover
-                    tableFilter
                     pagination
-                    scopedSlots = {{
-                      'Detail':
-                      (item, index)=>{
-                        return (
-                          <td className="py-2">
-                            <CButton
-                              color="primary"
-                              variant="outline"
-                              shape="square"
-                              size="sm"
-                              onClick={detailShow}
-                            >
-                             Detail show
-                            </CButton>
-                          </td>
-                          )
-                      }
-
-                    }}
                   />
             </CCardBody>
           </CCard>
@@ -141,6 +195,3 @@ function Impact() {
 }
 
 export default Impact
-
-
- 

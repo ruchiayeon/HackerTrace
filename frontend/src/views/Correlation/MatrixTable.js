@@ -8,7 +8,8 @@ import {
 //에러 페이지
 import Page404 from '../pages/page404/Page404'
 
-function MatrixTableAxios() {
+function MatrixTable() {
+    //console.log(spotChange)
     //실패/ 로딩중 메세지 --> 로딩 성공시 넘어가게 
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -87,7 +88,7 @@ function MatrixTableAxios() {
                     <p>초기 접근</p>
                 </section>
                 {initialAccess.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -98,7 +99,7 @@ function MatrixTableAxios() {
                     <p>실행</p>
                 </section>
                 {Execution.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
             </CCol>
             <CCol sm={2} className="matrixtable">
@@ -108,7 +109,7 @@ function MatrixTableAxios() {
                     <p>지속성 행위</p>
                 </section>
                 {Persistence.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -118,7 +119,7 @@ function MatrixTableAxios() {
                     <p>권한 상승 행위</p>
                 </section>
                 {Privilege.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -128,7 +129,7 @@ function MatrixTableAxios() {
                     <p>방어 회피</p>
                 </section>
                 {Defense.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -138,7 +139,7 @@ function MatrixTableAxios() {
                     <p>자격증명 접근</p>
                 </section>
                 {Credential.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -153,7 +154,7 @@ function MatrixTableAxios() {
                     <p>뭐라고 이야기하지</p>
                 </section>
                 {Discovery.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -164,7 +165,7 @@ function MatrixTableAxios() {
                     <p>수집행위</p>
                 </section>
                 {Collection.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -174,7 +175,7 @@ function MatrixTableAxios() {
                     <p>CLI 접근 및 조작행위</p>
                 </section>
                 {Command.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -185,7 +186,7 @@ function MatrixTableAxios() {
                     <p>유출 행위</p>
                 </section>
                 {Exfiltration.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -196,7 +197,7 @@ function MatrixTableAxios() {
                     <p>뭐라고 할까..</p>
                 </section>
                 {Impact.map((item, index) => {
-                    return <div key={index} value={item.external_ids[0]}> {item.name} </div>
+                    return <div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> {item.name} </div>
                 })}
 
             </CCol>
@@ -211,6 +212,6 @@ function MatrixTableAxios() {
 
 
 
-export default MatrixTableAxios
+export default MatrixTable
 
 

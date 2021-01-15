@@ -1,10 +1,9 @@
-
-
 //side bar style
 .matrixtotal{
     overflow:scroll;
     max-height: 500px;
     padding: 1rem 1rem;
+        background: linear-gradient(13deg, #c9c4f780, #f5d5d500);
 }
 ::-webkit-scrollbar {
     width: 5px;  /* 세로축 스크롤바 길이 */
@@ -18,7 +17,7 @@
 }
 ::-webkit-scrollbar-thumb {
     border-radius: 8px;
-    background-color: rgba(161, 161, 161, 0.486);
+    background-color: #a1a1a17c;
 }
 .table-responsive{
     text-align: center;
@@ -42,6 +41,27 @@
         
     }
 }
+
+//검색한 T값 - 사용자
+.searchT{
+    font-size: 1rem;
+    font-weight: 600;
+    background: #0065ff3d;
+}
+//검색한 T값 - 공격 그룹
+.attckGroupT{
+    font-size: 1rem;
+    font-weight: 600;
+    background: #ffa5007a;
+}
+//검색후, T값이 같을 경우 className추가
+.matchT{
+    background: #da1515!important;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
 .btn-info{
     background: #321fdb!important;
     border-color: #321fdb!important;
@@ -91,4 +111,7 @@ hr{
 }
 .searchtoolbar{
     margin: 1rem 0;
+}
+.hiddenUidSelec{
+    display: none;
 }
