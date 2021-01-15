@@ -19,3 +19,11 @@ mongodb
 
 
 **-/frontend**
+
+node v14.15.1.
+
+npm  v6.14.8
+
+ReactJs v17.0.1
+
+@core ui react template
