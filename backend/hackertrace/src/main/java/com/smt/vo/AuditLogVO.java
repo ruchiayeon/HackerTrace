@@ -13,7 +13,9 @@ import lombok.Setter;
 @Setter
 public class AuditLogVO {
 
-	@Pattern(regexp = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
+	@Pattern(
+			regexp = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$",
+			message = "올바른 IP 형식이 아닙니다.")
 	private String hostIp;
 	private String type;
 	private String node;

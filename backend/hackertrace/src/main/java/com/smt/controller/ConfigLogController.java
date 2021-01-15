@@ -2,7 +2,9 @@ package com.smt.controller;
 
 import javax.validation.Valid;
 
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -12,12 +14,14 @@ import com.smt.service.ConfigLogService;
 import com.smt.util.APIUtil;
 import com.smt.vo.ConfigLogListVO;
 import com.smt.vo.ConfigLogVO;
+import com.smt.vo.ConfigOriginVO;
 import com.smt.vo.ResultVO;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/config")
 @Api(value = "ConfigLogController", description = "형상관리 관련")
 public class ConfigLogController {
@@ -25,7 +29,8 @@ public class ConfigLogController {
 	@Autowired
 	ConfigLogService service;
 	
-	@ApiOperation(value = "형상 관리 원본 파일 등록 초기화")
+	@ApiOperation(value = "형상 관리 원본 파일 등록 초기화(to.배)")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
 	@RequestMapping(value = "/file/origin/drop", method = RequestMethod.GET)
 	public ResultVO dropConfigOriginFile() {
 
@@ -38,7 +43,8 @@ public class ConfigLogController {
 		
 	}
 
-	@ApiOperation(value = "형상 관리 원본 파일 등록")
+	@ApiOperation(value = "형상 관리 원본 파일 등록(to.배)")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
 	@RequestMapping(value = "/file/origin", method = RequestMethod.POST)
 	public ResultVO insertConfigOriginFile(final @Valid @RequestBody ConfigLogVO configLogVO) {
 
@@ -53,7 +59,8 @@ public class ConfigLogController {
 		
 	}
 	
-	@ApiOperation(value = "형상 관리 원본 이후 파일 정보 등록")
+	@ApiOperation(value = "형상 관리 원본 이후 파일 정보 등록(to.배)")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
 	@RequestMapping(value = "/file/log", method = RequestMethod.POST)
 	public ResultVO insertConfigLogFile(final @Valid @RequestBody ConfigLogVO configLogVO) {
 
@@ -66,13 +73,42 @@ public class ConfigLogController {
 		
 	}
 	
-	@ApiOperation(value = "형상 관리 원본 파일, 로그 파일 정보 조회")
-	@RequestMapping(value = "/list", method = RequestMethod.POST)
-	public ResultVO selectConfigLogList(final @Valid @RequestBody ConfigLogListVO ConfigLogListVO) {
+	@ApiOperation(value = "형상 관리 파일 디렉터리 목록")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/directory", method = RequestMethod.GET)
+	public ResultVO selectConfigOriginFilePath() {
+
 		try {
-			return APIUtil.resResult(0, "형상 관리 로그 내역 조회를 완료했습니다.", service.selectConfigLogFileList(ConfigLogListVO));
+			return APIUtil.resResult(0, "형상 관리 파일 디렉터리 목록 조회가 완료되었습니다.", service.selectConfigOriginFilePath());
+		}catch(Exception e) {
+			return APIUtil.resResult(1, "형상 관리 파일 디렉터리 목록 조회가 실패되었습니다.", null);
+		}
+		
+	}
+	
+	
+	
+	@ApiOperation(value = "형상 관리 원본 파일, 로그 파일 정보 조회")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/log/list", method = RequestMethod.POST)
+	public ResultVO selectConfigLogList(final @Valid @RequestBody ConfigLogListVO configLogListVO) {
+		try {
+			return APIUtil.resResult(0, "형상 관리 로그 내역 조회를 완료했습니다.", service.selectConfigLogFileList(configLogListVO));
 		}catch(Exception e) {
 			return APIUtil.resResult(1, "형상 관리 로그 내역 조회를 실패했습니다.", null);
+		}
+	}
+	
+	@ApiOperation(value = "특정 파일 원본 파일, 로그 파일 내용 조회(무결성)")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/origin-log/contents", method = RequestMethod.POST)
+	public ResultVO selectConfigOriginFileContents(final @Valid @RequestBody ConfigOriginVO configOriginVO) {
+		try {
+			Document result = new Document();
+			result = service.selectConfigOriginLogFileContents(configOriginVO);
+			return APIUtil.resResult(0, configOriginVO.getFileName()+"의 원본/로그 파일 내용 조회가 완료되었습니다.", result);
+		}catch(Exception e) {
+			return APIUtil.resResult(1, configOriginVO.getFileName()+"의 원본/로그 파일 내용 조회가 실패되었습니다.", null);
 		}
 	}
 	

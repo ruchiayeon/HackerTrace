@@ -53,6 +53,7 @@ public class MitreAttackDAO {
 			}
 			
 			resultDocList.add(doc);
+			
 		}
 
 		return resultDocList; 
@@ -63,29 +64,22 @@ public class MitreAttackDAO {
 		MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
 		BasicDBObject dateTermQuery = MogoDBUtil.getDateTermFindQuery("time", vo.getStartDate(), vo.getEndDate());
+		dateTermQuery.put("hostIp", vo.getHostIp());
 		 
-		List<BasicDBObject> hostIpQueryList = new ArrayList<BasicDBObject>();
 		List<BasicDBObject> uidQueryList = new ArrayList<BasicDBObject>();
 		List<BasicDBObject> sesQueryList = new ArrayList<BasicDBObject>();
 		
+		System.out.println(dateTermQuery.toJson());
 		BasicDBObject matchQuery = new BasicDBObject("$match", dateTermQuery);
 		
-		BasicDBObject groupHostIpQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$hostIp"));
 		BasicDBObject groupUidQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$uid"));
 		BasicDBObject groupSesQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$ses"));
-		
-		hostIpQueryList.add(matchQuery);
-		hostIpQueryList.add(groupHostIpQuery);
 		
 		uidQueryList.add(matchQuery);
 		uidQueryList.add(groupUidQuery);
 		
 		sesQueryList.add(matchQuery);
 		sesQueryList.add(groupSesQuery);
-		
-		List<Document> hostIpList = auditLogCol.aggregate(hostIpQueryList).into(new ArrayList<>());
-		List<String> hostIps = new ArrayList<>();
-		getGroupResults(hostIpList, hostIps);
 		
 		List<Document> uidList = auditLogCol.aggregate(uidQueryList).into(new ArrayList<>());
 		List<String> uids = new ArrayList<>();
@@ -96,7 +90,6 @@ public class MitreAttackDAO {
 		getGroupResults(sesList, sess);
 		
 		Document resultDoc = new Document();
-		resultDoc.put("host_ip_list", hostIps);
 		resultDoc.put("uid_list", uids);
 		resultDoc.put("ses_list", sess);
 		
@@ -126,7 +119,7 @@ public class MitreAttackDAO {
 		findQuery.put("key", new BasicDBObject("$regex", "T.*"));
 		
 		List<Document> docList = auditLogCol.find(findQuery)
-												.into(new ArrayList<>());
+																.into(new ArrayList<>());
 		
 		return docList;
 	}

@@ -36,10 +36,7 @@ public class AuditLogDAO {
 		
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
-		List<Document> docList;
-		
 		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("time", vo.getStartDate(), vo.getEndDate());
-		
 		findQuery.put("hostIp", vo.getHostIp());
 		
 		//공격 단계에 맡는 t 목록
@@ -52,13 +49,15 @@ public class AuditLogDAO {
 		//OR query
 		findQuery.put("$or", keyQueryList);
 		//LIKE query
-		findQuery.put(vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
+		if(vo.getSearchType() != "") {
+			findQuery.put(vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
+		}
 		
 		System.out.println(findQuery.toJson());
-		docList = audtiLogListCol.find(findQuery)
-					  .limit(vo.getPageSize())
-					  .skip(vo.getPageNumber()-1)
-					  .into(new ArrayList<>());
+		List<Document> docList = audtiLogListCol.find(findQuery)
+																     .limit(vo.getPageSize())
+																     .skip(vo.getPageNumber()-1)
+																     .into(new ArrayList<>());
 		
 		return docList;
 		

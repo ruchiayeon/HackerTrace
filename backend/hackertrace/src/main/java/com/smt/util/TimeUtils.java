@@ -6,7 +6,9 @@ import java.util.Date;
 public class TimeUtils {
 
 	public static String getAuditMsgToDate(String msg){
-		String subMsgFormat = msg.substring(6, msg.length()-11);
+		
+		String[] initMsgFormat = msg.split("\\:");
+		String subMsgFormat = initMsgFormat[0].substring(6,initMsgFormat[0].length());
 		String[] splitTimeFormat = subMsgFormat.split("\\.");
 	    
 		long timestamp = Long.parseLong(splitTimeFormat[0]);

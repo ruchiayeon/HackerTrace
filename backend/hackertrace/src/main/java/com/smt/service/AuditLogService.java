@@ -40,62 +40,8 @@ public class AuditLogService {
 				
 				List<String> arguments = new ArrayList<String>(); //arguments
 				for (String field : splitLine) {
-					
 					String[] keyValSplit = field.split("\\=");
-					
-					if (keyValSplit[0].equals("type")) {
-						
-						aLVO.setType(keyValSplit[1]);
-						
-					} else if (keyValSplit[0].equals("msg")) {
-						
-						aLVO.setMsg(keyValSplit[1]);
-						aLVO.setTime(TimeUtils.getAuditMsgToDate(keyValSplit[1]));
-						
-					} else if (keyValSplit[0].equals("proctitle")) {
-						
-						aLVO.setProctitle(keyValSplit[1]);
-						
-					} else if (keyValSplit[0].equals("arch")) {
-						
-						aLVO.setArch(keyValSplit[1]);
-						
-					} else if (keyValSplit[0].equals("syscall")) {
-						
-						aLVO.setSyscall(Integer.valueOf(keyValSplit[1]));
-						
-					} else if (keyValSplit[0].equals("item")) {
-						
-						aLVO.setItems(Integer.valueOf(keyValSplit[1]));
-						
-					} else if (keyValSplit[0].equals("name")) {
-						
-						aLVO.setName(keyValSplit[1].replaceAll("\\\"", ""));
-						
-					} else if (keyValSplit[0].equals("key")) {
-						
-						aLVO.setKey(keyValSplit[1].replaceAll("\\\"", ""));
-						
-					} else if(keyValSplit[0].equals("uid")) {
-						
-						aLVO.setUid(Integer.valueOf(keyValSplit[1]));
-						
-					} else if(keyValSplit[0].equals("ses")) {
-						
-						aLVO.setSes(keyValSplit[1]);
-						
-					}
-					
-					for(int i = 0 ; i<80; i++) {
-						String keyName = "a"+i;
-						
-						if(keyValSplit[0].equals(keyName)) {
-							arguments.add(keyValSplit[1]);
-						}
-					}
-					
-					if(arguments.size()>0)
-						aLVO.setArguments(arguments);
+					readLineFieldMapping(aLVO, arguments, keyValSplit);
 				}
 				
 				aLVO.setHostIp("127.0.0.1");
@@ -111,7 +57,93 @@ public class AuditLogService {
 
 	}
 	
+	public void insertAuditLogByReqLog(String line) {
+		
+		try {
+			
+			String[] splitLine = line.split(" ");
+			
+			AuditLogVO aLVO = new AuditLogVO();
+			List<String> arguments = new ArrayList<String>(); //arguments
+			
+			for (String field : splitLine) {
+				
+				String[] keyValSplit = field.split("\\=");
+				readLineFieldMapping(aLVO, arguments, keyValSplit);
+				
+				if(keyValSplit[0].equals("node")) {
+					aLVO.setHostIp(keyValSplit[1]);
+				}
+			}
+			
+			dao.insertAuditLog(aLVO);
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
 	public List<Document> getAuditLogList(AuditLogListVO vo){
 		return dao.getAuditLogList(vo);
+	}
+	
+	private void readLineFieldMapping(AuditLogVO aLVO, List<String> arguments, String[] keyValSplit) {
+		
+		if (keyValSplit[0].equals("type")) {
+			
+			aLVO.setType(keyValSplit[1]);
+			
+		} else if (keyValSplit[0].equals("msg")) {
+			
+			aLVO.setMsg(keyValSplit[1]);
+			aLVO.setTime(TimeUtils.getAuditMsgToDate(keyValSplit[1]));
+			
+		} else if (keyValSplit[0].equals("proctitle")) {
+			
+			aLVO.setProctitle(keyValSplit[1]);
+			
+		} else if (keyValSplit[0].equals("arch")) {
+			
+			aLVO.setArch(keyValSplit[1]);
+			
+		} else if (keyValSplit[0].equals("syscall")) {
+			
+			aLVO.setSyscall(Integer.valueOf(keyValSplit[1]));
+			
+		} else if (keyValSplit[0].equals("item")) {
+			
+			aLVO.setItems(Integer.valueOf(keyValSplit[1]));
+			
+		} else if (keyValSplit[0].equals("name")) {
+			
+			aLVO.setName(keyValSplit[1].replaceAll("\\\"", ""));
+			
+		} else if (keyValSplit[0].equals("key")) {
+			
+			aLVO.setKey(keyValSplit[1].replaceAll("\\\"", ""));
+			
+		} else if(keyValSplit[0].equals("uid")) {
+			
+			aLVO.setUid(Integer.valueOf(keyValSplit[1]));
+			
+		} else if(keyValSplit[0].equals("ses")) {
+			
+			aLVO.setSes(keyValSplit[1]);
+			
+		} 
+		
+		for(int i = 0 ; i<80; i++) {
+			String keyName = "a"+i;
+			
+			if(keyValSplit[0].equals(keyName)) {
+				arguments.add(keyValSplit[1]);
+			}
+		}
+		
+		if(arguments.size()>0)
+			aLVO.setArguments(arguments);
+		
 	}
 }

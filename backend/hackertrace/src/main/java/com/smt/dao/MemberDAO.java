@@ -22,7 +22,10 @@ public class MemberDAO {
 		MongoCollection<Document> memCol = mongoTemplate.getCollection("MEMBER");
 
 		BasicDBObject findQuery = new BasicDBObject("userId", vo.getUserId());
-		List<Document> docList = memCol.find(findQuery).into(new ArrayList<>());
+		
+		System.out.println(findQuery.toJson());
+		List<Document> docList = memCol.find(findQuery)
+														   .into(new ArrayList<>());
 
 		return docList;
 	}
