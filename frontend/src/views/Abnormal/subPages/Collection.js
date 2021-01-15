@@ -84,7 +84,7 @@ function Collection() {
     {key:'ses',_style:{width:'10%'}},
     {key:'uid',_style:{width:'10%'}},
     {key:'msg',_style:{width:'40%'}},
-
+    {key:'key',_style:{width:'40%'}},
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.

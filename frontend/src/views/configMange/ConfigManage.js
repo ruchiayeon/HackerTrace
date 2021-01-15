@@ -22,12 +22,12 @@ import Clock from '../Clock/Clock'
 import Page404 from '../pages/page404/Page404'
 
 
-function PrivilegeEscalation() {
+function ConfigManage() {
   const [modal, setModal] = useState(false)
-  
+
   const[inputs, setInputs] = useState({
     search:'',
-    startDate:'2020-01-01',
+    startDate:'2021-01-01',
     endDate:'2021-01-30',
     selectColum:'uid',
     selectHostIp:'127.0.0.1'
@@ -46,7 +46,7 @@ function PrivilegeEscalation() {
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [privilegeDatas, setPrivilegeDatas] = useState(false);
+  const [configDatas, setConfigDatas] = useState(false);
 
   //검색 버튼 및 Value값 넘겨주는 부분
   function submitValue(){
@@ -90,7 +90,8 @@ function PrivilegeEscalation() {
     {key:'ses',_style:{width:'10%'}},
     {key:'uid',_style:{width:'10%'}},
     {key:'msg',_style:{width:'40%'}},
-    {key:'History',_style:{width:'40%'}},
+    {key:'Integrity',_style:{width:'10%'}},
+    {key:'History',_style:{width:'10%'}},
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -105,20 +106,20 @@ function PrivilegeEscalation() {
           endDate   : endDate,
           hostIp    : selectHostIp,
           pageNumber: 1,
-          pageSize  : 100,
+          pageSize  : 1000,
           phases    : "privilege-escalation",
           searchType: selectColum,
           searchWord: search, 
         }
       )
-      setPrivilegeDatas(response.data.data);
+      setConfigDatas(response.data.data);
       console.log(response.data.data);
      
     }catch(e){
       //에러시 flag를 달아서 이동
       setError(e);
       console.log(e)
-      if(!privilegeDatas) return <div>일치하는 데이터가 없습니다.</div>;
+      if(!configDatas) return <div>일치하는 데이터가 없습니다.</div>;
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
@@ -126,7 +127,7 @@ function PrivilegeEscalation() {
   if(loading) return <div>로딩중</div>;
   if(error) return <Page404/>;
 
-  if(!privilegeDatas){
+  if(!configDatas){
     submitValue()
   }
 
@@ -186,7 +187,7 @@ function PrivilegeEscalation() {
                   </CCol>
                 </CRow>
                   <CDataTable
-                    items={privilegeDatas}
+                    items={configDatas}
                     fields={fields}
                     itemsPerPage= {10}
                     hover
@@ -202,18 +203,53 @@ function PrivilegeEscalation() {
                             shape="square"
                             size="sm"
                             onClick={() => setModal(!modal)}>
-                              Detail
+                              History
                             </CButton>
                           </td>
                           )
-                      }
-
+                      },
+                      'Integrity':
+                      (item, index)=>{
+                        return (
+                          <td className="py-2">
+                            <CButton 
+                            color="primary"
+                            variant="outline"
+                            shape="square"
+                            size="sm"
+                            onClick={() => setModal(!modal)}>
+                              Config Integrity
+                            </CButton>
+                          </td>
+                          )
+                      },
+                      
                     }}
                   />
-                
+               {/*형상변경 관련 내용 */} 
               <CModal show={modal} onClose={setModal}>
                 <CModalHeader closeButton>
                   <CModalTitle>형상 변경 내용</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
+                  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+                  aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+                  culpa qui officia deserunt mollit anim id est laborum.
+                </CModalBody>
+                <CModalFooter>
+                  <CButton 
+                    color="secondary" 
+                    onClick={() => setModal(false)}
+                  >Cancel</CButton>
+                </CModalFooter>
+              </CModal>
+
+              {/*형상변경 History내용 */} 
+              <CModal show={modal} onClose={setModal}>
+                <CModalHeader closeButton>
+                  <CModalTitle>History 내용</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
                   Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
@@ -237,4 +273,4 @@ function PrivilegeEscalation() {
   )
 }
 
-export default PrivilegeEscalation
+export default ConfigManage

@@ -10,7 +10,8 @@ import {
   CInputGroup,
   CInputGroupAppend,
   CButton,
-  CSelect
+  CSelect,
+ // CPagination
 } from '@coreui/react'
 import axios from 'axios'
 import Clock from '../../Clock/Clock'
@@ -41,6 +42,7 @@ function PrivilegeEscalation() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [privilegeDatas, setPrivilegeDatas] = useState(false);
+ // const [currentPage, setCurrentPage] = useState(1)
 
   //검색 버튼 및 Value값 넘겨주는 부분
   function submitValue(){
@@ -62,7 +64,7 @@ function PrivilegeEscalation() {
         )
         //받아온 값을 hostDatas에 넣어준다.
         setHostDatas(response.data.data);
-        console.log(response.data.data);
+        //console.log(response.data.data);
       }catch(e){
         //에러시 flag를 달아서 이동
         setError(e);
@@ -80,6 +82,7 @@ function PrivilegeEscalation() {
   const fields = [
     {key:'time',_style:{width:'10%'}},
     {key:'hostIp',_style:{width:'10%'}},
+    {key:'key',_style:{width:'10%'}},
     {key:'type',_style:{width:'10%'}}, 
     {key:'ses',_style:{width:'10%'}},
     {key:'uid',_style:{width:'10%'}},
@@ -99,15 +102,17 @@ function PrivilegeEscalation() {
           endDate   : endDate,
           hostIp    : selectHostIp,
           pageNumber: 1,
-          pageSize  : 100,
+          pageSize  : 1000,
           phases    : "privilege-escalation",
           searchType: selectColum,
           searchWord: search, 
         }
       )
       setPrivilegeDatas(response.data.data);
-      console.log(response.data.data);
-     
+      console.log(response.data.data.length);
+      if(response.data.data.length>1000){
+        alert('검색하신 데이터의 양이 많습니다. 검색 범위를 줄여주십시오.')
+      }
     }catch(e){
       //에러시 flag를 달아서 이동
       setError(e);
@@ -180,8 +185,8 @@ function PrivilegeEscalation() {
                   </CCol>
                 </CRow>
                   <CDataTable
-                    items={privilegeDatas}
-                    fields={fields}
+                    items  = {privilegeDatas}
+                    fields = {fields}
                     itemsPerPage= {10}
                     hover
                     pagination
