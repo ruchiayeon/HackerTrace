@@ -18,8 +18,6 @@ public class HostsDAO {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
-	
-
 	public void dropHostsColleciton() {
 		mongoTemplate.dropCollection("HOSTS");
 	}
@@ -31,9 +29,7 @@ public class HostsDAO {
 	public int countHostsByUserIp(HostsVO vo) {
 		MongoCollection<Document> hostsCol = mongoTemplate.getCollection("HOSTS");
 		BasicDBObject findQuery = new BasicDBObject("hostIp", vo.getHostIp());
-		long hostCount = hostsCol.countDocuments(findQuery);
-
-		return (int) hostCount;
+		return (int) hostsCol.countDocuments(findQuery);
 	}
 
 	public List<Document> getAllSavedHostsList() {
