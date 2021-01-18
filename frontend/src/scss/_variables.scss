@@ -115,3 +115,19 @@ hr{
 .hiddenUidSelec{
     display: none;
 }
+
+//modal style 
+.modal-dialog{
+    max-width: 100%!important;
+    margin: 3rem 16rem!important;
+}
+
+///spiner-center
+.spinner-center{
+    margin: 3rem auto;
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    min-height: 50vh;
+
+}

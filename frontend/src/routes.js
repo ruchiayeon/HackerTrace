@@ -58,6 +58,7 @@ const Collection = React.lazy(() => import('./views/Abnormal/subPages/Collection
 const CommandAndControl = React.lazy(() => import('./views/Abnormal/subPages/CommandAndControl'));
 const Exfiltration = React.lazy(() => import('./views/Abnormal/subPages/Exfiltration'));
 const Impact = React.lazy(() => import('./views/Abnormal/subPages/Impact'));
+const Loading = React.lazy(() => import('../src/views/pages/Loading/Loading'));
 
 const routes = [
   //MainPage 
@@ -92,7 +93,7 @@ const routes = [
 
 
 
-  { path: '/theme', name: 'Theme', component: Colors, exact: true },
+  { path: '/loading', name: 'Theme', component: Loading, exact: true },
   { path: '/theme/colors', name: 'Colors', component: Colors },
   { path: '/theme/typography', name: 'Typography', component: Typography },
   { path: '/base', name: 'Base', component: Cards, exact: true },

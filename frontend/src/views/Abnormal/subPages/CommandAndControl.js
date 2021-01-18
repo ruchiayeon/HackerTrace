@@ -15,6 +15,7 @@ import {
 import axios from 'axios'
 import Clock from '../../Clock/Clock'
 import Page404 from '../../pages/page404/Page404'
+import Loading from '../../pages/Loading/Loading'
 
 
 function CommAControl() {
@@ -80,11 +81,11 @@ function CommAControl() {
   const fields = [
     {key:'time',_style:{width:'10%'}},
     {key:'hostIp',_style:{width:'10%'}},
+    {key:'key',_style:{width:'10%'}},
     {key:'type',_style:{width:'10%'}}, 
     {key:'ses',_style:{width:'10%'}},
     {key:'uid',_style:{width:'10%'}},
     {key:'msg',_style:{width:'40%'}},
-
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -100,7 +101,7 @@ function CommAControl() {
           endDate   : endDate,
           hostIp    : selectHostIp,
           pageNumber: 1,
-          pageSize  : 50,
+          pageSize  : 1000,
           phases    : "command-and-control",
           searchType: selectColum,
           searchWord: search, 
@@ -118,7 +119,7 @@ function CommAControl() {
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
   };
-  if(loading) return <div>로딩중</div>;
+  if(loading) return <Loading/>;;
   if(error) return <Page404/>;
 
   if(!commAConDatas){

@@ -15,15 +15,28 @@ import {
   CModalHeader,
   CModalTitle,
   CModalBody,
-  CModalFooter
+  CModalFooter,
+ // CCollapse
 } from '@coreui/react'
 import axios from 'axios'
+import ReactDiffViewer from 'react-diff-viewer'
+
+//페이지 import
 import Clock from '../Clock/Clock'
 import Page404 from '../pages/page404/Page404'
+import Loading from '../pages/Loading/Loading'
+import ConfigHistory from './configHistory'
 
 
 function ConfigManage() {
-  const [modal, setModal] = useState(false)
+  const [configChange, setConfigChange] = useState(false)
+  
+  const [oldCode , setOldCode] = useState('null')
+  const [newCode , setNewCode] = useState('null')
+
+  //config integrity 부분 선언
+  //const [items, setItems] = useState(configDatas)
+
 
   const[inputs, setInputs] = useState({
     search:'',
@@ -36,12 +49,11 @@ function ConfigManage() {
   const { search, startDate, endDate, selectColum, selectHostIp } = inputs;
 
   function handlerChange(e){
-      const { value, name } = e.target;  
-      
-      setInputs({
-      ...inputs,
-      [name]:value
-      });
+    const { value, name } = e.target;  
+    setInputs({
+    ...inputs,
+    [name]:value
+    });
   };
 
   const [error, setError] = useState(null);
@@ -68,7 +80,6 @@ function ConfigManage() {
         )
         //받아온 값을 hostDatas에 넣어준다.
         setHostDatas(response.data.data);
-        console.log(response.data.data);
       }catch(e){
         //에러시 flag를 달아서 이동
         setError(e);
@@ -84,14 +95,13 @@ function ConfigManage() {
   if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
 
   const fields = [
-    {key:'time',_style:{width:'10%'}},
+    {key:'fileCreateDate',_style:{width:'10%'}},
     {key:'hostIp',_style:{width:'10%'}},
-    {key:'type',_style:{width:'10%'}}, 
-    {key:'ses',_style:{width:'10%'}},
     {key:'uid',_style:{width:'10%'}},
-    {key:'msg',_style:{width:'40%'}},
+    {key:'fileName',_style:{width:'10%'}}, 
+    {key:'filePath',_style:{width:'30%'}}, 
     {key:'Integrity',_style:{width:'10%'}},
-    {key:'History',_style:{width:'10%'}},
+
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -100,20 +110,20 @@ function ConfigManage() {
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/audit-daemon/log/list',
+        'http://210.114.18.175:8080/ht/config/log/list',
         { 
           startDate : startDate,
           endDate   : endDate,
           hostIp    : selectHostIp,
           pageNumber: 1,
           pageSize  : 1000,
-          phases    : "privilege-escalation",
+          filePath : "/etc",
           searchType: selectColum,
           searchWord: search, 
         }
       )
       setConfigDatas(response.data.data);
-      console.log(response.data.data);
+      //console.log(response.data.data[0]._id);
      
     }catch(e){
       //에러시 flag를 달아서 이동
@@ -123,13 +133,53 @@ function ConfigManage() {
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
-  };
-  if(loading) return <div>로딩중</div>;
+    };
+  if(loading) return <Loading/>;
   if(error) return <Page404/>;
 
   if(!configDatas){
     submitValue()
   }
+  function toggleModal(index,item){
+    
+    var rowId = item._id;
+    var rowPath = item.filePath;
+    var rowFileNam = item.fileName;
+    var rowHostIp = item.hostIp;
+    var rowUid = item.uid;
+    
+    IntgrityCheck(rowId, rowPath, rowFileNam, rowHostIp, rowUid)
+    setConfigChange(!configChange);
+  }
+  
+  const IntgrityCheck = async(rowId, rowPath, rowFileNam, rowHostIp, rowUid) => {
+    try{
+      setLoading(true);
+      //axios를 이용하여 해당 url에서 값을 받아온다.
+      const response = await axios.post(
+        'http://210.114.18.175:8080/ht/config/origin-log/contents',
+        { 
+          fileName  : rowFileNam,
+          filePath  : rowPath,
+          hostIp    : rowHostIp,
+          logObjId  : rowId,
+          uid       : rowUid
+        }
+      )
+      setOldCode(response.data.data.origin_config_file_contents.contents);
+      setNewCode(response.data.data.log_config_file_contents.contents);
+     
+    }catch(e){
+      //에러시 flag를 달아서 이동
+      setError(e);
+      console.log(e)
+      if(!oldCode) return <div>일치하는 데이터가 없습니다.</div>;
+      if(!newCode) return <div>일치하는 데이터가 없습니다.</div>;
+    }
+    //로딩 실패시 flag를 달아서 이동
+    setLoading(false);
+  }
+
 
   return (
     <>
@@ -137,6 +187,7 @@ function ConfigManage() {
         <CCol>
           <CCard>
             <CCardBody>
+              <ConfigHistory/>
               <Clock/>
                 <CRow className="searchtoolbar"> 
                   <CCol md="2">
@@ -159,10 +210,9 @@ function ConfigManage() {
                       <CCol md="4">
                         <CFormGroup>
                           <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="selectColum">
-                            <option value='type'>type</option>
                             <option value='uid'>uid</option>
-                            <option value='ses'>session</option>
-                            <option value='key'>T value</option>
+                            <option value='fileName'>fileName</option>
+                            <option value='filePath'>filePath</option>
                           </CSelect>
                         </CFormGroup>
                       </CCol>
@@ -186,82 +236,48 @@ function ConfigManage() {
                     </CRow>
                   </CCol>
                 </CRow>
-                  <CDataTable
-                    items={configDatas}
-                    fields={fields}
-                    itemsPerPage= {10}
-                    hover
-                    pagination
-                    scopedSlots = {{
-                      'History':
-                      (item, index)=>{
-                        return (
-                          <td className="py-2">
-                            <CButton 
-                            color="primary"
-                            variant="outline"
-                            shape="square"
-                            size="sm"
-                            onClick={() => setModal(!modal)}>
-                              History
-                            </CButton>
-                          </td>
-                          )
-                      },
-                      'Integrity':
-                      (item, index)=>{
-                        return (
-                          <td className="py-2">
-                            <CButton 
-                            color="primary"
-                            variant="outline"
-                            shape="square"
-                            size="sm"
-                            onClick={() => setModal(!modal)}>
-                              Config Integrity
-                            </CButton>
-                          </td>
-                          )
-                      },
-                      
-                    }}
-                  />
+                <CDataTable
+                  items={configDatas}
+                  fields={fields}
+                  itemsPerPage= {10}
+                  hover
+                  pagination
+                  clickableRows={true}
+                  scopedSlots = {{
+                    'Integrity':
+                    (item, index)=>{
+                      return (
+                        <td className="py-2">
+                          <CButton 
+                          color="primary"
+                          variant="outline"
+                          shape="square"
+                          size="sm"
+                          onClick={() =>toggleModal(index, item)}>
+                            Integrity
+                          </CButton>
+                        </td>
+                        )
+                    },
+                    
+                  }}
+                />
                {/*형상변경 관련 내용 */} 
-              <CModal show={modal} onClose={setModal}>
+              <CModal show={configChange} onClose={setConfigChange}>
                 <CModalHeader closeButton>
                   <CModalTitle>형상 변경 내용</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
-                  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                  aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                  culpa qui officia deserunt mollit anim id est laborum.
+                  <CRow>
+                    <CCol><h5>원본</h5></CCol>
+                    <CCol><h5>비교본</h5></CCol>
+                  </CRow>
+                  <ReactDiffViewer oldValue={oldCode} newValue={newCode} splitView={true} showDiffOnly={true}/>
                 </CModalBody>
                 <CModalFooter>
                   <CButton 
                     color="secondary" 
-                    onClick={() => setModal(false)}
-                  >Cancel</CButton>
-                </CModalFooter>
-              </CModal>
-
-              {/*형상변경 History내용 */} 
-              <CModal show={modal} onClose={setModal}>
-                <CModalHeader closeButton>
-                  <CModalTitle>History 내용</CModalTitle>
-                </CModalHeader>
-                <CModalBody>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
-                  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                  aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                  culpa qui officia deserunt mollit anim id est laborum.
-                </CModalBody>
-                <CModalFooter>
-                  <CButton 
-                    color="secondary" 
-                    onClick={() => setModal(false)}
+                    onClick={() => setConfigChange(false)}
                   >Cancel</CButton>
                 </CModalFooter>
               </CModal>
@@ -272,5 +288,4 @@ function ConfigManage() {
     </>
   )
 }
-
 export default ConfigManage

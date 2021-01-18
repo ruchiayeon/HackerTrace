@@ -10,11 +10,13 @@ import {
   CInputGroup,
   CInputGroupAppend,
   CButton,
-  CSelect
+  CSelect,
+ // CPagination
 } from '@coreui/react'
 import axios from 'axios'
 import Clock from '../../Clock/Clock'
 import Page404 from '../../pages/page404/Page404'
+import Loading from '../../pages/Loading/Loading'
 
 
 function Collection() {
@@ -31,16 +33,17 @@ function Collection() {
 
   function handlerChange(e){
       const { value, name } = e.target;  
-      
+      //변경이 될때, 변수가 가지고 있는 Value값이 변경된다.
       setInputs({
       ...inputs,
-      [name]:value
+      [name]: value
       });
   };
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [collectDatas, setCollectDatas] = useState(false);
+  const [privilegeDatas, setPrivilegeDatas] = useState(false);
+ // const [currentPage, setCurrentPage] = useState(1)
 
   //검색 버튼 및 Value값 넘겨주는 부분
   function submitValue(){
@@ -62,7 +65,7 @@ function Collection() {
         )
         //받아온 값을 hostDatas에 넣어준다.
         setHostDatas(response.data.data);
-        console.log(response.data.data);
+        //console.log(response.data.data);
       }catch(e){
         //에러시 flag를 달아서 이동
         setError(e);
@@ -80,16 +83,15 @@ function Collection() {
   const fields = [
     {key:'time',_style:{width:'10%'}},
     {key:'hostIp',_style:{width:'10%'}},
+    {key:'key',_style:{width:'10%'}},
     {key:'type',_style:{width:'10%'}}, 
     {key:'ses',_style:{width:'10%'}},
     {key:'uid',_style:{width:'10%'}},
     {key:'msg',_style:{width:'40%'}},
-    {key:'key',_style:{width:'40%'}},
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
   const tableAxiosData = async(startDate, endDate, selectColum, search, selectHostIp) => {
-    console.log(selectHostIp)
     try{
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
@@ -100,28 +102,30 @@ function Collection() {
           endDate   : endDate,
           hostIp    : selectHostIp,
           pageNumber: 1,
-          pageSize  : 50,
+          pageSize  : 1000,
           phases    : "collection",
           searchType: selectColum,
           searchWord: search, 
         }
       )
-      setCollectDatas(response.data.data);
-      console.log(response.data.data);
-     
+      setPrivilegeDatas(response.data.data);
+      console.log(response.data.data.length);
+      if(response.data.data.length>1000){
+        alert('검색하신 데이터의 양이 많습니다. 검색 범위를 줄여주십시오.')
+      }
     }catch(e){
       //에러시 flag를 달아서 이동
       setError(e);
       console.log(e)
-      if(!collectDatas) return <div>일치하는 데이터가 없습니다.</div>;
+      if(!privilegeDatas) return <div>일치하는 데이터가 없습니다.</div>;
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
   };
-  if(loading) return <div>로딩중</div>;
+  if(loading) return <Loading/>;
   if(error) return <Page404/>;
 
-  if(!collectDatas){
+  if(!privilegeDatas){
     submitValue()
   }
 
@@ -136,7 +140,7 @@ function Collection() {
                   <CCol md="2">
                     <CFormGroup row>
                       <CCol xs="12" md="12">
-                        <CInput type="date" id="startDate" placeholder="start_date"  onChange={handlerChange} value={startDate} name='startDate'/>
+                        <CInput type="date" id="startDate" placeholder="start_date" onChange={handlerChange} value={startDate} name='startDate'/>
                       </CCol>
                     </CFormGroup>
                   </CCol>
@@ -181,8 +185,8 @@ function Collection() {
                   </CCol>
                 </CRow>
                   <CDataTable
-                    items={collectDatas}
-                    fields={fields}
+                    items  = {privilegeDatas}
+                    fields = {fields}
                     itemsPerPage= {10}
                     hover
                     pagination
@@ -196,6 +200,3 @@ function Collection() {
 }
 
 export default Collection
-
-
- 

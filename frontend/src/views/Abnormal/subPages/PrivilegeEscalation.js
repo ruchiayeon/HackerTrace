@@ -16,6 +16,7 @@ import {
 import axios from 'axios'
 import Clock from '../../Clock/Clock'
 import Page404 from '../../pages/page404/Page404'
+import Loading from '../../pages/Loading/Loading'
 
 
 function PrivilegeEscalation() {
@@ -32,10 +33,10 @@ function PrivilegeEscalation() {
 
   function handlerChange(e){
       const { value, name } = e.target;  
-      
+      //변경이 될때, 변수가 가지고 있는 Value값이 변경된다.
       setInputs({
       ...inputs,
-      [name]:value
+      [name]: value
       });
   };
 
@@ -87,7 +88,6 @@ function PrivilegeEscalation() {
     {key:'ses',_style:{width:'10%'}},
     {key:'uid',_style:{width:'10%'}},
     {key:'msg',_style:{width:'40%'}},
-
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -122,7 +122,7 @@ function PrivilegeEscalation() {
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
   };
-  if(loading) return <div>로딩중</div>;
+  if(loading) return <Loading/>;
   if(error) return <Page404/>;
 
   if(!privilegeDatas){
@@ -140,7 +140,7 @@ function PrivilegeEscalation() {
                   <CCol md="2">
                     <CFormGroup row>
                       <CCol xs="12" md="12">
-                        <CInput type="date" id="startDate" placeholder="start_date"  onChange={handlerChange} value={startDate} name='startDate'/>
+                        <CInput type="date" id="startDate" placeholder="start_date" onChange={handlerChange} value={startDate} name='startDate'/>
                       </CCol>
                     </CFormGroup>
                   </CCol>

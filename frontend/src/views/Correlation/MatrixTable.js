@@ -20,7 +20,7 @@ function MatrixTable() {
     const [version, setMiterVerData] = useState(null);
     const [spec, setMiterSpecData] = useState(null);
     
-    useEffect(()=>{
+
         const matrixResData = async() => {
         try{
             //요청이 왔을때 원래 있던 값을 초기화해준다.
@@ -48,16 +48,16 @@ function MatrixTable() {
             //로딩 실패시 flag를 달아서 이동
             setLoading(false);
        };
-        matrixResData();
-    }, []);
+        
+
 
     //로딩관련 예외처리를 해준다. --> 페이지 만들어졌을때 변경 하기 
     if(loading) return <div>로딩중</div>;
     if(error) return <Page404/>;
-    if(!attackMatrixs) return <div>일치하는 데이터가 없습니다.</div>;
-    if(!attackMatrixTitle) return <div>일치하는 데이터가 없습니다.</div>;
-    if(!version) return <div>일치하는 데이터가 없습니다.</div>;
-    if(!spec) return <div>일치하는 데이터가 없습니다.</div>;
+    if(!attackMatrixs || !attackMatrixTitle || !version ||!spec){
+        matrixResData();
+    };
+  
 
     //Axios로 불러온 값을 뿌려주는 부분이다.  
     //console.log('data is ' + JSON.stringify(data)); 이렇게 사용하면  json형으로 사용이 가능하다고 하는데 

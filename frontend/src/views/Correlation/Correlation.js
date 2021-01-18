@@ -10,18 +10,13 @@ import {
   CInput,
   CSelect,
   CButton,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle
 } from '@coreui/react'
+
 //import MatrixTable from './MatrixTable'
-import Page404 from '../pages/page404/Page404'
+import Loading from '../pages/Loading/Loading'
 
 function Correlation() {
-  const [modal, setModal] = useState(false)
-
+ 
   const[inputs, setInputs] = useState({
     startDate:'2020-01-01',
     endDate:'2021-01-30',
@@ -95,7 +90,7 @@ function Correlation() {
           //setError(null);
 
           setLoading(true);
-          //axios를 이용하여 해당 url에서 갑을 받아온다.
+          //axios를 이용하여 해당 url에서 값을 받아온다.
           const response = await axios.get(
               'http://210.114.18.175:8080/ht/mitre/matrix?isSubT=T'
           )
@@ -184,18 +179,13 @@ function Correlation() {
       )
 
       //받아온 값을 setMiterData에 넣어준다.
-      if(!response.data.data || response.data.data === ''){
-        setCorrData(null);
-        setMatchAttGroupDatas(null)
-      }else{
-        setCorrData(response.data.data[1].user_audit_match_t);
-        setMatchAttGroupDatas(response.data.data[0].attack_group_matching)
-        console.log(response.data.data[0].attack_group_matching[0].external_ids);
-      }
+     
+      setCorrData(response.data.data[1].user_audit_match_t);
+      setMatchAttGroupDatas(response.data.data[0].attack_group_matching)
+   
     }catch(e){
       //에러시 flag를 달아서 이동
-      setError(e);
-      console.log(e)
+      setError(e)
       if(!corrDatas) return <div>일치하는 데이터가 없습니다.</div>;
       if(!matchAttGroupDatas) return <div>일치하는 데이터가 없습니다.</div>;
     }
@@ -207,29 +197,33 @@ function Correlation() {
 
   //<table 검색된 부분을 가지고 className 변경 파트>
   //2021-01-15 해당 부분 확인 필
+
+
   function changeColors(){
     const AttSpotChange = matchAttGroupDatas[0];
     const corrSpotChange = corrDatas;
 
-    if(!AttSpotChange || AttSpotChange === 'n'){
+    console.log(AttSpotChange,corrSpotChange)
+
+    /*if(!AttSpotChange || AttSpotChange === 'n'){
       alert('아래 조건을 먼저 선택해주세요.')
     }else{
-      alert(`${AttSpotChange.external_ids}`);
+      
       console.log(AttSpotChange.external_ids)
     }
-
+    
     if(!corrSpotChange || corrSpotChange === 'n'){
       alert('아래 조건을 먼저 선택해주세요.')
     }else{
-      alert(`${corrSpotChange.length}`);
-      console.log(corrSpotChange.length)
-    }
+      
+      console.log(corrSpotChange)
+    }*/
   }
   
  
   //로딩관련 예외처리를 해준다. --> 페이지 만들어졌을때 변경 하기 
-  if(loading) return <div>로딩중</div>;
-  if(error) return <Page404/>;
+  if(loading) return <Loading/>;
+  if(error) return alert('상관분석을 위한 데이터가 없습니다.');
   if(!attackMatrixs) return <div>일치하는 데이터가 없습니다.</div>;
   if(!attackMatrixTitle) return <div>일치하는 데이터가 없습니다.</div>;
   if(!version) return <div>일치하는 데이터가 없습니다.</div>;
@@ -251,6 +245,7 @@ function Correlation() {
   const Command = attackMatrixs[8]
   const Exfiltration = attackMatrixs[9]
   const Impact = attackMatrixs[10]
+
 
 
   return (
@@ -481,47 +476,7 @@ function Correlation() {
                 hover
                 //tableFilter
                 pagination
-                scopedSlots = {{
-                  /*modal 부분 --> 필요없으면 삭제할 것 */
-                  'Detail': 
-                  (item, index)=>{
-                    return (
-                      <td className="py-2">
-                      <CButton 
-                        color="primary"
-                        variant="outline"
-                        shape="square"
-                        size="sm"
-                        onClick={() => setModal(!modal)}>
-                        Detail
-                      </CButton>
-                      
-                      </td>
-                      )
-                  }
-
-                }}
               />
-              {/*modal 부분 --> 필요없으면 삭제할 것 */}
-              <CModal show={modal} onClose={setModal}>
-                <CModalHeader closeButton>
-                  <CModalTitle>Modal title</CModalTitle>
-                </CModalHeader>
-                <CModalBody>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
-                  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                  aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                  cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                  culpa qui officia deserunt mollit anim id est laborum.
-                </CModalBody>
-                <CModalFooter>
-                  <CButton color="primary">Do Something</CButton>{' '}
-                  <CButton 
-                    color="secondary" 
-                    onClick={() => setModal(false)}
-                  >Cancel</CButton>
-                </CModalFooter>
-              </CModal>
             </CCardBody>
           </CCard>
         </CCol>
