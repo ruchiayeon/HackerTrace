@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.smt.dao.ConfigLogDAO;
+import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
+import com.smt.vo.ConfigLogSessionsVO;
 import com.smt.vo.ConfigLogVO;
 import com.smt.vo.ConfigOriginVO;
 
@@ -58,6 +60,14 @@ public class ConfigLogService {
 	
 	public Document selectConfigOriginLogFileContents(ConfigOriginVO vo) {
 		return dao.selectConfigOriginLogFileContents(vo);
+	}
+	
+	public List<Document> selectBefroDateAuditLogSessionList(ConfigLogSessionsVO vo){
+		return dao.selectBefroDateAuditLogSessionList(vo);
+	}
+	
+	public List<Document> selectBeforDateAuditLogByConfigLog(ConfigLogHistoryVO vo){
+		return dao.selectBeforDateAuditLogByConfigLog(vo);
 	}
 	
 

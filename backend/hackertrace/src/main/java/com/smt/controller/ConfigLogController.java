@@ -1,5 +1,7 @@
 package com.smt.controller;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.bson.Document;
@@ -12,7 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.smt.service.ConfigLogService;
 import com.smt.util.APIUtil;
+import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
+import com.smt.vo.ConfigLogSessionsVO;
 import com.smt.vo.ConfigLogVO;
 import com.smt.vo.ConfigOriginVO;
 import com.smt.vo.ResultVO;
@@ -109,6 +113,36 @@ public class ConfigLogController {
 			return APIUtil.resResult(0, configOriginVO.getFileName()+"의 원본/로그 파일 내용 조회가 완료되었습니다.", result);
 		}catch(Exception e) {
 			return APIUtil.resResult(1, configOriginVO.getFileName()+"의 원본/로그 파일 내용 조회가 실패되었습니다.", null);
+		}
+	}
+	
+	@ApiOperation(value = "형상 로그 파일 이전 감사 로그 세션 목록")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/log/modify/session", method = RequestMethod.POST)
+	public ResultVO selectBefroDateAuditLogSessionList(final @Valid @RequestBody ConfigLogSessionsVO configLogSessionsVO) {
+		
+		try {
+			List<Document> list = service.selectBefroDateAuditLogSessionList(configLogSessionsVO);
+			return APIUtil.resResult(0,"형상 로그 파일 이전 감사 로그 세션 목록 조회가 완료했습니다.", list );
+		}catch(Exception e) {
+			e.printStackTrace();
+			return APIUtil.resResult(1, "형상 로그 파일 이전 감사 로그 세션 목록 조회가 실패되었습니다.", null);
+		}
+		
+	}
+	
+	
+	@ApiOperation(value = "형상 로그 파일 이전 감사 로그")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/log/modify/history", method = RequestMethod.POST)
+	public ResultVO selectBeforDateAuditLogByConfigLog(final @Valid @RequestBody ConfigLogHistoryVO configLogHistoryVO) {
+		
+		try {
+			List<Document> result = service.selectBeforDateAuditLogByConfigLog(configLogHistoryVO);
+			return APIUtil.resResult(0, "형상 로그 파일 이전 감사로그 조회가 완료되었습니다.", result);
+			
+		}catch(Exception e) {
+			return APIUtil.resResult(1, "형상 로그 파일 이전 감사로그 조회가 실패되었습니다.", null);
 		}
 	}
 	

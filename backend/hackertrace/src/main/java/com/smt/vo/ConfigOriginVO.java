@@ -8,19 +8,19 @@ import lombok.Setter;
 @Setter
 public class ConfigOriginVO {
 	
-	@ApiModelProperty(example = "127.0.0.1")
+	@ApiModelProperty(value="호스트 IP", example = "127.0.0.1")
 	private String hostIp; 
 	
-	@ApiModelProperty(example = "0")
-	private Integer uid;
+	@ApiModelProperty(value="UID", example = "0")
+	private String uid;
 	
-	@ApiModelProperty(example = "/etc")
+	@ApiModelProperty(value="형상파일 경로", example = "/etc")
 	private String filePath;
 	
-	@ApiModelProperty(example = "crontab")
+	@ApiModelProperty(value="형상 관리 파일명", example = "crontab")
 	private String fileName;
 	
-	@ApiModelProperty(example = "5ffeaaa38a35c62284cd8587")
+	@ApiModelProperty(value="로그 파일 Object 아이디", example = "5ffeaaa38a35c62284cd8587")
 	private String logObjId;
 	
 }

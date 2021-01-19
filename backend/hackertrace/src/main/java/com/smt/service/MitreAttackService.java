@@ -131,11 +131,13 @@ public class MitreAttackService {
 		
 		//선택한 사용자 감사로그의 T값 초기화
 		List<Document> mitreUserAuditList = dao.selectUserAuditLogList(vo);
-
+		System.out.println("selected user audit log count : "+mitreUserAuditList.size());
 		//사용자 audit 로그 중복 T값 제거
 		List<String> userAuditTList = new ArrayList<String>();
 		for(Document doc : mitreUserAuditList) {
-			userAuditTList.add(doc.getString("key"));
+			Document bodyDoc = new Document(); //reason : changed audit log format 
+			bodyDoc = (Document) doc.get("body");
+			userAuditTList.add(bodyDoc.getString("key"));
 		}
 		List<String> userAuditOnlyTList = userAuditTList.stream().distinct().collect(Collectors.toList());
 		
@@ -183,7 +185,9 @@ public class MitreAttackService {
 				Document doc = new Document();
 				List<Object> auditLogObjIdList = new ArrayList<Object>();
 				for(Document auditLogDoc : mitreUserAuditList) {
-					if(matrixT.equals(auditLogDoc.get("key"))) {
+					Document bodyDoc = new Document(); //reason : changed audit log format 
+					bodyDoc = (Document) auditLogDoc.get("body");
+					if(matrixT.equals(bodyDoc.get("key"))) {
 						//추후 상세 분석 기능 요구 시 사용
 						auditLogObjIdList.add(auditLogDoc.get("_id").toString()); 
 						tCnt++;

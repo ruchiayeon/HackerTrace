@@ -39,6 +39,7 @@ public class MitreAttackDAO {
 		MongoCollection<Document> mitreAttackCol = mongoTemplate.getCollection("MITRE_ATTACK");
 		
 		BasicDBObject findQuery = new BasicDBObject("kill_chain_phases", phases);
+		
 		List<Document> docList = mitreAttackCol.find(findQuery).into(new ArrayList<>());
 		List<Document> resultDocList = new ArrayList<>();
 		for(Document doc : docList ) {
@@ -47,8 +48,8 @@ public class MitreAttackDAO {
 			doc.remove("kill_chain_phases");
 			
 			if(isSubT.equals("F")) {
-				List<String> externalIds = (List<String>) doc.get("external_ids");
-				if(externalIds.get(0).split("\\.").length>1)
+				List<String> externalIdsList = (List<String>) doc.get("external_ids");
+				if(externalIdsList.get(0).split("\\.").length>1)
 					continue;
 			}
 			
@@ -63,8 +64,8 @@ public class MitreAttackDAO {
 	public Document selectMitreAuditCondition(MitreAuditConditionVO vo){
 		MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
-		BasicDBObject dateTermQuery = MogoDBUtil.getDateTermFindQuery("time", vo.getStartDate(), vo.getEndDate());
-		dateTermQuery.put("hostIp", vo.getHostIp());
+		BasicDBObject dateTermQuery = MogoDBUtil.getDateTermFindQuery("header.time", vo.getStartDate(), vo.getEndDate());
+		dateTermQuery.put("header.hostIp", vo.getHostIp());
 		 
 		List<BasicDBObject> uidQueryList = new ArrayList<BasicDBObject>();
 		List<BasicDBObject> sesQueryList = new ArrayList<BasicDBObject>();
@@ -111,17 +112,15 @@ public class MitreAttackDAO {
 		
 		MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
-		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("time",vo.getStartDate(), vo.getEndDate());
+		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("header.time",vo.getStartDate(), vo.getEndDate());
 		
-		findQuery.put("hostIp", vo.getHostIp());
-		findQuery.put("uid", Integer.parseInt(vo.getUid()));
-		findQuery.put("ses", vo.getSes());
-		findQuery.put("key", new BasicDBObject("$regex", "T.*"));
+		findQuery.put("header.hostIp", vo.getHostIp());
+		findQuery.put("body.uid", vo.getUid());
+		findQuery.put("body.ses", vo.getSes());
+		findQuery.put("body.key", new BasicDBObject("$regex", "T*"));
+		System.out.println(findQuery);
 		
-		List<Document> docList = auditLogCol.find(findQuery)
-																.into(new ArrayList<>());
-		
-		return docList;
+		return auditLogCol.find(findQuery).into(new ArrayList<>());
 	}
 
 	
@@ -129,24 +128,29 @@ public class MitreAttackDAO {
 	public List<Document> selectAttackGroupList(){
 		
 		MongoCollection<Document> mitreAttackGroup = mongoTemplate.getCollection("MITRE_ATTACK_GROUP");
+		
+		//GROUP BY
 		List<BasicDBObject> aggregateList = new ArrayList<BasicDBObject>();
 		BasicDBObject aggregateQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$attack_group") );
 		aggregateList.add(aggregateQuery);
+		
 		return mitreAttackGroup.aggregate(aggregateList).into(new ArrayList<>());
 		
 	}
 	
 	public Document selectTValueByGroupName(String attackGroupName){
+		
 		MongoCollection<Document> mitreAttackGroup = mongoTemplate.getCollection("MITRE_ATTACK_GROUP");
+		
 		Document result = new Document();
 		BasicDBObject findQuery = new BasicDBObject("attack_group", attackGroupName);
-		List<Document> docList = mitreAttackGroup.find(findQuery)
-				.into(new ArrayList<>());
+		List<Document> docList = mitreAttackGroup.find(findQuery).into(new ArrayList<>());
 		
 		List<String> tList = new ArrayList<String>();
 		for(Document doc : docList) {
 			tList.add(doc.getString("external_id"));
 		}
+		
 		result.put("attack_group", attackGroupName);
 		result.put("external_ids", tList);
 		return result;
@@ -177,14 +181,12 @@ public class MitreAttackDAO {
 		List<String> tValByPhases = new ArrayList<String>();
 		MongoCollection<Document> mitreAttackCol = mongoTemplate.getCollection("MITRE_ATTACK");
 		
+		//IN QUERY
 		BasicDBObject findQuery = new BasicDBObject();
 		String[] platformsArr = {"Linux"};
 		String[] phasesArr = {phases};
-		findQuery.put("platforms"
-				, new BasicDBObject("$in", platformsArr ));
-		
-		findQuery.put("kill_chain_phases"
-				, new BasicDBObject("$in", phasesArr));
+		findQuery.put("platforms", new BasicDBObject("$in", platformsArr ));
+		findQuery.put("kill_chain_phases", new BasicDBObject("$in", phasesArr));
 		
 		System.out.println(findQuery.toJson());
 		List<Document> docList = mitreAttackCol.find(findQuery).into(new ArrayList<>());
@@ -202,6 +204,7 @@ public class MitreAttackDAO {
 		BasicDBObject findQuery = new BasicDBObject();
 		String[] tArr = {tVal};
 		findQuery.put("external_ids", new BasicDBObject("$in", tArr));
+		
 		System.out.println(findQuery.toJson());
 		List<Document> docList = mitreAttackCol.find(findQuery).into(new ArrayList<>());
 		

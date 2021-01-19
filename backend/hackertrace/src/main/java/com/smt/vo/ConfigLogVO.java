@@ -8,22 +8,22 @@ import lombok.Setter;
 @Setter
 public class ConfigLogVO {
 	
-	@ApiModelProperty(example = "127.0.0.1")
+	@ApiModelProperty(value="호스트 아이피", example = "127.0.0.1")
 	private String hostIp; 
 	
-	@ApiModelProperty(example = "crontab")
+	@ApiModelProperty(value="형상 관리 파일명", example = "crontab")
 	private String fileName;
 	
-	@ApiModelProperty(example = "/etc")
+	@ApiModelProperty(value="형상 관리 파일 경로", example = "/etc")
 	private String filePath;
 	
-	@ApiModelProperty(example = "* * * * File ./abc.sh ")
+	@ApiModelProperty(value="형상 관리 파일 내용", example = "* * * * File ./abc.sh ")
 	private String contents;
 	
-	@ApiModelProperty(example = "0")
-	private Integer uid;
+	@ApiModelProperty(value="UID", example = "0")
+	private String uid;
 	
-	@ApiModelProperty(example = "2021-01-13 01:00:01 ")
+	@ApiModelProperty(value="형상 관리 파일 생성 시간", example = "2021-01-13 01:00:01 ")
 	private String fileCreateDate; //파일 생성 시간
 	
 	
