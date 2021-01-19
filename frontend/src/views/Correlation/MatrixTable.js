@@ -1,4 +1,4 @@
-import React,{useEffect, useState} from 'react'
+import React,{useLayoutEffect, useState} from 'react'
 import axios from 'axios'
 import {
     CRow,
@@ -20,7 +20,8 @@ function MatrixTable() {
     const [version, setMiterVerData] = useState(null);
     const [spec, setMiterSpecData] = useState(null);
     
-
+console.log(attackMatrixTitle,version, spec)
+useLayoutEffect(()=>{
         const matrixResData = async() => {
         try{
             //요청이 왔을때 원래 있던 값을 초기화해준다.
@@ -49,14 +50,12 @@ function MatrixTable() {
             setLoading(false);
        };
         
-
-
+       matrixResData()
+    }, []);
     //로딩관련 예외처리를 해준다. --> 페이지 만들어졌을때 변경 하기 
     if(loading) return <div>로딩중</div>;
     if(error) return <Page404/>;
-    if(!attackMatrixs || !attackMatrixTitle || !version ||!spec){
-        matrixResData();
-    };
+    
   
 
     //Axios로 불러온 값을 뿌려주는 부분이다.  
