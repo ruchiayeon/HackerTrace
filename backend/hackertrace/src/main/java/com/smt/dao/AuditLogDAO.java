@@ -36,28 +36,34 @@ public class AuditLogDAO {
 		
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
-		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("time", vo.getStartDate(), vo.getEndDate());
-		findQuery.put("hostIp", vo.getHostIp());
+		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("header.time", vo.getStartDate(), vo.getEndDate());
+		findQuery.put("header.hostIp", vo.getHostIp());
 		
 		//공격 단계에 맡는 t 목록
 		List<String> tValByPhases = mitreADao.selectMitreAttackTValueByPhases(vo.getPhases());
 		List<BasicDBObject> keyQueryList = new ArrayList<>();
-		for(String t : tValByPhases) {
-			keyQueryList.add(new BasicDBObject("key", t));
+		for(String tVal : tValByPhases) {
+			keyQueryList.add(new BasicDBObject("body.key", tVal));
 		}
 		
 		//OR query
 		findQuery.put("$or", keyQueryList);
 		//LIKE query
 		if(vo.getSearchType() != "") {
-			findQuery.put(vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
+			String keyName = "";
+			if(vo.getSearchType().equals("uid") || vo.getSearchType().equals("ses") || vo.getSearchType().equals("key")) {
+				keyName = "body.";
+			}else {
+				keyName = "header.";
+			}
+			findQuery.put(keyName+vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
 		}
 		
 		System.out.println(findQuery.toJson());
 		List<Document> docList = audtiLogListCol.find(findQuery)
-																     .limit(vo.getPageSize())
-																     .skip(vo.getPageNumber()-1)
-																     .into(new ArrayList<>());
+															       .limit(vo.getPageSize())
+															       .skip(vo.getPageNumber()-1)
+															       .into(new ArrayList<>());
 		
 		return docList;
 		

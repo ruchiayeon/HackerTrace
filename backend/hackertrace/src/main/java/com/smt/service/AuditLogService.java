@@ -110,11 +110,11 @@ public class AuditLogService {
 			
 		} else if (keyValSplit[0].equals("syscall")) {
 			
-			aLVO.setSyscall(Integer.valueOf(keyValSplit[1]));
+			aLVO.setSyscall(keyValSplit[1]);
 			
 		} else if (keyValSplit[0].equals("item")) {
 			
-			aLVO.setItems(Integer.valueOf(keyValSplit[1]));
+			aLVO.setItems(keyValSplit[1]);
 			
 		} else if (keyValSplit[0].equals("name")) {
 			
@@ -126,7 +126,7 @@ public class AuditLogService {
 			
 		} else if(keyValSplit[0].equals("uid")) {
 			
-			aLVO.setUid(Integer.valueOf(keyValSplit[1]));
+			aLVO.setUid(keyValSplit[1]);
 			
 		} else if(keyValSplit[0].equals("ses")) {
 			

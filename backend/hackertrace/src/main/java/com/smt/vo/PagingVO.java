@@ -10,11 +10,11 @@ import lombok.Setter;
 @Setter
 public class PagingVO {
 	
-	@ApiModelProperty(example = "1")
+	@ApiModelProperty(value="페이지 번호", example = "1")
 	@Positive
 	private Integer pageNumber;
 	
-	@ApiModelProperty(example = "50")
+	@ApiModelProperty(value="페이지 당 보여지는 row 수", example = "50")
 	@Positive
 	private Integer pageSize;
 
