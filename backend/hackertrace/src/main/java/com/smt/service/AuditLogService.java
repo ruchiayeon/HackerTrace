@@ -21,6 +21,10 @@ public class AuditLogService {
 	@Autowired
 	AuditLogDAO dao;
 	
+	public List<Document> getAuditLogList(AuditLogListVO vo){
+		return dao.getAuditLogList(vo);
+	}
+	
 	public void insertAuditLogByLogFile(String filePath) {
 
 		File auditLogFile = new File(filePath);
@@ -83,12 +87,7 @@ public class AuditLogService {
 		}
 		
 	}
-	
-	
-	public List<Document> getAuditLogList(AuditLogListVO vo){
-		return dao.getAuditLogList(vo);
-	}
-	
+
 	private void readLineFieldMapping(AuditLogVO aLVO, List<String> arguments, String[] keyValSplit) {
 		
 		if (keyValSplit[0].equals("type")) {

@@ -128,12 +128,12 @@ public class ConfigLogDAO {
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
 	    
 	    String beforeEndDate = DateUtil.beforDateMonthUnit(vo.getFileCreateDate(), vo.getTerm());
-	    BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("header.time", beforeEndDate, vo.getFileCreateDate());
-		findQuery.put("header.hostIp", vo.getHostIp());
-		findQuery.put("body.uid", vo.getUid());
+	    BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("body_event_time", beforeEndDate, vo.getFileCreateDate());
+		findQuery.put("body_host_ip", vo.getHostIp());
+		findQuery.put("body_uid", vo.getUid());
 		
 		BasicDBObject matchQuery = new BasicDBObject("$match", findQuery);
-		BasicDBObject groupQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$body.ses"));
+		BasicDBObject groupQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$body_ses"));
 		
 		System.out.println(matchQuery.toJson());
 		System.out.println(groupQuery.toJson());
@@ -153,13 +153,13 @@ public class ConfigLogDAO {
 	    //month단위
 	    String beforeEndDate = DateUtil.beforDateMonthUnit(vo.getFileCreateDate(), vo.getTerm());
 		
-		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("header.time", beforeEndDate, vo.getFileCreateDate());
-		findQuery.put("header.hostIp", vo.getHostIp());
-		findQuery.put("body.uid", vo.getUid());
-		findQuery.put("body.ses", vo.getSes());
+		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("body_event_time", beforeEndDate, vo.getFileCreateDate());
+		findQuery.put("body_host_ip", vo.getHostIp());
+		findQuery.put("body_uid", vo.getUid());
+		findQuery.put("body_ses", vo.getSes());
 		
 		if(!vo.getIsAll().equalsIgnoreCase("T")) {
-			findQuery.put("body.name", Pattern.compile(vo.getFileName(), Pattern.CASE_INSENSITIVE ));
+			findQuery.put("body_name", Pattern.compile(vo.getFileName(), Pattern.CASE_INSENSITIVE ));
 		}
 		
 		System.out.println(findQuery.toJson());

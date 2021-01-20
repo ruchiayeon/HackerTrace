@@ -130,30 +130,43 @@ public class MitreAttackService {
 		List<Document> resultDocList = new ArrayList<>();
 		
 		//선택한 사용자 감사로그의 T값 초기화
-		List<Document> mitreUserAuditList = dao.selectUserAuditLogList(vo);
-		System.out.println("selected user audit log count : "+mitreUserAuditList.size());
-		//사용자 audit 로그 중복 T값 제거
-		List<String> userAuditTList = new ArrayList<String>();
-		for(Document doc : mitreUserAuditList) {
-			Document bodyDoc = new Document(); //reason : changed audit log format 
-			bodyDoc = (Document) doc.get("body");
-			userAuditTList.add(bodyDoc.getString("key"));
+		List<Document> mitreUserAuditAllList = new ArrayList<Document>();
+		mitreUserAuditAllList = dao.selectUserAuditLogList(vo);
+		
+		//사용자 중복 T 값 제거
+		List<String> mitreUserAuditOnlyTList = new ArrayList<String>();
+		for(Document doc : mitreUserAuditAllList) {
+			mitreUserAuditOnlyTList.add(doc.getString("body_key").replaceAll("\\\"", ""));
 		}
-		List<String> userAuditOnlyTList = userAuditTList.stream().distinct().collect(Collectors.toList());
+		mitreUserAuditOnlyTList.stream().distinct();
 		
 		//해커그룹 별 일치율 계산
+		List<Document> attackGroupMatchingList = getMitreUserAuditMatching(mitreUserAuditOnlyTList);
+		resultDocList.add(new Document("attack_group_matching", attackGroupMatchingList));
+		
+		//TODO : 추후 상세 분석 기능 요구 시 사용 활용
+		//audit 로그 일치 ID 목록
+		List<Document> userAuditLogMatchObjIdList = getUserAuditLogMatchObjId(mitreUserAuditAllList);
+		resultDocList.add(new Document("user_audit_match_t", userAuditLogMatchObjIdList));
+		
+		return resultDocList;
+	}
+	
+	private List<Document> getMitreUserAuditMatching(List<String> mitreUserAuditOnlyTList) {
+		
 		List<Document> attackGroupMatchingList = new ArrayList<Document>();
+		
 		//공격 그룹 목록 조회
-		List<Document> attackGroupList = dao.selectAttackGroupList(); 
-		for(Document attackGroup:attackGroupList) {
-			Document attGTValue = dao.selectTValueByGroupName(attackGroup.getString("_id"));
+		List<Document> attackGroupAllList = dao.selectAttackGroupList(); 
+		for(Document attackGroup:attackGroupAllList) {
+			Document attackGroupDoc = dao.selectTValueByGroupName(attackGroup.getString("_id"));
 			
 			//공격 그룹이 사용한 T값 목록
-			List<String> attackGroupTList = (List<String>) attGTValue.get("external_ids");
-
+			List<String> attackGroupTList = (List<String>) attackGroupDoc.get("attack_group_external_ids");
+			
 			//일치 검사
 			int matchCnt = 0;
-			for(String auditLogT: userAuditOnlyTList) {
+			for(String auditLogT: mitreUserAuditOnlyTList) {
 				if(attackGroupTList.contains(auditLogT))
 					matchCnt++;
 			}
@@ -161,51 +174,41 @@ public class MitreAttackService {
 			if(matchCnt != 0 ) {
 				int groupTCnt = attackGroupTList.size();
 				double matching = (double)matchCnt/(double)groupTCnt*100.0;
-				attGTValue.put("user_external_ids", userAuditOnlyTList);
-				attGTValue.put("match_count", matchCnt);
-				attGTValue.put("group_t_count", groupTCnt);
-				attGTValue.put("matching_value", matching);
-				attGTValue.put("matching_rate", Math.round(matching)+"%");
-				attackGroupMatchingList.add(attGTValue);
+				attackGroupDoc.put("user_external_ids", mitreUserAuditOnlyTList);
+				attackGroupDoc.put("match_count", matchCnt);
+				attackGroupDoc.put("group_t_count", groupTCnt);
+				attackGroupDoc.put("matching_value", matching);
+				attackGroupDoc.put("matching_rate", Math.round(matching)+"%");
+				attackGroupMatchingList.add(attackGroupDoc);
 			}
 		}
 		
 		//공격 그룹 별 일치율 오름 차순
 		sortAttackGroupMatchList(attackGroupMatchingList);
-		
-		resultDocList.add(new Document("attack_group_matching", attackGroupMatchingList));
-		
+		return attackGroupMatchingList;
+	}
+
+	private List<Document> getUserAuditLogMatchObjId(List<Document> mitreUserAuditAllList) {
 		//att&ck matrix T, user audit log T 비교
-		List<Document> userAuditMatchList = new ArrayList<Document>();
+		List<Document> userAuditLogMatchObjIdList = new ArrayList<Document>();
 		//Linux Platfoms에서 사용하는 T 목록 조회
 		List<String> mitreAttackMatirxTList = dao.selectMitreAttackMatrixTList();
 		for(String matrixT: mitreAttackMatirxTList) {
 				
-				int tCnt = 0;
-				Document doc = new Document();
 				List<Object> auditLogObjIdList = new ArrayList<Object>();
-				for(Document auditLogDoc : mitreUserAuditList) {
-					Document bodyDoc = new Document(); //reason : changed audit log format 
-					bodyDoc = (Document) auditLogDoc.get("body");
-					if(matrixT.equals(bodyDoc.get("key"))) {
-						//추후 상세 분석 기능 요구 시 사용
-						auditLogObjIdList.add(auditLogDoc.get("_id").toString()); 
-						tCnt++;
-					}
+				for(Document userAuditLog : mitreUserAuditAllList) {
+					if(matrixT.equals(userAuditLog.getString("body_key").replaceAll("\\\"", ""))) 
+						auditLogObjIdList.add(userAuditLog.get("_id").toString()); 
 				}
 				
-				if(tCnt == 0)
-					continue;
-				
-				doc.put("external_ids", matrixT);
-				doc.put("count", tCnt);
-				doc.put("_ids", auditLogObjIdList);
-				userAuditMatchList.add(doc);
+				if(auditLogObjIdList.size() > 0) {
+					Document doc = new Document();
+					doc.put("external_ids", matrixT);
+					doc.put("_ids", auditLogObjIdList);
+					userAuditLogMatchObjIdList.add(doc);
+				}
 		}
-		
-		resultDocList.add(new Document("user_audit_match_t", userAuditMatchList));
-		
-		return resultDocList;
+		return userAuditLogMatchObjIdList;
 	}
 
 	//일치율에 따른 sorting
