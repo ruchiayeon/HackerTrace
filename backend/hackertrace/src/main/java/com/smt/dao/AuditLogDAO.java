@@ -64,11 +64,14 @@ public class AuditLogDAO {
 			findQuery.put(keyName+vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
 		}
 		
-		System.out.println(findQuery.toJson());
-		List<Document> docList = audtiLogListCol.find(findQuery)
-															       .limit(vo.getPageSize())
-															       .skip(vo.getPageNumber()-1)
-															       .into(new ArrayList<>());
+		List<Document> docList  = new ArrayList<>();
+		if(audtiLogListCol.countDocuments(findQuery) > 0) {
+			System.out.println(findQuery.toJson());
+			docList = audtiLogListCol.find(findQuery)
+										       .limit(vo.getPageSize())
+										       .skip(vo.getPageNumber()-1)
+										       .into(new ArrayList<>());
+		}
 		
 		return docList;
 		

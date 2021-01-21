@@ -1,7 +1,11 @@
 package com.smt.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.Valid;
 
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.smt.service.HostsService;
+import com.smt.util.APIUtil;
 import com.smt.vo.HostsVO;
 import com.smt.vo.ResultVO;
 
@@ -36,7 +41,13 @@ public class HostsController {
 	@CrossOrigin(origins = "*", allowedHeaders = "*")
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public ResultVO getHostsList() {
-		return service.getAllSavedHostsList();
+		try {
+			List<Document> hostsList = new ArrayList<>();
+			hostsList = service.getAllSavedHostsList();
+			return APIUtil.resResult(0, "등록된 호스트 목록 조회가 완료되었습니다.", hostsList);
+		} catch (Exception e) {
+			return APIUtil.resResult(1, "등록된 호스트 목록 조회가 실패되었습니다.", null);
+		}
 	}
 
 }

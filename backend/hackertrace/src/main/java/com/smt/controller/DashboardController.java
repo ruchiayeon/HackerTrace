@@ -36,7 +36,7 @@ public class DashboardController {
 	{
 		
 		try {
-			return APIUtil.resResult(0, "마이터 공경정보 통계 조회가 완료되었습니다.", service.countMitreAttackByAuditLog(hostIp));
+			return APIUtil.resResult(0, "마이터 공격정보 통계 조회가 완료되었습니다.", service.getMitreAttackCountInfo(hostIp));
 		}catch(Exception e) {
 			return APIUtil.resResult(1, "마이터 공격정보 통계 조회가 실패되었습니다.", null);
 		}

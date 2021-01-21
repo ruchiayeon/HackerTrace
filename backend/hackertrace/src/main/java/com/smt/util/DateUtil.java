@@ -54,5 +54,12 @@ public class DateUtil {
 		Calendar time = Calendar.getInstance();
 		return dateFormatter.format(time.getTime());
 	}
+	
+	public static String getCurrentTime() {
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
+		Calendar time = Calendar.getInstance();
+		return dateFormatter.format(time.getTime());
+	}
 
 }

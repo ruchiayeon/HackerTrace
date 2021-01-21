@@ -117,7 +117,7 @@ public class MitreAttackDAO {
 		findQuery.put("body_host_ip", vo.getHostIp());
 		findQuery.put("body_uid", vo.getUid());
 		findQuery.put("body_ses", vo.getSes());
-		findQuery.put("body_key", new BasicDBObject("$regex", "\\\"T*"));
+		findQuery.put("body_key", new BasicDBObject("$regex", ".*T.*"));
 		System.out.println(findQuery);
 		
 		return auditLogCol.find(findQuery).into(new ArrayList<>());
@@ -133,7 +133,7 @@ public class MitreAttackDAO {
 		matchQuery.put("body_host_ip", vo.getHostIp());
 		matchQuery.put("body_uid", vo.getUid());
 		matchQuery.put("body_ses", vo.getSes());
-		matchQuery.put("body_key", new BasicDBObject("$regex", "\\\"T*"));
+		matchQuery.put("body_key", new BasicDBObject("$regex", ".*T.*"));
 		
 		BasicDBObject groupQuery = new BasicDBObject("_id", "$body_key");
 		

@@ -20,34 +20,61 @@ public class DashboardService {
 	@Autowired
 	MitreAttackDAO mitAttackDao;
 	
-	public List<Object> countMitreAttackByAuditLog(String hostIp){
-		List<Object> countResult = new ArrayList<Object>();
+	public Document countMitreAttackByAuditLog(String hostIp){
+		Document countResult = new Document();
+		try {
 		
-		List<Integer> todayList = new ArrayList<Integer>();
-		List<Integer> weekList = new ArrayList<Integer>();
-		List<Integer> monthList = new ArrayList<Integer>();
-		for (KillChainPhases phases : KillChainPhases.values()) {
-			
-			List<Document> killCPList = mitAttackDao.getMitreInfoByKillChainPhase(phases.getName(), "T");
-			List<String> killChainTList = new ArrayList<>();
-			if(killCPList.size()>0) {
+		if(dao.existAuditLogByHostIp(hostIp)) {
+		
+			for (KillChainPhases phases : KillChainPhases.values()) {
 				
-				for(Document doc : killCPList) {
-					List<String> externalIdsList = (List<String>) doc.get("external_ids");
-					killChainTList.add(externalIdsList.get(0));
+				List<Document> killCPList = mitAttackDao.getMitreInfoByKillChainPhase(phases.getName(), "T");
+				List<String> killChainTList = new ArrayList<>();
+				if(killCPList.size()>0) {
+					
+					for(Document doc : killCPList) {
+						List<String> externalIdsList = (List<String>) doc.get("external_ids");
+						killChainTList.add(externalIdsList.get(0));
+					}
+					
+					countResult.put(phases.getName().trim(), dao.countAuditLogByAttakPhases(hostIp, killChainTList, "today"));
 				}
 				
-				todayList.add(dao.countAuditLogByAttakPhases(hostIp, killChainTList, "today"));
-				weekList.add(dao.countAuditLogByAttakPhases(hostIp, killChainTList, "week"));
-				monthList.add(dao.countAuditLogByAttakPhases(hostIp, killChainTList, "month"));
+			}
+			
+		}else {
+			for (KillChainPhases phases : KillChainPhases.values()) {
+				List<Document> killCPList = mitAttackDao.getMitreInfoByKillChainPhase(phases.getName(), "T");
+				if(killCPList.size()>0) {
+					countResult.put(phases.getName().trim(), "0");
+				}
 			}
 			
 		}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 		
-		countResult.add(todayList);
-		countResult.add(weekList);
-		countResult.add(monthList);
 		return countResult;
+	}
+	
+	public List<Document> getMitreAttackCountInfo(String hostIp) {
+		List<Document> docList = new ArrayList<>();
+		
+		Document todayCounts =new Document(); 
+		Document weekCounts = new Document();
+		Document monthCounts = new Document();
+		
+		todayCounts = dao.getStatsCountInfo(hostIp, "mitre", "today");
+		weekCounts = dao.getStatsCountInfo(hostIp, "mitre", "week");
+		monthCounts = dao.getStatsCountInfo(hostIp, "mitre", "month");
+		
+		docList.add((todayCounts==null)?new Document():todayCounts);
+		docList.add(weekCounts==null? new Document():weekCounts);
+		docList.add(monthCounts==null? new Document():monthCounts);
+		
+		return docList;
+		
 	}
 	
 	
