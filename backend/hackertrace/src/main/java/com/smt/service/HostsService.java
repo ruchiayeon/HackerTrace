@@ -33,14 +33,10 @@ public class HostsService {
 		}
 	}
 
-	public ResultVO getAllSavedHostsList() {
-		try {
+	public List<Document> getAllSavedHostsList() {
 			List<Document> hostsList = new ArrayList<>();
 			hostsList = dao.getAllSavedHostsList();
-			return APIUtil.resResult(0, "등록된 호스트 목록 조회가 완료되었습니다.", hostsList);
-		} catch (Exception e) {
-			return APIUtil.resResult(1, "등록된 호스트 목록 조회가 실패되었습니다.", null);
-		}
+			return hostsList;
 	}
 
 }

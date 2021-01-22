@@ -13,7 +13,7 @@ public class APIUtil {
 			vo.setData("");
 		else
 			vo.setData(data);
-		
+	
 		return vo;
 	}
 }

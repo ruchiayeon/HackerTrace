@@ -36,34 +36,42 @@ public class AuditLogDAO {
 		
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
-		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("header.time", vo.getStartDate(), vo.getEndDate());
-		findQuery.put("header.hostIp", vo.getHostIp());
+		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("body_event_time", vo.getStartDate(), vo.getEndDate());
+		findQuery.put("body_host_ip", vo.getHostIp());
 		
 		//공격 단계에 맡는 t 목록
 		List<String> tValByPhases = mitreADao.selectMitreAttackTValueByPhases(vo.getPhases());
-		List<BasicDBObject> keyQueryList = new ArrayList<>();
+		List<BasicDBObject> keyQueryList = new ArrayList<BasicDBObject>();
 		for(String tVal : tValByPhases) {
-			keyQueryList.add(new BasicDBObject("body.key", tVal));
+			keyQueryList.add(new BasicDBObject("body_key", "\""+tVal+"\""));
 		}
 		
 		//OR query
 		findQuery.put("$or", keyQueryList);
+		
 		//LIKE query
 		if(vo.getSearchType() != "") {
+			
 			String keyName = "";
-			if(vo.getSearchType().equals("uid") || vo.getSearchType().equals("ses") || vo.getSearchType().equals("key")) {
-				keyName = "body.";
+			if(vo.getSearchType().equals("type")) {
+				keyName = "header_";
+			}else if(vo.getSearchType().equals("msg")){
+				keyName = "header_message:";
 			}else {
-				keyName = "header.";
+				keyName = "body_";
 			}
+		
 			findQuery.put(keyName+vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
 		}
 		
-		System.out.println(findQuery.toJson());
-		List<Document> docList = audtiLogListCol.find(findQuery)
-															       .limit(vo.getPageSize())
-															       .skip(vo.getPageNumber()-1)
-															       .into(new ArrayList<>());
+		List<Document> docList  = new ArrayList<>();
+		if(audtiLogListCol.countDocuments(findQuery) > 0) {
+			System.out.println(findQuery.toJson());
+			docList = audtiLogListCol.find(findQuery)
+										       .limit(vo.getPageSize())
+										       .skip(vo.getPageNumber()-1)
+										       .into(new ArrayList<>());
+		}
 		
 		return docList;
 		

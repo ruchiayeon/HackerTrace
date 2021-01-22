@@ -28,6 +28,18 @@ public class AuditLogController {
 	@Autowired
 	AuditLogService service;
 	
+	@ApiOperation(value = "audit 이상행위 로그를 조회함")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/log/list", method = RequestMethod.POST)
+	public ResultVO getAuditLogList(final @Valid @RequestBody AuditLogListVO auditLogListVO) {
+		try {
+			System.out.println(auditLogListVO.toString());
+			return APIUtil.resResult(0, "조회가 완료되었습니다.", service.getAuditLogList(auditLogListVO));
+		} catch (Exception e) {
+			return APIUtil.resResult(1, "조회가 실패되었습니다.", null);
+		}
+	}
+	
 //	@ApiOperation(value = "로그파일에서 audit 로그를 DB에 저장함")
 //	@CrossOrigin(origins = "*", allowedHeaders = "*")
 //	@RequestMapping(value = "/log/file", method = RequestMethod.GET)
@@ -66,16 +78,6 @@ public class AuditLogController {
 //	}
 
 
-	@ApiOperation(value = "audit 이상행위 로그를 조회함")
-	@CrossOrigin(origins = "*", allowedHeaders = "*")
-	@RequestMapping(value = "/log/list", method = RequestMethod.POST)
-	public ResultVO getAuditLogList(final @Valid @RequestBody AuditLogListVO auditLogListVO) {
-		try {
-			System.out.println(auditLogListVO.toString());
-			return APIUtil.resResult(0, "조회가 완료되었습니다.", service.getAuditLogList(auditLogListVO));
-		} catch (Exception e) {
-			return APIUtil.resResult(1, "조회가 실패되었습니다.", null);
-		}
-	}
+
 
 }
