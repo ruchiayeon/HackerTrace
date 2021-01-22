@@ -5,6 +5,7 @@ import axios from 'axios'
 import { CCol, CRow } from '@coreui/react';
 
 
+
 function ConfigHistory() {
      //host Ip받아오는 부분
   const [configHistory, setConfigHistory] = useState(null);
@@ -20,6 +21,11 @@ function ConfigHistory() {
         )
         //받아온 값을 hostDatas에 넣어준다.
         setConfigHistory(response.data.data);
+
+
+
+
+        
         //console.log(response.data.data[0])
       }catch(e){
         //에러시 flag를 달아서 이동

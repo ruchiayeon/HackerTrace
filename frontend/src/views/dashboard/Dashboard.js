@@ -1,37 +1,67 @@
-import React, { lazy } from 'react'
+import React, { lazy, useState } from 'react'
 import {
-  CBadge,
   CCard,
   CCardBody,
   CCol,
   CDataTable,
   CRow,
 } from '@coreui/react'
+import axios from 'axios'
 
-import usersData from '../../views/users/UsersData'
 import Clock from '../Clock/Clock'
-import MainChartExample from '../charts/MainChartExample.js'
+import ConfigCharts from './Configchart'
+import Page404 from "../pages/page404/Page404"
+import Loading from "../pages/Loading/Loading"
+
+function Dashboard() {
+  const WidgetsDropdown = lazy(() => import('../widgets/WidgetsDropdown.js'))
 
 
-const fields = ['TIME','Initial_Access', 'Execution', 'Persistence','Privilege_Escalation',
-'Defense_Evasion','Credential_Access','Discovery','Lateral_Movement','Collection','Command_and_Control','Exfiltration','Impact']
 
-const getBadge = status => {
-  switch (status) {
-    case 'Active': return 'success'
-    case 'Inactive': return 'secondary'
-    case 'Pending': return 'warning'
-    case 'Banned': return 'danger'
-    default: return 'primary'
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  //이상행위 대시보드 Count 조회
+  const [abnormalData, setAbnormalData] =useState(null) 
+
+  const AbnormalDash = async() => {
+    try{
+      setLoading(true);
+      const respose = await axios.post(
+        `http://210.114.18.175:8080/ht/dashboard/statics/mitre-attack?hostIp=210.114.19.179`
+      )
+      const responseDatas = respose.data.data
+      setAbnormalData(responseDatas)
+
+      console.log(respose.data.data)
+    }catch(e){
+      setError(e)
+      console.log(e)
+    }
+    setLoading(false);
   }
-}
-const WidgetsDropdown = lazy(() => import('../widgets/WidgetsDropdown.js'))
+  
+  const fields = [
+    {key:'term', label:"TIME"},
+    {key:'initial-access', label:"Initial Access"},
+    {key:'execution', label:"Execution"},
+    {key:'persistence', label:"Persistence"}, 
+    {key:'privilege-escalation', label:"Privilege Escalation"},
+    {key:'defense-evasion', label:"Defense Evasion"},
+    {key:'credential-access', label:"Credential Access"},
+    {key:'discovery', label:"Discovery"}, 
+    {key:'lateral-movement', label:"Lateral Movement"},
+    {key:'command-and-control', label:"Command And Control"},
+    {key:'exfiltration', label:"Exfiltration"},
+    {key:'impact', label:"Impact"},
+  ]
 
+  if(loading) return <Loading/>;
+  if(error) return <Page404/>;
+  if(!abnormalData) return AbnormalDash();
 
-const Dashboard = () => {
   return (
     <>
-    
       {/*첫번째 숫자위젯 */}
       <WidgetsDropdown />
       {/*형상관리 template */}
@@ -43,40 +73,25 @@ const Dashboard = () => {
               <div className="small text-muted"><Clock/></div>
             </CCol>
           </CRow>
-          <MainChartExample style={{height: '300px', marginTop: '40px'}}/>
+          <ConfigCharts style={{height: '300px', marginTop: '40px'}}/>
         </CCardBody>
       </CCard>
-
-
       <CRow>
         <CCol>
           <CCard>
             <CCardBody>
               <CRow>
                 <CCol >
-                <h4 id="traffic" className="card-title mb-0">이상행위</h4>
-                <div className="small text-muted"><Clock/></div>
+                  <h4 id="traffic" className="card-title mb-0">이상행위</h4>
+                  <div className="small text-muted">
+                    <h6>업데이트 일자 : {abnormalData[0].updateTime}</h6>
+                  </div>
                   <CDataTable
-                    items={usersData}
+                    items={abnormalData}
                     fields={fields}
-                   
-                   
-                    scopedSlots = {{
-                      'status':
-                        (item)=>(
-                          <td>
-                            <CBadge color={getBadge(item.status)}>
-                              {item.status}
-                            </CBadge>
-                          </td>
-                        )
-
-                    }}
                   />
                 </CCol>
-
-              </CRow>
-                 
+              </CRow>             
             </CCardBody>
           </CCard>
         </CCol>

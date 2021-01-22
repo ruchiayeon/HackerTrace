@@ -20,12 +20,44 @@ import Loading from '../../pages/Loading/Loading'
 
 function DefenseEvasion() {
 
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [defenseEvDatas, setDefenseEvDatas] = useState(false);
+
+  //host Ip받아오는 부분
+  const [hostDatas, setHostDatas] = useState(null);
+  const [firsthostDatas, setFirHostDatas] = useState(null);
+
+  //host ip 받아오기
+  //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
+  useEffect(()=>{
+    const hostResData = async() => {
+      try{
+        setLoading(true);
+        //axios를 이용하여 해당 url에서 갑을 받아온다.
+        const response = await axios.get(
+          'http://210.114.18.175:8080/ht/host/list'
+        )
+        //받아온 값을 hostDatas에 넣어준다.
+        setHostDatas(response.data.data);
+        setFirHostDatas(response.data.data[0].hostIp)
+      }catch(e){
+        //에러시 flag를 달아서 이동
+        setError(e);
+        console.log(e)
+      }
+        //로딩 실패시 flag를 달아서 이동
+        setLoading(false);
+      };
+    hostResData();
+  }, []);
+
   const[inputs, setInputs] = useState({
     search:'',
     startDate:'2020-01-01',
     endDate:'2021-01-30',
     selectColum:'uid',
-    selectHostIp:'127.0.0.1'
+    selectHostIp: firsthostDatas
   });
 
   const { search, startDate, endDate, selectColum, selectHostIp } = inputs;
@@ -39,53 +71,27 @@ function DefenseEvasion() {
       });
   };
 
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [defenseEvDatas, setDefenseEvDatas] = useState(false);
-
   //검색 버튼 및 Value값 넘겨주는 부분
   function submitValue(){
-    //alert(`${selectHostIp}/${selectColum}`)
-    tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
+    if(!selectHostIp){
+      console.log(firsthostDatas)
+      console.log(selectHostIp)
+      tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas)
+    }else{
+      console.log(firsthostDatas);
+      console.log(selectHostIp)
+      tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
+    }
   };
-  
-  //host Ip받아오는 부분
-  const [hostDatas, setHostDatas] = useState(null);
-
-  //host ip 받아오기
-  useEffect(()=>{
-    const hostResData = async() => {
-      try{
-        setLoading(true);
-        //axios를 이용하여 해당 url에서 갑을 받아온다.
-        const response = await axios.get(
-            'http://210.114.18.175:8080/ht/host/list'
-        )
-        //받아온 값을 hostDatas에 넣어준다.
-        setHostDatas(response.data.data);
-        console.log(response.data.data);
-      }catch(e){
-        //에러시 flag를 달아서 이동
-        setError(e);
-        console.log(e)
-      }
-        //로딩 실패시 flag를 달아서 이동
-        setLoading(false);
-      };
-    hostResData();
-  }, []);
-
-  //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
-  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
 
   const fields = [
-    {key:'time',_style:{width:'10%'}},
-    {key:'hostIp',_style:{width:'10%'}},
-    {key:'key',_style:{width:'10%'}},
-    {key:'type',_style:{width:'10%'}}, 
-    {key:'ses',_style:{width:'10%'}},
-    {key:'uid',_style:{width:'10%'}},
-    {key:'msg',_style:{width:'40%'}},
+    {key:'time', _style:{width:'10%'}, label:"TIME"},
+    {key:'body_host_ip', _style:{width:'10%'}, label:"HOST IP"},
+    {key:'body_key', _style:{width:'10%'}, label:"Mitter T Value"},
+    {key:'header_message:type', _style:{width:'10%'}, label:"Audit Type"}, 
+    {key:'body_ses', _style:{width:'10%'}, label:"Session"},
+    {key:'body_uid', _style:{width:'10%'}, label:"Uid"},
+    {key:'header_msg', _style:{width:'40%'}, label:"Messages"},
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -100,7 +106,7 @@ function DefenseEvasion() {
           endDate   : endDate,
           hostIp    : selectHostIp,
           pageNumber: 1,
-          pageSize  : 1000,
+          pageSize  : 50,
           phases    : "defense-evasion",
           searchType: selectColum,
           searchWord: search, 
@@ -120,10 +126,9 @@ function DefenseEvasion() {
   };
   if(loading) return <Loading/>;;
   if(error) return <Page404/>;
-
-  if(!defenseEvDatas){
-    submitValue()
-  }
+  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
+  if(!defenseEvDatas) return submitValue()
+  
 
   return (
     <>

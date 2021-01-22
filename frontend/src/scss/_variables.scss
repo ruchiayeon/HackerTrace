@@ -3,7 +3,7 @@
     overflow:scroll;
     max-height: 36rem;
     padding: 0rem 1rem;
-        background: linear-gradient(13deg, #c9c4f780, #f5d5d500);
+    background: linear-gradient(13deg, #c9c4f780, #f5d5d500);
 }
 ::-webkit-scrollbar {
     width: 5px;  /* 세로축 스크롤바 길이 */
@@ -44,29 +44,22 @@
 
 //검색한 T값 - 사용자
 .searchT{
-    font-size: 1rem;
-    font-weight: 600;
-    background: #0065ff3d!important;
-}
-//검색한 T값 - 공격 그룹
-.attckGroupT{
     padding: 1rem;
     font-size: 1rem;
     font-weight: 600;
-    background: #ffa6003b!important;
+    background: linear-gradient(13deg, #c9c4f700,#0065ff3d);
 }
-.attckGroupT section{
+.searchT section{
     transition: 0.3s ease-in-out;
     box-shadow: 0px 0px 0px 0px #00000054;
     padding: 0.5rem;
     font-size: 1rem;
     font-weight: 600;
     text-align: center;
-    background: #ffa600 !important;
-    height: 4rem;
+    background: #0066ff !important;
     border-radius: 15px;
 }
-.attckGroupT div{
+.searchT div{
     padding: 1rem 0.4rem;
     margin: 0.7rem 0rem;
     border-radius: 8px;
@@ -81,26 +74,118 @@
         
     }
 }
+.searchT section h5{
+    font-size: 1.2rem!important;
+    color:#ffffff;
+    font-weight: bold;
+    text-shadow: 0px 0px 6px #000000;
+    transition: 0.3s ease-in-out;
+}
+.searchT section p{
+    font-size: 0.6rem!important;
+    color: white;
+    text-shadow: 0px 0px 4px #000000;
+    transition: 0.3s ease-in-out;
+    margin-bottom: 0;
+}
 
+//검색한 T값 - 공격 그룹
+.attckGroupT{
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background: linear-gradient(13deg, #c9c4f700, #ffa6003b);
+    transition: 0.2s ease-in-out;
+}
+.attckGroupT section{
+    transition: 0.2s ease-in-out;
+    box-shadow: 0px 0px 0px 0px #00000054;
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    background: #ffa600 !important;
+    border-radius: 15px;
+}
+.attckGroupT div{
+    padding: 1rem 0.4rem;
+    margin: 0.7rem 0rem;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0px 0px 8px 0px #00000011;
+    transition: 0.2s ease-in-out;
+    &:hover{
+        background: #0065ff3d;
+        transition: 0.2s ease-in-out;
+        box-shadow: 0px 0px 0px 0px #00000054
+        //box-shadow: 0px 0px 12px 0px#2762bbbd;
+        
+    }
+}
 .attckGroupT section h5{
     font-size: 1.2rem!important;
     color:#ffffff;
     font-weight: bold;
-    text-shadow: 0px 0px 6px #000000;;
+    text-shadow: 0px 0px 6px #000000;
+    transition: 0.2s ease-in-out;
 }
 .attckGroupT section p{
     font-size: 0.6rem!important;
     color: white;
-    text-shadow: 0px 0px 6px #58441f;
+    text-shadow: 0px 0px 4px #000000;
+    transition: 0.2s ease-in-out;
 }
 
 //검색후, T값이 같을 경우 className추가
 .matchT{
-    background: #da1515!important;
-    color: #fff;
+    padding: 1rem;
+    background: linear-gradient(13deg, #c9c4f700, #da151573);
     font-weight: 600;
     font-size: 1rem;
+    transition: 0.2s ease-in-out;
 }
+.matchT section{
+    transition: 0.2s ease-in-out;
+    box-shadow: 0px 0px 0px 0px #00000054;
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    background:  #da1515 !important;
+    border-radius: 15px;
+}
+.matchT div{
+    padding: 1rem 0.4rem;
+    margin: 0.7rem 0rem;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0px 0px 8px 0px #00000011;
+    transition: 0.2s ease-in-out;
+    &:hover{
+        background: #0065ff3d;
+        transition: 0.2s ease-in-out;
+        box-shadow: 0px 0px 0px 0px #00000054
+        //box-shadow: 0px 0px 12px 0px#2762bbbd;
+        
+    }
+}
+.matchT section h5{
+    font-size: 1.2rem!important;
+    transition: 0.2s ease-in-out;
+    color:#ffffff;
+    font-weight: bold;
+    text-shadow: 0px 0px 6px #000000;;
+}
+.matchT section p{
+    transition: 0.2s ease-in-out;
+
+    
+    font-size: 0.6rem!important;
+    color: white;
+    text-shadow: 0px 0px 4px #000000;
+}
+
+
 
 .btn-info{
     background: #321fdb!important;
@@ -138,14 +223,30 @@ hr{
     margin: 0.2rem 1rem 0.2rem 1rem;
 }
 .matchTLegend{
-    margin: 0.2rem 1rem 0.2rem 0.2rem;
+    margin: 0.2rem 1rem 0.2rem 1rem;
     background: #da1515;
     width: 1rem;
     height: 1rem;
     border-radius: 1rem;
 }
+.searchTLegend{
+    margin: 0.2rem 1rem 0.2rem 0rem;
+    background: #321fdb;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 1rem;
+}
+.LegendRow{
+    margin: 0rem 1rem 0rem 1rem;
+    cursor: pointer;
+}
 .legend{
     padding: 0 1rem;
+}
+//공격 그룹 확인 
+.attackGroupBtn{
+    overflow: scroll;
+    max-height: 36rem;
 }
 
 //correlation table 
@@ -189,4 +290,19 @@ hr{
     flex-direction: row;
     min-height: 50vh;
 
+}
+
+//.tippy-content
+.tippy-content{
+    min-width: 30rem!important;
+    max-width: 40rem;
+    white-space: break-spaces!important;
+}
+.tippy-box{
+    max-width: 100%!important;
+    box-shadow: 1px 3px 12px 1px #0000002e;
+}
+.popover-header{
+    background-color: #321fdb!important;
+    color: #fff;
 }

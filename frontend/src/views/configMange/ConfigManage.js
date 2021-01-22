@@ -25,49 +25,22 @@ import ReactDiffViewer from 'react-diff-viewer'
 import Clock from '../Clock/Clock'
 import Page404 from '../pages/page404/Page404'
 import Loading from '../pages/Loading/Loading'
-import ConfigHistory from './configHistory'
+//import ConfigHistory from './configHistory'
 
 
 function ConfigManage() {
   const [configChange, setConfigChange] = useState(false)
-  
-  const [oldCode , setOldCode] = useState('null')
-  const [newCode , setNewCode] = useState('null')
-
-  //config integrity 부분 선언
-  //const [items, setItems] = useState(configDatas)
-
-
-  const[inputs, setInputs] = useState({
-    search:'',
-    startDate:'2021-01-01',
-    endDate:'2021-01-30',
-    selectColum:'uid',
-    selectHostIp:'127.0.0.1'
-  });
-
-  const { search, startDate, endDate, selectColum, selectHostIp } = inputs;
-
-  function handlerChange(e){
-    const { value, name } = e.target;  
-    setInputs({
-    ...inputs,
-    [name]:value
-    });
-  };
+  const [configDatas, setConfigDatas] = useState(false);
+  const [oldCode , setOldCode] = useState("old")
+  const [newCode , setNewCode] = useState("new")
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [configDatas, setConfigDatas] = useState(false);
 
-  //검색 버튼 및 Value값 넘겨주는 부분
-  function submitValue(){
-    //alert(`${selectHostIp}/${selectColum}`)
-    tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
-  };
   
   //host Ip받아오는 부분
   const [hostDatas, setHostDatas] = useState(null);
+  const [firsthostDatas, setFirHostDatas] = useState(null);
 
   //host ip 받아오기
   useEffect(()=>{
@@ -80,6 +53,7 @@ function ConfigManage() {
         )
         //받아온 값을 hostDatas에 넣어준다.
         setHostDatas(response.data.data);
+        setFirHostDatas(response.data.data[0].hostIp)
       }catch(e){
         //에러시 flag를 달아서 이동
         setError(e);
@@ -91,8 +65,32 @@ function ConfigManage() {
     hostResData();
   }, []);
 
-  //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
-  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
+  const[inputs, setInputs] = useState({
+    search:'',
+    startDate:'2021-01-01',
+    endDate:'2021-01-30',
+    selectColum:'uid',
+    selectHostIp: firsthostDatas
+  });
+
+  const { search, startDate, endDate, selectColum, selectHostIp } = inputs;
+
+  function handlerChange(e){
+    const { value, name } = e.target;  
+    setInputs({
+    ...inputs,
+    [name]:value
+    });
+  };
+
+  //검색 버튼 및 Value값 넘겨주는 부분
+  function submitValue(){
+    if(!selectHostIp){
+      tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas)
+    }else{
+      tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
+    }
+  };
 
   const fields = [
     {key:'fileCreateDate',_style:{width:'10%'}},
@@ -101,7 +99,6 @@ function ConfigManage() {
     {key:'fileName',_style:{width:'10%'}}, 
     {key:'filePath',_style:{width:'30%'}}, 
     {key:'Integrity',_style:{width:'10%'}},
-
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -133,13 +130,8 @@ function ConfigManage() {
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
-    };
-  if(loading) return <Loading/>;
-  if(error) return <Page404/>;
+  };
 
-  if(!configDatas){
-    submitValue()
-  }
   function toggleModal(index,item){
     
     var rowId = item._id;
@@ -173,13 +165,14 @@ function ConfigManage() {
       //에러시 flag를 달아서 이동
       setError(e);
       console.log(e)
-      if(!oldCode) return <div>일치하는 데이터가 없습니다.</div>;
-      if(!newCode) return <div>일치하는 데이터가 없습니다.</div>;
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
   }
-
+  if(loading) return <Loading/>;
+  if(error) return <Page404/>;
+  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
+  if(!configDatas) return submitValue()
 
   return (
     <>
@@ -187,7 +180,7 @@ function ConfigManage() {
         <CCol>
           <CCard>
             <CCardBody>
-              <ConfigHistory/>
+
               <Clock/>
                 <CRow className="searchtoolbar"> 
                   <CCol md="2">

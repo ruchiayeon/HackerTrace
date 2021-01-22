@@ -39,13 +39,15 @@ function TheHeader() {
   //host Ip받아오는 부분
   const [hostDatas, setHostDatas] = useState(null);
 
+
+  //input data handeling 전혀 코딩 안함
   useEffect(()=>{
     const hostResData = async() => {
     try{
       setLoading(true);
       //axios를 이용하여 해당 url에서 갑을 받아온다.
       const response = await axios.get(
-          'http://210.114.18.175:8080/ht/host/list'
+        'http://210.114.18.175:8080/ht/host/list'
       )
       //받아온 값을 setMiterData에 넣어준다.
       
@@ -65,12 +67,6 @@ function TheHeader() {
   if(loading) return <div>로딩중</div>;
   if(error) return <div>에러</div>;
   if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
-
-  function submitValue() {
-    alert(`${hostDatas}`)
-  }
-
-
 
   return (
     <CHeader withSubheader>
@@ -117,7 +113,7 @@ function TheHeader() {
             <CFormGroup>
               <CSelect custom name="hostIpAName" id="hostIpAName">
                 {hostDatas.map((item, index) => {
-                  return <option key={index} value={item.hostIp} onClick={submitValue}>{item.hostName}({item.hostIp})</option>
+                  return <option key={index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
                 })}
               </CSelect>
             </CFormGroup>
