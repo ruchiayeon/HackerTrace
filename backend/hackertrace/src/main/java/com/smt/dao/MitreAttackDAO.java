@@ -2,6 +2,7 @@ package com.smt.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.smt.util.MogoDBUtil;
 import com.smt.vo.MitreAttackVO;
+import com.smt.vo.MitreAuditConditionSesVO;
 import com.smt.vo.MitreAuditConditionVO;
 import com.smt.vo.MitreAuditVO;
 
@@ -20,6 +22,7 @@ public class MitreAttackDAO {
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
+	
 	
 	public void deleteMitreAttackInfo() {
 		mongoTemplate.dropCollection("MITRE_ATTACK");
@@ -61,63 +64,123 @@ public class MitreAttackDAO {
 		
 	}
 	
-	public Document selectMitreAuditCondition(MitreAuditConditionVO vo){
-		MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
+//	public Document selectMitreAuditCondition(MitreAuditConditionVO vo){
+//		MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
+//		
+//		BasicDBObject dateTermQuery =new BasicDBObject();
+//		dateTermQuery.put("body_host_ip", vo.getHostIp());
+//		dateTermQuery.put("body_key", new BasicDBObject("$regex", ".*T.*"));
+//		dateTermQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(vo.getStartDate(), vo.getEndDate()) );
+//		
+//		Document resultDoc = new Document();
+//		 
+//		List<BasicDBObject> uidSesQueryList = new ArrayList<BasicDBObject>();
+//		
+//		System.out.println(dateTermQuery.toJson());
+//		BasicDBObject matchQuery = new BasicDBObject("$match", dateTermQuery);
+//		BasicDBObject sesUidQuery = new BasicDBObject();
+//		sesUidQuery.put("v1", "$body_uid");
+//		sesUidQuery.put("v2", "$body_ses");
+//		BasicDBObject uidQuery = new BasicDBObject("$group", new BasicDBObject("_id",sesUidQuery));
+//		
+//		uidSesQueryList.add(matchQuery);
+//		uidSesQueryList.add(uidQuery);
+//		
+//		System.out.println(uidSesQueryList.toString());
+//		List<Document> uidSesList = auditLogCol.aggregate(uidSesQueryList).into(new ArrayList<>());
+//		List<String> uidList = new ArrayList<String>();
+//		List<String> sesList = new ArrayList<String>();
+//		for(Document doc : uidSesList) {
+//			Document resDoc = new Document();
+//			resDoc = (Document) doc.get("_id");
+//			System.out.println(resDoc.toJson());
+////			if(doc.get("_id") != null) {
+////				uidList.add((String)doc.get("_id"));
+////			}
+//		}
 		
-		BasicDBObject dateTermQuery = MogoDBUtil.getDateTermFindQuery("body_event_time", vo.getStartDate(), vo.getEndDate());
-		dateTermQuery.put("body_host_ip", vo.getHostIp());
-		 
-		List<BasicDBObject> uidQueryList = new ArrayList<BasicDBObject>();
-		List<BasicDBObject> sesQueryList = new ArrayList<BasicDBObject>();
+//		resultDoc.put("uid_list", uidList);
 		
-		System.out.println(dateTermQuery.toJson());
-		BasicDBObject matchQuery = new BasicDBObject("$match", dateTermQuery);
+//		return resultDoc;
 		
-		BasicDBObject groupUidQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$body_uid"));
-		BasicDBObject groupSesQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$body_ses"));
+//	}
+	
+	public Document selectMitreAuditConditionUid(MitreAuditConditionVO vo){
+		MongoCollection<Document> auditLogUidSesCol = mongoTemplate.getCollection("AUDIT_LOG_UID_SES");
 		
-		uidQueryList.add(matchQuery);
-		uidQueryList.add(groupUidQuery);
+		BasicDBObject matchConditionQuery =new BasicDBObject();
+		matchConditionQuery.put("createDate", new BasicDBObject("$gte", vo.getStartDate()).append( "$lte" , vo.getEndDate()));
+		matchConditionQuery.put("hostIp", vo.getHostIp());
 		
-		sesQueryList.add(matchQuery);
-		sesQueryList.add(groupSesQuery);
+		BasicDBObject matchQuery = new BasicDBObject("$match", matchConditionQuery);
+		BasicDBObject groupQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$uid"));
 		
-		List<Document> uidList = auditLogCol.aggregate(uidQueryList).into(new ArrayList<>());
-		List<String> uids = new ArrayList<>();
-		getGroupResults(uidList, uids);
+		List<BasicDBObject> getOnlyUidQueryList = new ArrayList<BasicDBObject>();
+		getOnlyUidQueryList.add(matchQuery);
+		getOnlyUidQueryList.add(groupQuery);
 		
-		List<Document> sesList = auditLogCol.aggregate(sesQueryList).into(new ArrayList<>());
-		List<String> sess = new ArrayList<>();
-		getGroupResults(sesList, sess);
+		List<Document> uidDocList = auditLogUidSesCol.aggregate(getOnlyUidQueryList).into(new ArrayList<>());
+		List<String> uidListResult = new ArrayList<String>();
+		for(Document doc : uidDocList) {
+			uidListResult.add((String)doc.get("_id"));
+		}
 		
 		Document resultDoc = new Document();
-		resultDoc.put("uid_list", uids);
-		resultDoc.put("ses_list", sess);
+		resultDoc.put("uid_list", uidListResult);
+		
+		return resultDoc;
+		
+	}
+	
+	public Document selectMitreAuditConditionSes(MitreAuditConditionSesVO vo){
+		MongoCollection<Document> auditLogUidSesCol = mongoTemplate.getCollection("AUDIT_LOG_UID_SES");
+		
+		BasicDBObject matchConditionQuery =new BasicDBObject();
+		matchConditionQuery.put("createDate", new BasicDBObject("$gte", vo.getStartDate()).append( "$lte" , vo.getEndDate()));
+		matchConditionQuery.put("hostIp", vo.getHostIp());
+		matchConditionQuery.put("uid", vo.getUid());
+		
+		BasicDBObject matchQuery = new BasicDBObject("$match", matchConditionQuery);
+		BasicDBObject groupQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$ses"));
+		
+		List<BasicDBObject> getOnlySesQueryList = new ArrayList<BasicDBObject>();
+		getOnlySesQueryList.add(matchQuery);
+		getOnlySesQueryList.add(groupQuery);
+		
+		List<Document> sesDocList = auditLogUidSesCol.aggregate(getOnlySesQueryList).into(new ArrayList<>());
+		List<String> sesListResult = new ArrayList<String>();
+		for(Document doc : sesDocList) {
+			sesListResult = (List<String>) doc.get("_id");
+		}
+		
+		Document resultDoc = new Document();
+		resultDoc.put("ses_list", sesListResult);
 		
 		return resultDoc;
 		
 	}
 
-	private void getGroupResults(List<Document> docList, List<String> idValList) {
-		
-		for(Document doc : docList) {
-			String idVal = String.valueOf(doc.get("_id"));
-			if(idVal != "null") 
-				idValList.add(idVal);
-		}
-		
-	}
+//	private void getGroupResults(List<Document> docList, List<String> idValList) {
+//		
+//		for(Document doc : docList) {
+//			String idVal = String.valueOf(doc.get("_id"));
+//			if(idVal != "null") 
+//				idValList.add(idVal);
+//		}
+//		
+//	}
 	
 	public List<Document> selectUserAuditLogList(MitreAuditVO vo){
 		
 		MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
-		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("body_event_time",vo.getStartDate(), vo.getEndDate());
+		BasicDBObject findQuery = new BasicDBObject();
 		
 		findQuery.put("body_host_ip", vo.getHostIp());
 		findQuery.put("body_uid", vo.getUid());
 		findQuery.put("body_ses", vo.getSes());
 		findQuery.put("body_key", new BasicDBObject("$regex", ".*T.*"));
+		findQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(vo.getStartDate(), vo.getEndDate()) );
 		System.out.println(findQuery);
 		
 		return auditLogCol.find(findQuery).into(new ArrayList<>());
@@ -128,12 +191,13 @@ public class MitreAttackDAO {
 		
 		MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
-		BasicDBObject matchQuery = MogoDBUtil.getDateTermFindQuery("body_event_time",vo.getStartDate(), vo.getEndDate());
+		BasicDBObject matchQuery = new BasicDBObject();
 		
 		matchQuery.put("body_host_ip", vo.getHostIp());
 		matchQuery.put("body_uid", vo.getUid());
 		matchQuery.put("body_ses", vo.getSes());
 		matchQuery.put("body_key", new BasicDBObject("$regex", ".*T.*"));
+		matchQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(vo.getStartDate(), vo.getEndDate()) );
 		
 		BasicDBObject groupQuery = new BasicDBObject("_id", "$body_key");
 		
@@ -196,9 +260,7 @@ public class MitreAttackDAO {
 			
 		}
 		
-		tList.stream().distinct();
-		
-		return tList;
+		return tList.stream().distinct().collect(Collectors.toList());
 		
 	}
 	

@@ -66,7 +66,7 @@ public class ConfigLogDAO {
 		
 		MongoCollection<Document> configFilesLogsListCol = mongoTemplate.getCollection("CONFIG_FILES_LOGS");
 		
-		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("fileCreateDate", vo.getStartDate(), vo.getEndDate());
+		BasicDBObject findQuery = new BasicDBObject();
 		findQuery.put("hostIp", vo.getHostIp());
 		findQuery.put("filePath", vo.getFilePath());
 		
@@ -86,6 +86,7 @@ public class ConfigLogDAO {
 			
 		}
 		
+		findQuery.put("fileCreateDate", MogoDBUtil.getDateTermFindQuery(vo.getStartDate(), vo.getEndDate()) );
 		System.out.println(findQuery.toJson());
 
 		return configFilesLogsListCol.find(findQuery)
@@ -128,9 +129,10 @@ public class ConfigLogDAO {
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
 	    
 	    String beforeEndDate = DateUtil.beforDateMonthUnit(vo.getFileCreateDate(), vo.getTerm());
-	    BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("body_event_time", beforeEndDate, vo.getFileCreateDate());
+	    BasicDBObject findQuery = new BasicDBObject();
 		findQuery.put("body_host_ip", vo.getHostIp());
 		findQuery.put("body_uid", vo.getUid());
+		findQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(beforeEndDate, vo.getFileCreateDate()) );
 		
 		BasicDBObject matchQuery = new BasicDBObject("$match", findQuery);
 		BasicDBObject groupQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$body_ses"));
@@ -153,10 +155,11 @@ public class ConfigLogDAO {
 	    //month단위
 	    String beforeEndDate = DateUtil.beforDateMonthUnit(vo.getFileCreateDate(), vo.getTerm());
 		
-		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("body_event_time", beforeEndDate, vo.getFileCreateDate());
+		BasicDBObject findQuery = new BasicDBObject();
 		findQuery.put("body_host_ip", vo.getHostIp());
 		findQuery.put("body_uid", vo.getUid());
 		findQuery.put("body_ses", vo.getSes());
+		findQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(beforeEndDate, vo.getFileCreateDate()) );
 		
 		if(!vo.getIsAll().equalsIgnoreCase("T")) {
 			findQuery.put("body_name", Pattern.compile(vo.getFileName(), Pattern.CASE_INSENSITIVE ));

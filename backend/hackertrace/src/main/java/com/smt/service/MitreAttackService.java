@@ -22,6 +22,7 @@ import com.google.gson.JsonSyntaxException;
 import com.smt.dao.MitreAttackDAO;
 import com.smt.util.KillChainPhases;
 import com.smt.vo.MitreAttackVO;
+import com.smt.vo.MitreAuditConditionSesVO;
 import com.smt.vo.MitreAuditConditionVO;
 import com.smt.vo.MitreAuditVO;
 
@@ -121,8 +122,16 @@ public class MitreAttackService {
 
 	}
 	
-	public Document selectMitreAuditCondition(MitreAuditConditionVO vo){
-		return dao.selectMitreAuditCondition(vo);
+//	public Document selectMitreAuditCondition(MitreAuditConditionVO vo){
+//		return dao.selectMitreAuditCondition(vo);
+//	}
+	
+	public Document selectMitreAuditConditionUid(MitreAuditConditionVO vo){
+		return dao.selectMitreAuditConditionUid(vo);
+	}
+	
+	public Document selectMitreAuditConditionSes(MitreAuditConditionSesVO vo){
+		return dao.selectMitreAuditConditionSes(vo);
 	}
 	
 	public List<Document> selectMitreAuditList(MitreAuditVO vo){
@@ -138,7 +147,7 @@ public class MitreAttackService {
 		for(Document doc : mitreUserAuditAllList) {
 			mitreUserAuditOnlyTList.add(doc.getString("body_key").replaceAll("\\\"", ""));
 		}
-		mitreUserAuditOnlyTList.stream().distinct();
+		mitreUserAuditOnlyTList = mitreUserAuditOnlyTList.stream().distinct().collect(Collectors.toList());
 		
 		//해커그룹 별 일치율 계산
 		List<Document> attackGroupMatchingList = getMitreUserAuditMatching(mitreUserAuditOnlyTList);

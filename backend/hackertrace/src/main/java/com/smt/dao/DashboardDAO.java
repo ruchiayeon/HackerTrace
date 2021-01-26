@@ -34,8 +34,6 @@ public class DashboardDAO {
 			startDate = DateUtil.beforDateDayUnit(endDate, "7");
 		else //1달전
 			startDate = DateUtil.beforDateMonthUnit(endDate, "1"); 
-		
-//		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("body_event_time", startDate, endDate);
 			
 			List<BasicDBObject> keyQueryList = new ArrayList<>();
 			for(String tVal : tList) {
@@ -44,12 +42,10 @@ public class DashboardDAO {
 			
 			BasicDBObject findQuery = new BasicDBObject("$or", keyQueryList);
 			findQuery.put("body_host_ip", hostIp);
-			String sDate = startDate+" 00:00:00";
-			String eDate = endDate+" 23:59:59";
-			findQuery.put("body_event_time", new BasicDBObject("$gte", sDate).append( "$lte" , eDate ) );
+			findQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(startDate, endDate) );
 			
 			System.out.println(findQuery.toJson());
-			staticsResult = String.valueOf( audtiLogListCol.countDocuments(findQuery));
+			staticsResult = String.valueOf((int)audtiLogListCol.countDocuments(findQuery));
 		
 		return staticsResult;
 	}
@@ -58,12 +54,12 @@ public class DashboardDAO {
 		long countAuditLogByIp = 0;
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
 		BasicDBObject findQuery = new BasicDBObject("body_host_ip", hostIp);
-		countAuditLogByIp = audtiLogListCol.countDocuments(findQuery);
+		countAuditLogByIp = (int)audtiLogListCol.countDocuments(findQuery);
 		System.out.println(countAuditLogByIp);
 		return countAuditLogByIp>0?true:false;
 	}
 	
-	public Document getStatsCountInfo(String hostIp, String type, String term) {
+	public Document getStatsMitreCountInfo(String hostIp, String type, String term) {
 		Document result = new Document();
 		List<Document> resultList  = new ArrayList<>();
 		MongoCollection<Document> statsCol = mongoTemplate.getCollection("DB_STATS");
@@ -83,7 +79,7 @@ public class DashboardDAO {
 		findQuery.put("createDate", new BasicDBObject("$gte", startDate).append( "$lte" , endDate ) );
 		
 		System.out.println(findQuery.toJson());
-		if(statsCol.countDocuments(findQuery)>0) {
+		if((int)statsCol.countDocuments(findQuery)>0) {
 			resultList = statsCol.find(findQuery).into(new ArrayList<>());
 	
 			result.put("updateTime", resultList.get(0).get("updateTime"));
@@ -97,12 +93,60 @@ public class DashboardDAO {
 					}
 					result.put(phases.getName(), sum);
 			}
-		}else {
-			result = null;
+			
+		} else { //통계 collection에 통계정보가 없을 시
+			
+			result.put("updateTime", "0000-0000-00 00:00:00");
+			for (KillChainPhases phases : KillChainPhases.values()) {
+				result.put(phases.getName(), 0);
+			}
+			
 		}
 		
-		
 		return result != null?result:null;
+	}
+	
+	public Document getConfigModifyCountWeek(String hostIp, String type) {
+		MongoCollection<Document> statsCol = mongoTemplate.getCollection("DB_STATS");
+
+		Document result = new Document();
+		String today = DateUtil.getTodayDate();
+		try {
+
+			List<Document> countDocList = new ArrayList<Document>();
+			for (int index = 6; index > -1; index--) {
+
+				String beforeDate = DateUtil.beforDateDayUnit(today, String.valueOf(index));
+
+				BasicDBObject findQuery = new BasicDBObject();
+				findQuery.put("hostIp", hostIp);
+				findQuery.put("type", type);
+				findQuery.put("createDate", beforeDate);
+				System.out.println(findQuery.toJson());
+
+				List<Document> countList = statsCol.find(findQuery).into(new ArrayList<>());
+				Integer count = 0;
+				String updateTime = "";
+
+				if (countList.size() > 0) {
+					Document countDoc = new Document();
+					countDoc = countList.get(0);
+					count = (int)(countDoc.get("count"));
+					updateTime = countDoc.getString("updateTime");
+				}
+
+				Document doc = new Document();
+				doc.put(DateUtil.getDateDay(beforeDate), String.valueOf(count));
+				doc.put("date", beforeDate);
+				doc.put("updateTime", updateTime);
+				countDocList.add(doc);
+			}
+
+			result.put("chart_data", countDocList);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 }

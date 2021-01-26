@@ -65,16 +65,25 @@ public class DashboardService {
 		Document weekCounts = new Document();
 		Document monthCounts = new Document();
 		
-		todayCounts = dao.getStatsCountInfo(hostIp, "mitre", "today");
-		weekCounts = dao.getStatsCountInfo(hostIp, "mitre", "week");
-		monthCounts = dao.getStatsCountInfo(hostIp, "mitre", "month");
+		todayCounts = dao.getStatsMitreCountInfo(hostIp, "mitre", "today");
+		todayCounts.put("term", "TODAY");
 		
-		docList.add((todayCounts==null)?new Document():todayCounts);
+		weekCounts = dao.getStatsMitreCountInfo(hostIp, "mitre", "week");
+		weekCounts.put("term", "WEEK");
+		
+		monthCounts = dao.getStatsMitreCountInfo(hostIp, "mitre", "month");
+		monthCounts.put("term", "MONTH");
+		
+		docList.add(todayCounts==null?new Document():todayCounts);
 		docList.add(weekCounts==null? new Document():weekCounts);
 		docList.add(monthCounts==null? new Document():monthCounts);
 		
 		return docList;
 		
+	}
+	
+	public Document getConfigModifyCountWeek(String hostIp) throws Exception {
+		return dao.getConfigModifyCountWeek(hostIp, "config");
 	}
 	
 	

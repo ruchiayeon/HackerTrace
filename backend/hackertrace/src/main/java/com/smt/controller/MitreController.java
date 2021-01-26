@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.smt.service.MitreAttackService;
 import com.smt.util.APIUtil;
+import com.smt.util.DateUtil;
+import com.smt.vo.MitreAuditConditionSesVO;
 import com.smt.vo.MitreAuditConditionVO;
 import com.smt.vo.MitreAuditVO;
 import com.smt.vo.ResultVO;
@@ -58,19 +60,37 @@ public class MitreController {
 
 	}
 	
+
+	
 	@CrossOrigin(origins = "*", allowedHeaders = "*")
-	@RequestMapping(value = "/condition", method = RequestMethod.POST)
+	@RequestMapping(value = "/condition/uid", method = RequestMethod.POST)
 	@ApiOperation(value = "기간에 해당하는 검색 조건들을 조회")
 	public ResultVO getSearchCondition(@Valid @RequestBody MitreAuditConditionVO mitreAuditConditionVO) {
 
 		try {
-			Document mitreAuditCondtion = mitreAttackService.selectMitreAuditCondition(mitreAuditConditionVO);
+			Document mitreAuditCondtion = mitreAttackService.selectMitreAuditConditionUid(mitreAuditConditionVO);
 			return APIUtil.resResult(0, "검색 조건 목록 조회가 완료되었습니다.", mitreAuditCondtion);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return APIUtil.resResult(0, "검색 조건 목록 조회가 실패되었습니다.", null);
 		}
 	}
+	
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/condition/ses", method = RequestMethod.POST)
+	@ApiOperation(value = "기간에 해당하는 검색 조건들을 조회")
+	public ResultVO getSearchConditionSes(@Valid @RequestBody MitreAuditConditionSesVO mitreAuditConditionSesVO) {
+
+		try {
+			Document mitreAuditCondtion = mitreAttackService.selectMitreAuditConditionSes(mitreAuditConditionSesVO);
+			return APIUtil.resResult(0, "검색 조건 목록 조회가 완료되었습니다.", mitreAuditCondtion);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return APIUtil.resResult(0, "검색 조건 목록 조회가 실패되었습니다.", null);
+		}
+	}
+	
+	
 
 	// 날짜 선택 -> 호스트 선택(ip) -> 사용자 선택(uid) -> 세션 선택(ses)
 	@CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -99,6 +119,25 @@ public class MitreController {
 		}
 		
 	}
+	
+//	@CrossOrigin(origins = "*", allowedHeaders = "*")
+//	@RequestMapping(value = "/condition", method = RequestMethod.POST)
+//	@ApiOperation(value = "기간에 해당하는 검색 조건들을 조회")
+//	public ResultVO getSearchConditionAll(@Valid @RequestBody MitreAuditConditionVO mitreAuditConditionVO) {
+//
+//		try {
+//			long beforeTime = System.currentTimeMillis();
+//			Document mitreAuditCondtion = mitreAttackService.selectMitreAuditCondition(mitreAuditConditionVO);
+//			long afterTime = System.currentTimeMillis(); 
+//			long secDiffTime = (afterTime - beforeTime)/1000;
+//			System.out.println("시간차이(m) : "+secDiffTime);
+//			System.out.println("end"+DateUtil.getCurrentTime());
+//			return APIUtil.resResult(0, "검색 조건 목록 조회가 완료되었습니다.", mitreAuditCondtion);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return APIUtil.resResult(0, "검색 조건 목록 조회가 실패되었습니다.", null);
+//		}
+//	}
 	
 	
 }

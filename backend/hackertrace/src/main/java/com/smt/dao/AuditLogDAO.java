@@ -36,7 +36,7 @@ public class AuditLogDAO {
 		
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
 		
-		BasicDBObject findQuery = MogoDBUtil.getDateTermFindQuery("body_event_time", vo.getStartDate(), vo.getEndDate());
+		BasicDBObject findQuery = new BasicDBObject();
 		findQuery.put("body_host_ip", vo.getHostIp());
 		
 		//공격 단계에 맡는 t 목록
@@ -64,18 +64,19 @@ public class AuditLogDAO {
 			findQuery.put(keyName+vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
 		}
 		
+		findQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(vo.getStartDate(), vo.getEndDate()) );
 		List<Document> docList  = new ArrayList<>();
-		if(audtiLogListCol.countDocuments(findQuery) > 0) {
-			System.out.println(findQuery.toJson());
-			docList = audtiLogListCol.find(findQuery)
-										       .limit(vo.getPageSize())
-										       .skip(vo.getPageNumber()-1)
-										       .into(new ArrayList<>());
-		}
+		System.out.println(findQuery.toJson());
+		docList = audtiLogListCol.find(findQuery)
+									       .limit(vo.getPageSize())
+									       .skip(vo.getPageNumber()-1)
+									       .into(new ArrayList<>());
 		
 		return docList;
 		
 	}
+	
+	
 	
 
 	

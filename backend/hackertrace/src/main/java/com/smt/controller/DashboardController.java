@@ -24,6 +24,24 @@ public class DashboardController {
 	
 	@Autowired
 	DashboardService service;
+	
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/statics/chart/config", method = RequestMethod.POST)
+	public ResultVO countConfigInfoChart(
+			@Valid @RequestParam("hostIp") 
+			@Pattern(regexp = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$",
+					   message = "올바른 IP 형식이 아닙니다.")
+			String hostIp
+			) 
+	{
+		try {
+			return APIUtil.resResult(0, "형상 관리 통계 조회가 완료되었습니다.", service.getConfigModifyCountWeek(hostIp));
+		}catch(Exception e) {
+			return APIUtil.resResult(1, "형상 관리 통계 조회가 실패되었습니다.", null);
+		}
+		
+	}
+	
 
 	@CrossOrigin(origins = "*", allowedHeaders = "*")
 	@RequestMapping(value = "/statics/mitre-attack", method = RequestMethod.POST)
@@ -42,4 +60,7 @@ public class DashboardController {
 		}
 		
 	}
+	
+	
+	
 }
