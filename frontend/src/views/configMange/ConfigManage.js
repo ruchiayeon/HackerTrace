@@ -20,27 +20,65 @@ import {
 } from '@coreui/react'
 import axios from 'axios'
 import ReactDiffViewer from 'react-diff-viewer'
+import Tree from 'react-animated-tree'
 
 //페이지 import
 import Clock from '../Clock/Clock'
 import Page404 from '../pages/page404/Page404'
 import Loading from '../pages/Loading/Loading'
-//import ConfigHistory from './configHistory'
 
 
 function ConfigManage() {
+  //형상 변경 Hook
   const [configChange, setConfigChange] = useState(false)
   const [configDatas, setConfigDatas] = useState(false);
   const [oldCode , setOldCode] = useState("old")
   const [newCode , setNewCode] = useState("new")
 
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-
+  //configHistroy Hook
+  const [configHistory, setconfigHistory] = useState([null])
   
   //host Ip받아오는 부분
   const [hostDatas, setHostDatas] = useState(null);
   const [firsthostDatas, setFirHostDatas] = useState(null);
+  //const [dircList, setDircList] = useState([null]);
+  //const [firstdircList, setFirDircList] = useState(null);
+
+  //file tree 부분
+  const treeSource = useState([
+    {
+      name: 'root',
+      children: [
+          {
+              name: 'parent',
+              children: [
+                  { name: 'child1' },
+                  { name: 'child2' }
+              ]
+          },
+          {
+              name: 'loading parent',
+              children: []
+          },
+          {
+              name: 'parent',
+              children: [
+                  {
+                      name: 'nested parent',
+                      children: [
+                          { name: 'nested child 1'},
+                          { name: 'nested child 2' }
+                      ]
+                  }
+              ]
+          }
+      ]
+  }
+  ])
+
+  //예외처리 Hook
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   //host ip 받아오기
   useEffect(()=>{
@@ -62,18 +100,36 @@ function ConfigManage() {
         //로딩 실패시 flag를 달아서 이동
         setLoading(false);
       };
+
+      //형상관리 디렉토리 리스트 
+      const getDircList = async() => {
+        try{
+          const response = await axios.get(
+            'http://210.114.18.175:8080/ht/config/directory'
+          )
+          //setDircList(response.data.data)
+         // setFirDircList(response.data.data)
+          console.log(response.data.data);
+        }catch(e){
+          setError(e);
+          console.log(e)
+        }
+      }
+    getDircList();
     hostResData();
   }, []);
 
+  
   const[inputs, setInputs] = useState({
     search:'',
     startDate:'2021-01-01',
     endDate:'2021-01-30',
     selectColum:'uid',
-    selectHostIp: firsthostDatas
+    selectHostIp: "",
+    setDircList: ""
   });
 
-  const { search, startDate, endDate, selectColum, selectHostIp } = inputs;
+  const { search, startDate, endDate, selectColum, selectHostIp, selectDircList } = inputs;
 
   function handlerChange(e){
     const { value, name } = e.target;  
@@ -83,22 +139,35 @@ function ConfigManage() {
     });
   };
 
+
   //검색 버튼 및 Value값 넘겨주는 부분
   function submitValue(){
     if(!selectHostIp){
-      tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas)
+      if(!selectDircList){
+        console.log("1")
+        tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas)
+      }else{
+        console.log("2")
+        tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas)
+      }
     }else{
-      tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
+      if(!selectDircList){
+        console.log("3")
+        tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
+      }else{
+        console.log("4")
+        tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
+      }
     }
   };
 
   const fields = [
-    {key:'fileCreateDate',_style:{width:'10%'}},
-    {key:'hostIp',_style:{width:'10%'}},
-    {key:'uid',_style:{width:'10%'}},
-    {key:'fileName',_style:{width:'10%'}}, 
-    {key:'filePath',_style:{width:'30%'}}, 
-    {key:'Integrity',_style:{width:'10%'}},
+    {label:"TIME", key:'fileCreateDate',_style:{width:'10%'}},
+    {label:"HOST IP", key:'hostIp',_style:{width:'10%'}},
+    {label:"Uid", key:'uid',_style:{width:'10%'}},
+    {label:"File Name", key:'fileName',_style:{width:'10%'}}, 
+    {label:"File Path", key:'filePath',_style:{width:'30%'}}, 
+    {label:"Integerity Check", key:'Integrity',_style:{width:'10%'}},
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -114,7 +183,7 @@ function ConfigManage() {
           hostIp    : selectHostIp,
           pageNumber: 1,
           pageSize  : 1000,
-          filePath : "/etc",
+          filePath  : "/etc",//selectFilePath
           searchType: selectColum,
           searchWord: search, 
         }
@@ -126,7 +195,6 @@ function ConfigManage() {
       //에러시 flag를 달아서 이동
       setError(e);
       console.log(e)
-      if(!configDatas) return <div>일치하는 데이터가 없습니다.</div>;
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
@@ -169,10 +237,40 @@ function ConfigManage() {
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
   }
+
+  //Config History
+  const ConfigHistory =  async() =>{
+    try{
+      const response = await axios.post(
+        'http://210.114.18.175:8080/ht/config/log/modify/history',
+        {
+          fileCreateDate: "2021-01-30 01:00:01",
+          fileName: "crontab",
+          hostIp: "127.0.0.1",
+          isAll: "T",
+          ses: 0,
+          term: 1,
+          uid: 0
+        }
+      )
+      console.log(response.data.data)
+      setconfigHistory(response.data.data)
+    }catch(e){
+      setError(e);
+      console.log(e)
+    }
+  }
+  function alertSubmit(){
+    alert("asdfasdf")
+  }
+  const tree = treeSource[0]
+  console.log(tree[0].children)
+
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
   if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
-  if(!configDatas) return submitValue()
+  if(!configDatas) return submitValue();
+  if(!configHistory) return ConfigHistory()
 
   return (
     <>
@@ -180,13 +278,15 @@ function ConfigManage() {
         <CCol>
           <CCard>
             <CCardBody>
-
-              <Clock/>
-                <CRow className="searchtoolbar"> 
+            <Clock/>
+              <CRow className="searchtoolbar"> 
+                  <CCol md="3"> 
+                  
+                  </CCol>
                   <CCol md="2">
                     <CFormGroup row>
                       <CCol xs="12" md="12">
-                        <CInput type="date" id="startDate" placeholder="start_date"  onChange={handlerChange} value={startDate} name='startDate'/>
+                        <CInput type="date" id="startDate" placeholder="start_date" onChange={handlerChange} value={startDate} name='startDate'/>
                       </CCol>
                     </CFormGroup>
                   </CCol>
@@ -197,18 +297,18 @@ function ConfigManage() {
                       </CCol>
                     </CFormGroup>
                   </CCol>
-                  <CCol md="2"></CCol>
-                  <CCol md="6">
+
+                  <CCol md="5">
                     <CRow>
-                      <CCol md="4">
+                      <CCol md="3">
                         <CFormGroup>
                           <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="selectColum">
                             <option value='uid'>uid</option>
                             <option value='fileName'>fileName</option>
-                            <option value='filePath'>filePath</option>
                           </CSelect>
                         </CFormGroup>
                       </CCol>
+                      
                       <CCol md="4">
                         <CFormGroup>
                           <CSelect custom name="selectHostIp" onChange={handlerChange} value={selectHostIp} id="selectHostIp">
@@ -218,17 +318,114 @@ function ConfigManage() {
                           </CSelect>
                         </CFormGroup>
                       </CCol>
-                      <CCol md="4">
+                     
+                      <CCol md="5">
                         <CInputGroup className="input-prepend">
                           <CInput size="100" type="text" placeholder="search" onChange={handlerChange} value={search} name='search' />
                           <CInputGroupAppend>
-                            <CButton color="info" onClick={submitValue}>Search</CButton>
+                            <CButton color="info" onClick={submitValue}>검색</CButton>
                           </CInputGroupAppend>
                         </CInputGroup>
                       </CCol>
                     </CRow>
                   </CCol>
                 </CRow>
+              <CRow>
+              <CCol className="folderTree" md={2}>
+                {tree[0].children.map((item,index)=>{
+                  return <Tree content={item.name} type={<span className="folderimage">📁</span>} open/>
+                })}
+                
+                
+
+                <Tree content="./etc" type={<span className="folderimage">📁</span>} open>
+                  <Tree content="hello" type={<span className="folderimage">📁</span>} />
+                  <Tree content="subtree with children" >
+                    <Tree content="hello" />
+                    <Tree content="sub-subtree with children">
+                      <Tree content="child 1" style={{ color: '#63b1de' }} />
+                      <Tree content="child 2" style={{ color: '#63b1de' }} />
+                      <Tree content="child 3" style={{ color: '#63b1de' }} />
+                    </Tree>
+                    <Tree content="hello" />
+                  </Tree>
+                  <Tree content="hello"/>
+                  <Tree content="hello"/>
+                </Tree>
+                <Tree content="./bash" type={<span value="dlrkdus" className="folderimage">📁</span>} open>
+                  <Tree content="hello" type={<span className="folderimage">📁</span>} />
+                  <Tree content="subtree with children" >
+                    <Tree content="hello" />
+                    <Tree content="sub-subtree with children">
+                      <button content="child 1.png" style={{ color: '#63b1de' }} />
+                      <Tree content="child 2" style={{ color: '#63b1de' }} />
+                      <Tree content="child 3" style={{ color: '#63b1de' }} />
+                      <Tree content="child 3" type={<p content="hello" ></p>}></Tree>
+          
+                    </Tree>
+                    <button content="hello" />
+                  </Tree>
+                  <button content="hello" onClick={alertSubmit}>hello</button>
+                  <Tree content="hello"/>
+                </Tree>
+              </CCol>
+              <CCol className="folderTree" md={10}>
+                
+                <h1>history</h1>
+                <section>
+                  <CRow>
+                    <div className="attckGrouptLegend"/>
+                    <div><Clock/> 파일 위치/</div>
+                  </CRow>
+                  <ul>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                  </ul>
+                </section>
+                <section>
+                  <CRow>
+                    <div className="attckGrouptLegend"/>
+                    <div><Clock/> 파일 위치/</div>
+                  </CRow>
+                  <ul>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                  </ul>
+                </section>
+                <section>
+                  <CRow>
+                    <div className="attckGrouptLegend"/>
+                    <div><Clock/> 파일 위치/</div>
+                  </CRow>
+                  <ul>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                    <li>safasdf</li>
+                  </ul>
+                </section>
+              </CCol>
+              </CRow>
+              <br/>
                 <CDataTable
                   items={configDatas}
                   fields={fields}

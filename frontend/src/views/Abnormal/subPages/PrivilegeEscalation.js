@@ -24,11 +24,14 @@ function PrivilegeEscalation() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [privilegeDatas, setPrivilegeDatas] = useState(false);
- // const [currentPage, setCurrentPage] = useState(1)
+  const [pageNumbers, setpageNumbers] = useState(1)
+  const [logCount, setlogCount] = useState(null);
   
   //host Ip받아오는 부분
   const [hostDatas, setHostDatas] = useState(null);
   const [firsthostDatas, setFirHostDatas] = useState(null);
+
+
 
   //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
   useEffect(()=>{
@@ -45,7 +48,6 @@ function PrivilegeEscalation() {
       }catch(e){
         //에러시 flag를 달아서 이동
         setError(e);
-        console.log(e)
       }
         //로딩 실패시 flag를 달아서 이동
         setLoading(false);
@@ -75,24 +77,24 @@ function PrivilegeEscalation() {
   //검색 버튼 및 Value값 넘겨주는 부분
   function submitValue(){
     if(!selectHostIp){
-      tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas)
+      tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas, pageNumbers)
     }else{
-      tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
+      tableAxiosData(startDate, endDate, selectColum, search, selectHostIp, pageNumbers)
     }
   };
 
   const fields = [
-    {key:'time', _style:{width:'10%'}, label:"TIME"},
+    {key:'time', _style:{width:'20%'}, label:"TIME"},
     {key:'body_host_ip', _style:{width:'10%'}, label:"HOST IP"},
     {key:'body_key', _style:{width:'10%'}, label:"Mitter T Value"},
     {key:'header_message:type', _style:{width:'10%'}, label:"Audit Type"}, 
     {key:'body_ses', _style:{width:'10%'}, label:"Session"},
     {key:'body_uid', _style:{width:'10%'}, label:"Uid"},
-    {key:'header_msg', _style:{width:'40%'}, label:"Messages"},
+    {key:'header_msg', _style:{width:'30%'}, label:"Messages"},
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
-  const tableAxiosData = async(startDate, endDate, selectColum, search, selectHostIp) => {
+  const tableAxiosData = async(startDate, endDate, selectColum, search, selectHostIp, pageNumbers) => {
     try{
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
@@ -102,23 +104,26 @@ function PrivilegeEscalation() {
           startDate : startDate,
           endDate   : endDate,
           hostIp    : selectHostIp,
-          pageNumber: 1,
-          pageSize  : 50,
+          pageNumber: pageNumbers,
+          pageSize  : 1000,
           phases    : "privilege-escalation",
           searchType: selectColum,
           searchWord: search, 
         }
       )
-      setPrivilegeDatas(response.data.data);
  
-      if(response.data.data.length>1000){
-        alert('검색하신 데이터의 양이 많습니다. 검색 범위를 줄여주십시오.')
+      if(pageNumbers>1){
+        for(let i =0; i<1000; i++){
+          privilegeDatas.push(response.data.data[i])
+          setlogCount(privilegeDatas.length)
+        }
+      }else{
+        setlogCount(response.data.data.length)
+        setPrivilegeDatas(response.data.data);
       }
     }catch(e){
       //에러시 flag를 달아서 이동
       setError(e);
-      console.log(e)
-    
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
@@ -135,7 +140,11 @@ function PrivilegeEscalation() {
         <CCol>
           <CCard>
             <CCardBody>
-              <Clock/>
+              <CRow>
+                <CCol> <Clock/></CCol>
+                <CCol><h5 className="logCount">Total Log Count : {logCount}</h5></CCol>
+              </CRow>
+             
                 <CRow className="searchtoolbar"> 
                   <CCol md="2">
                     <CFormGroup row>
@@ -177,7 +186,7 @@ function PrivilegeEscalation() {
                         <CInputGroup className="input-prepend">
                           <CInput size="100" type="text" placeholder="search" onChange={handlerChange} value={search} name='search' />
                           <CInputGroupAppend>
-                            <CButton color="info" onClick={submitValue}>Search</CButton>
+                            <CButton color="info" onClick={submitValue}>검색</CButton>
                           </CInputGroupAppend>
                         </CInputGroup>
                       </CCol>
@@ -190,7 +199,14 @@ function PrivilegeEscalation() {
                     itemsPerPage= {10}
                     hover
                     pagination
+                    onPageChange={(index) => {
+                      if(index === privilegeDatas.length/10){
+                        setpageNumbers(pageNumbers+1)
+                        submitValue()
+                      }
+                    }}
                   />
+                  
             </CCardBody>
           </CCard>
         </CCol>

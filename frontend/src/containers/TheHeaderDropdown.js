@@ -16,12 +16,14 @@ const TheHeaderDropdown = () => {
       className="c-header-nav-items mx-2"
       direction="down"
     >
+    
       <CDropdownToggle className="c-header-nav-link" caret={false}>
         <div className="c-avatar">
           <CImg
             src={'avatars/6.png'}
             className="c-avatar-img"
             alt="admin@bootstrapmaster.com"
+                       
           />
         </div>
       </CDropdownToggle>
@@ -34,8 +36,8 @@ const TheHeaderDropdown = () => {
         >
           <strong>사용자 이름</strong>
         </CDropdownItem>
-        <CDropdownItem to="/loginPage">
-          <CIcon name="cil-lock-locked" className="mfe-2" />
+        <CDropdownItem to="/register">
+          <CIcon name="cil-lock-locked" className="mfe-2"/>
           로그아웃
         </CDropdownItem>
       </CDropdownMenu>

@@ -5,21 +5,16 @@ import { getStyle, hexToRgba } from '@coreui/utils'
 const brandInfo = getStyle('info') || '#20a8d8'
 
 
-const ConfigCharts = attributes => {
-  const random = (min, max)=>{
-    return Math.floor(Math.random() * (max - min + 1) + min)
-  }
+const MainChartExample = attributes => {
 
   const defaultDatasets = (()=>{
-    let elements = 7
-    const data1 = []
+
+    const data1 = [{key:"월", count:123},1233,123,1,123,122]
     
-    for (let i = 0; i <= elements; i++) {
-      data1.push(random(50, 200)) //data값을 지정 해주면 받아서 axios로 넣기 
-    }
+   
     return [
       {
-        label: '형상관리 일주일 추이',
+        label: 'configWeekData',
         backgroundColor: hexToRgba(brandInfo, 10),
         borderColor: brandInfo,
         pointHoverBackgroundColor: brandInfo,
@@ -38,14 +33,14 @@ const ConfigCharts = attributes => {
         scales: {
           xAxes: [{
             gridLines: {
-              drawOnChartArea: true
+              drawOnChartArea: false
             }
           }],
           yAxes: [{
             ticks: {
               beginAtZero: true,
+              maxTicksLimit: 5,
               stepSize: Math.ceil(250 / 5),
-              max: 250
             },
             gridLines: {
               display: true
@@ -76,4 +71,4 @@ const ConfigCharts = attributes => {
 }
 
 
-export default ConfigCharts
+export default MainChartExample

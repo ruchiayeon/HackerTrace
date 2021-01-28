@@ -9,7 +9,7 @@ export class Clock extends Component {
     render() {
         return (
             <>
-                <h6>{this.state.date.toLocaleTimeString()}</h6>
+                <h6>{this.state.date.toDateString()} {this.state.date.toLocaleTimeString()}</h6>
             </>
         )
     }

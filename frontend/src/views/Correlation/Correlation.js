@@ -16,8 +16,7 @@ import {
 
 //import MatrixTable from './MatrixTable'
 import Loading from '../pages/Loading/Loading'
-
-
+import Page404 from '../pages/page404/Page404';
 
 
 function Correlation() {
@@ -30,6 +29,12 @@ function Correlation() {
   //host Ip받아오는 부분
   const [hostDatas, setHostDatas] = useState(null);
   const [firsthostDatas, setFirHostDatas] = useState(null);
+
+   //session / uid 받아오는 부분
+   const [uidDatas, setUidDatas] = useState([null]);
+   const [frisuidDatas, setFirsUidDatas] = useState([null]);
+   const [sessDatas, setSessDatas] = useState([null]);
+   const [frissessDatas, setFirsSessDatas] = useState([null]);
 
   //matrix받아오는 부분
   const [attackMatrixs, setMiterData] = useState(null);
@@ -69,36 +74,56 @@ function Correlation() {
       hostResData();
   }, []);
 
-  const[inputs, setInputs] = useState({
+  const [inputs, setInputs] = useState({
     startDate:'2021-01-01',
     endDate:'2021-01-30',
     selectHostColum: "",
-    selectUIDColum:'',
-    selectSESSColum:''
+    selectSESSColum : ""
   });
 
-  const { startDate, endDate, selectHostColum, selectUIDColum, selectSESSColum} = inputs;
+  const [deepinputs, setDeepInputs] = useState({
+    selectUIDColum : ""
+  });
+  
+  const { selectUIDColum} = deepinputs;
+  const { startDate, endDate, selectHostColum, selectSESSColum} = inputs;
 
   function handlerChange(e) {
     const { value, name } = e.target;  
-      setInputs({
-        ...inputs,
-        [name] : value
-      });
+    setInputs({
+      ...inputs,
+      [name] : value
+    });
   };
 
-  //session / uid 받아오는 부분
-  const [uidDatas, setUidDatas] = useState([null]);
-  const [frisuidDatas, setFirsUidDatas] = useState([null]);
-  const [sessDatas, setSessDatas] = useState([null]);
-  const [frissessDatas, setFirsSessDatas] = useState([null]);
+  function deephandlerChange(e) {
+    const { value, name } = e.target;  
+    const changeValue = e.target.value
+    sessubmitValue(changeValue);
+    setDeepInputs({
+      ...deepinputs,
+      [name] : value
+    });
+  };
+  
+  
+ //값이 없는경우 확인하는 조건문
+  function submitValue(){
+    if(!selectHostColum){ 
+      uidResDatas(startDate, endDate, firsthostDatas);
+    }else{
+      uidResDatas(startDate, endDate, selectHostColum);
+    }
+  };
 
-  const sessUidResDatas = async(startDate, endDate, selectHostColum) => {
+ 
+
+  const uidResDatas = async(startDate, endDate, selectHostColum) => {
     try{
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
-          'http://210.114.18.175:8080/ht/mitre/condition',
+          'http://210.114.18.175:8080/ht/mitre/condition/uid',
           {
             endDate   : endDate,
             startDate : startDate,
@@ -108,20 +133,13 @@ function Correlation() {
       //받아온 값을 setUidDatas/setSessDatas에 넣어준다.
       if(response.data.data.uid_list.length === 0){
         alert("UID가 존재하지 않습니다.")
-        setUidDatas(["UID가 존재하지 않습니다."])
+        setUidDatas([null])
+        setSessDatas([null])
       }else{
         setUidDatas(response.data.data.uid_list);
         setFirsUidDatas(response.data.data.uid_list[0]);
       }
-      if(response.data.data.ses_list.length === 0){
-        alert("Session이 존재하지 않습니다.")
-        setSessDatas(["UID가 존재하지 않습니다."])
-      }else{
-        setSessDatas(response.data.data.ses_list);
-        setFirsSessDatas(response.data.data.ses_list[0]);
-      }
-        
-
+      
     }catch(e){
       //에러시 flag를 달아서 이동
       setError(e);
@@ -131,14 +149,55 @@ function Correlation() {
     setLoading(false);
   };
   
-    //값이 없는경우 확인하는 조건문
-    function submitValue(){
-      if(!selectHostColum){ 
-        sessUidResDatas(startDate, endDate, firsthostDatas);
+  //값이 없는경우 확인하는 조건문
+  function sessubmitValue(selectUIDColum){
+    if(!selectHostColum){ 
+      if(!selectUIDColum){
+         sesResDatas(startDate, endDate, firsthostDatas, frisuidDatas);
       }else{
-        sessUidResDatas(startDate, endDate, selectHostColum);
+        sesResDatas(startDate, endDate, firsthostDatas, selectUIDColum);
       }
-    };
+    }else{
+      if(!selectUIDColum){
+        sesResDatas(startDate, endDate, selectHostColum, frisuidDatas);
+     }else{
+       sesResDatas(startDate, endDate, selectHostColum, selectUIDColum);
+     }
+    }
+  };
+
+  const sesResDatas = async(startDate, endDate, selectHostColum, selectUIDColum) => {
+    console.log(startDate, endDate, selectHostColum, selectUIDColum)
+    try{
+      setLoading(true);
+      //axios를 이용하여 해당 url에서 값을 받아온다.
+      const response = await axios.post(
+          'http://210.114.18.175:8080/ht/mitre/condition/ses',
+          {
+            endDate   : endDate,
+            startDate : startDate,
+            hostIp    : selectHostColum,
+            uid       : selectUIDColum
+          }
+      )
+      //받아온 값을 setUidDatas/setSessDatas에 넣어준다.
+      if(response.data.data.ses_list.length === 0){
+        alert("UID가 존재하지 않습니다.")
+        setSessDatas(["UID가 존재하지 않습니다."])
+      }else{
+        setSessDatas(response.data.data.ses_list);
+        setFirsSessDatas(response.data.data.ses_list[0]);
+      }
+      
+    }catch(e){
+      //에러시 flag를 달아서 이동
+      setError(e);
+      console.log(e)
+    }
+    //로딩 실패시 flag를 달아서 이동
+    setLoading(false);
+  };
+
   
   //<table 검색 파트>
 
@@ -153,13 +212,11 @@ function Correlation() {
   const [matchAttGroupDatas, setMatchAttGroupDatas] = useState([
     {attack_group_name:"",matching_rate:"%"},
     {attack_group_name:"",matching_rate:"%"},
-    {attack_group_name:"",matching_rate:"% "}
+    {attack_group_name:"",matching_rate:"%"}
   ]);
 
   //Table Search Axios 넣는 부분.
   const corrResData = async(startDate, endDate, selectHostColum, selectUIDColum, selectSESSColum) => {
-    resetMattrix();
-
     try{
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
@@ -172,11 +229,12 @@ function Correlation() {
           uid       : selectUIDColum 
         }
       )
-      
+
       //받아온 값을 setCorrData 넣어준다.
       if(response.data.data[1].user_audit_match_t.length === 0){
         alert("검출된 사용자 Mattix T Value 내역이 없습니다.")
         setCorrData(null)
+        resetMattrix();
       }else{
         setCorrData(response.data.data[1].user_audit_match_t);
       }
@@ -184,46 +242,64 @@ function Correlation() {
       if(response.data.data[0].attack_group_matching.length === 0){
         alert("검출된 유사 공격 그룹 내역이 없습니다.")
         setMatchAttGroupDatas([
-          {attack_group_name:"없음",matching_rate:"%"},
-          {attack_group_name:"없음",matching_rate:"%"},
-          {attack_group_name:"없음",matching_rate:"%"}
+          {attack_group_name:"일치대상 없음", matching_rate:"%"},
+          {attack_group_name:"일치대상 없음", matching_rate:"%"},
+          {attack_group_name:"일치대상 없음", matching_rate:"%"}
         ])
+        resetMattrix();
       }else{
-        console.log(response.data.data[0]);
         setMatchAttGroupDatas(response.data.data[0].attack_group_matching)
       }
+      
     }catch(e){
       //에러시 flag를 달아서 이동
       setError(e)
+      console.log(e)
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
     //값 넘기는 부분 작성 --> matrixTable쪽으로.
-    //addTClass()
   };
 
   //input selector를 따로 선택 안해도 받아오는 부분
   function submitTableValue(){
     if(frisuidDatas[0] === null || frissessDatas[0] === null){
       alert("상관분석 데이터가 존재 하지 않습니다.")
-    }else{  
-      if(!selectUIDColum || selectUIDColum === frisuidDatas){
-        if(!selectSESSColum||selectSESSColum === frissessDatas){
-          corrResData(startDate, endDate, selectHostColum, frisuidDatas, frissessDatas);
+    }else{ 
+      if(!selectHostColum || selectHostColum === firsthostDatas){
+        if(!selectUIDColum || selectUIDColum === frisuidDatas){
+          if(!selectSESSColum || selectSESSColum === frissessDatas){
+            corrResData(startDate, endDate, firsthostDatas, frisuidDatas, frissessDatas);
+          }else{
+            corrResData(startDate, endDate, firsthostDatas, frisuidDatas, selectSESSColum);
+          }
         }else{
-          corrResData(startDate, endDate, selectHostColum, frisuidDatas, selectSESSColum);
+          if(!selectSESSColum || selectSESSColum === frissessDatas){
+            corrResData(startDate, endDate, firsthostDatas, selectUIDColum, frissessDatas);
+          }else{
+            corrResData(startDate, endDate, firsthostDatas, selectUIDColum, selectSESSColum);
+          }
         }
-      }else {
-        if(selectSESSColum === frissessDatas){
-          corrResData(startDate, endDate, selectHostColum, selectUIDColum, frissessDatas);
+      }else{
+        if(!selectUIDColum || selectUIDColum === frisuidDatas){
+          if(!selectSESSColum || selectSESSColum === frissessDatas){
+            corrResData(startDate, endDate, selectHostColum, frisuidDatas, frissessDatas);
+          }else{
+            corrResData(startDate, endDate, selectHostColum, frisuidDatas, selectSESSColum);
+          }
         }else{
-          corrResData(startDate, endDate, selectHostColum, selectUIDColum, selectSESSColum);
+          if(!selectSESSColum || selectSESSColum === frissessDatas){
+            corrResData(startDate, endDate, selectHostColum, selectUIDColum, frissessDatas);
+          }else{
+            corrResData(startDate, endDate, selectHostColum, selectUIDColum, selectSESSColum);
+          }
         }
       }
     }
   };
-//<matrix-table> --> 나중에 쪼개기 
-    //Att&CK map info
+
+  //Matrix-table --> 나중에 쪼개기 
+  //Att&CK map info
   const matrixResData = async() => {
     try{
         //요청이 왔을때 원래 있던 값을 초기화해준다.
@@ -324,7 +400,7 @@ function Correlation() {
   }
 
   //사용자 검색결과 보여주기
-  function resultMatrix(){
+  async function resultMatrix(){
     resetMattrix();
     //corrDatas 확인해서 있으면 동작
     const corrSpotChange = corrDatas;
@@ -463,12 +539,11 @@ function Correlation() {
   function changeColors(){
 
     const AttSpotChange1 = matchAttGroupDatas[0].attack_group_external_ids;
-
+    
     if(!AttSpotChange1 || AttSpotChange1 ==='n'){
       alert('아래 검색 조건을 먼저 선택해주세요.')
     }else{
       resultMatrix();
-
       //Initial-access
       initialAccess.forEach(function(element) {
         AttSpotChange1.forEach(function(items){
@@ -927,7 +1002,7 @@ function Correlation() {
  
   //로딩관련 예외처리를 해준다. --> 페이지 만들어졌을때 변경 하기 
   if(loading) return <Loading/>;
-  if(error) return alert('상관분석을 위한 데이터가 없습니다.');
+  if(error) return <Page404/>
   if(!attackMatrixs) return matrixResData();
 
   //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
@@ -939,6 +1014,22 @@ function Correlation() {
         <CCol>
           <CCard>
             <CCardBody>
+               {/*사용자와 유사한 공격그룹을 보여주는 section*/}
+               <h4 className="posiab">ATT&CK Mattix Table</h4>
+               <section className="corrlresult col-md-4">
+               <h6>TOP 3 유사공격 그룹</h6>
+                <CRow >
+                  <CCol className="attgroupResult">
+                    <CButton onClick={changeColors}>1위 :<br/> {matchAttGroupDatas[0].attack_group_name}[{matchAttGroupDatas[0].matching_rate}]</CButton>
+                  </CCol>
+                  <CCol  className="attgroupResult">
+                    <CButton onClick={changeColors1}>2위 :<br/> {matchAttGroupDatas[1].attack_group_name}[{matchAttGroupDatas[1].matching_rate}]</CButton>
+                  </CCol>
+                  <CCol className="attgroupResult">
+                    <CButton onClick={changeColors2}>3위 :<br/> {matchAttGroupDatas[2].attack_group_name}[{matchAttGroupDatas[2].matching_rate}]</CButton>
+                  </CCol>
+                  </CRow>
+               </section>
               <CRow className='legend'>
                 <CPopover header='사용자공격 유형' content="사용자의 검색 결과 검출된 Mattrix T Value를 보여준다." >
                   <div className="LegendRow" onClick={resultMatrix}>
@@ -961,14 +1052,14 @@ function Correlation() {
                     </CRow>
                   </div>  
                 </CPopover>
-  
               </CRow>
+
               <CRow>
                  {/*Attack Mattrix tempalte */}
-                <CCol md={10}>
+                <CCol md={12}>
                   <div className="matrixtotal">
                     <CRow> 
-                      <CCol sm={2} className= {initcolor} value={initsearched}>
+                      <CCol className= {initcolor} value={initsearched}>
                         <section className="title">
                           <h5 value="initial-access">Initial-access</h5>
                           <p>초기 접근</p>
@@ -977,7 +1068,7 @@ function Correlation() {
                           return <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
                         })}
                       </CCol>
-                      <CCol sm={2} className={execolor} value={exesearched}>
+                      <CCol className={execolor} value={exesearched}>
                         <section className="title">
                           <h5 value="execution">Execution</h5>
                           <p>실행</p>
@@ -986,7 +1077,7 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
                         })}
                       </CCol>
-                      <CCol sm={2} className={persiscolor} value={persissearched}>
+                      <CCol className={persiscolor} value={persissearched}>
                         <section className="title"> 
                           <h5 value="persistence">Persistence</h5>
                           <p>지속성 행위</p>
@@ -995,7 +1086,7 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
                         })}
                       </CCol>
-                      <CCol sm={2} className={preEcolor} value={presearched}>
+                      <CCol className={preEcolor} value={presearched}>
                         <section className="title">
                           <h5>Privilege Escalation</h5>
                           <p>권한 상승 행위</p>
@@ -1004,7 +1095,7 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
                         })}
                       </CCol>
-                      <CCol sm={2} className={defencolor} value={defensearched}>
+                      <CCol className={defencolor} value={defensearched}>
                         <section className="title">
                           <h5>Defense Evasion</h5>
                           <p>방어 회피</p>
@@ -1013,7 +1104,7 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name}</div></CPopover>
                         })}
                       </CCol>
-                      <CCol sm={2} className={credicolor} value={credisearched}>
+                      <CCol className={credicolor} value={credisearched}>
                         <section className="title">
                           <h5>Credential Access</h5>
                           <p>자격증명 접근</p>
@@ -1022,7 +1113,7 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
                         })}
                       </CCol>    
-                      <CCol sm={2} className={discocolor} value={discosearched}>
+                      <CCol className={discocolor} value={discosearched}>
                         <section className="title">
                           <h5>Discovery</h5>
                           <p>뭐라고 이야기하지</p>
@@ -1031,7 +1122,7 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
                         })}
                       </CCol>
-                      <CCol sm={2} className={collcolor} value={collsearched}>
+                      <CCol className={collcolor} value={collsearched}>
                         <section className="title">
                           <h5>Collection</h5>
                           <p>수집행위</p>
@@ -1040,7 +1131,7 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
                         })}
                       </CCol>
-                      <CCol sm={2} className={commcolor} value={commsearched}>
+                      <CCol className={commcolor} value={commsearched}>
                         <section className="title">
                           <h5>Command and Control</h5>
                           <p>CLI 접근 및 조작행위</p>
@@ -1049,7 +1140,7 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
                         })}
                       </CCol>
-                      <CCol sm={2} className={exfcolor} value={exfsearched}>
+                      <CCol className={exfcolor} value={exfsearched}>
                         <section className="title">
                           <h5>Exfiltration</h5>
                           <p>유출 행위</p>
@@ -1058,7 +1149,7 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
                         })}
                       </CCol>
-                      <CCol sm={2} className= {impaccolor} value={impacsearched}>
+                      <CCol className= {impaccolor} value={impacsearched}>
                         <section className="title">
                           <h5>Impact</h5>
                           <p>뭐라고 할까..</p>
@@ -1067,52 +1158,10 @@ function Correlation() {
                           return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name}</div></CPopover>
                         })}
                       </CCol>              
-                      </CRow>
-
+                    </CRow>
                   </div>
                 </CCol>
-                {/*사용자와 유사한 공격그룹을 보여주는 section*/}
-                <CCol className="attackGroupBtn" md={2}>
-                  <h5>TOP 3 유사한 공격그룹 </h5>
-                  <section>
-                    <h5>1위 : {matchAttGroupDatas[0].attack_group_name}[{matchAttGroupDatas[0].matching_rate}]</h5>
-                    <p>공격 유형</p>
-                    <div>
-                      <ul>
-                        {matchAttGroupDatas[0].attack_group_external_ids}
-                      </ul>   
-                    </div>
-                    <div>
-                      <CButton onClick={changeColors} color="info">확인하기</CButton><br/>
-                    </div>
-                  </section>
-                  <hr/>
-                  <section>
-                    <h5>2위 : {matchAttGroupDatas[1].attack_group_name}[{matchAttGroupDatas[1].matching_rate}]</h5>
-                    <p>공격 유형</p>
-                    <div>
-                      <ul>
-                        {matchAttGroupDatas[1].attack_group_external_ids}
-                      </ul>   
-                    </div>
-                    <div>
-                      <CButton onClick={changeColors1} color="info">확인하기</CButton><br/>
-                    </div>
-                  </section>
-                  <hr/>
-                  <section>
-                    <h5>3위 : {matchAttGroupDatas[2].attack_group_name}[{matchAttGroupDatas[2].matching_rate}]</h5>
-                    <p>공격 유형</p>
-                    <div>
-                      <ul>
-                        {matchAttGroupDatas[2].attack_group_external_ids}
-                      </ul>   
-                    </div>
-                    <div>
-                      <CButton onClick={changeColors2} color="info">확인하기</CButton><br/>
-                    </div>
-                  </section>
-                </CCol>
+
               </CRow>
               <hr className="tableTopMargin"/>
                {/*상관분석 관련 검색하는 테이블을 표기한다. Axios쪽에 넘겨야하는 Value가 useEffect에 정의되어있다. 확인 필.*/}
@@ -1148,7 +1197,7 @@ function Correlation() {
                     <CRow>
                       <CCol md="4"sm="3">
                       <CFormGroup>
-                        <CSelect custom name="selectUIDColum" onChange={handlerChange} value={selectUIDColum} id="selectUIDColum">
+                        <CSelect custom name="selectUIDColum" onChange={deephandlerChange} value={selectUIDColum} id="selectUIDColum">
                           {uidDatas.map((item, index) => {
                             return <option className='selectUIDColum' key={index} value={item}>UID : {item}</option>
                           })}
