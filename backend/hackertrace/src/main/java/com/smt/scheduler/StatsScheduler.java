@@ -27,7 +27,7 @@ public class StatsScheduler {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
-	@Scheduled(cron = "${fixed.delay.string.audit.status}") 
+//	@Scheduled(cron = "${fixed.delay.string.audit.status}") 
 	public void excuteCountMitreAttackAuditLog() {
 		
 		try {
@@ -65,7 +65,7 @@ public class StatsScheduler {
 		
 	}
 	
-	@Scheduled(cron = "${fixed.delay.string.config.status}") 
+//	@Scheduled(cron = "${fixed.delay.string.config.status}") 
 	public void excuteCountConfigModify() {
 		
 		try {

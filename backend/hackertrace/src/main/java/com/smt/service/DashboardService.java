@@ -86,6 +86,31 @@ public class DashboardService {
 		return dao.getConfigModifyCountWeek(hostIp, "config");
 	}
 	
+	public List<Document> getConfigModifyCount(String hostIp) throws Exception {
+
+		List<Document> docList = new ArrayList<>();
+
+		Document todayCounts = new Document();
+		Document weekCounts = new Document();
+		Document monthCounts = new Document();
+		
+		todayCounts = dao.getConfigModifyCount(hostIp, "config", "today");
+		todayCounts.put("term", "TODAY");
+		
+		weekCounts = dao.getConfigModifyCount(hostIp, "config", "week");
+		weekCounts.put("term", "WEEK");
+		
+		monthCounts = dao.getConfigModifyCount(hostIp, "config", "month");
+		monthCounts.put("term", "MONTH");
+		
+		docList.add(todayCounts == null ? new Document() : todayCounts);
+		docList.add(weekCounts == null ? new Document() : weekCounts);
+		docList.add(monthCounts == null ? new Document() : monthCounts);
+		
+		return docList;
+		
+	}
+	
 	
 
 }

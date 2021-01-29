@@ -80,10 +80,13 @@ public class DashboardDAO {
 		
 		System.out.println(findQuery.toJson());
 		if((int)statsCol.countDocuments(findQuery)>0) {
+			
 			resultList = statsCol.find(findQuery).into(new ArrayList<>());
 	
 			result.put("updateTime", resultList.get(0).get("updateTime"));
+			
 			for (KillChainPhases phases : KillChainPhases.values()) {
+				  //TODO : change mongodb query
 					int sum = 0;
 					for(Document doc : resultList) {
 						if(doc.containsKey(phases.getName())){
@@ -135,6 +138,9 @@ public class DashboardDAO {
 					updateTime = countDoc.getString("updateTime");
 				}
 
+				if(updateTime == "")
+					updateTime = "00-00-00 00:00:00";
+				
 				Document doc = new Document();
 				doc.put(DateUtil.getDateDay(beforeDate), String.valueOf(count));
 				doc.put("date", beforeDate);
@@ -146,6 +152,47 @@ public class DashboardDAO {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return result;
+	}
+	
+	public Document getConfigModifyCount(String hostIp, String type, String term) {
+		
+		MongoCollection<Document> statsCol = mongoTemplate.getCollection("DB_STATS");
+		Document result = new Document();
+		
+		String endDate = DateUtil.getTodayDate();
+		String startDate = "";
+		if(term.equalsIgnoreCase("today")) //오늘
+			startDate = endDate;
+		else if(term.equalsIgnoreCase("week")) //일주일 전 
+			startDate = DateUtil.beforDateDayUnit(endDate, "7");
+		else //1달전
+			startDate = DateUtil.beforDateMonthUnit(endDate, "1"); 
+		
+		try {
+			
+			BasicDBObject findQuery = new BasicDBObject();
+			findQuery.put("hostIp", hostIp);
+			findQuery.put("type", type);
+			findQuery.put("createDate", new BasicDBObject("$gte", startDate).append( "$lte" , endDate ) );
+			System.out.println(findQuery.toJson());
+
+			List<Document> countList = statsCol.find(findQuery).into(new ArrayList<>());
+			Integer sum = 0;
+			String updateTime = "";
+			
+			for(Document doc : countList) {
+				sum += doc.getInteger("count");
+				updateTime = (String)doc.get("updateTime");
+			}
+			
+			result.put("count", String.valueOf(sum));
+			result.put("updateTime", updateTime);
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 		return result;
 	}
 

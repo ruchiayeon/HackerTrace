@@ -1,5 +1,6 @@
 package com.smt.vo;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -20,9 +21,11 @@ public class SearchListVO extends PagingVO{
 	@ApiModelProperty(value="검색 마지막일", example = "2021-01-13")
 	private String endDate;
 	
+	@NotNull
 	@ApiModelProperty(value="검색 유형", example = "uid")
 	private String searchType;
 	
+	@NotNull
 	@ApiModelProperty(value="검색어", example = "0")
 	private String searchWord;
 	

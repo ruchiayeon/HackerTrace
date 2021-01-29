@@ -25,7 +25,7 @@ public class AuditLogScheduler {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	
-	@Scheduled(cron = "${fixed.delay.string.audit.uid.ses}") 
+//	@Scheduled(cron = "${fixed.delay.string.audit.uid.ses}") 
 	public void excuteAggregateUid() throws InterruptedException {
 		
 		try {

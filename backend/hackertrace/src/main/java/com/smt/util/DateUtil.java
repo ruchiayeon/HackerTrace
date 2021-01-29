@@ -62,6 +62,13 @@ public class DateUtil {
 		return dateFormatter.format(time.getTime());
 	}
 	
+	public static String getCurrentMilleTime() {
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		
+		Calendar time = Calendar.getInstance();
+		return dateFormatter.format(time.getTime());
+	}
+	
 	public static String getDateDay(String date) throws Exception {
 		 
 	     

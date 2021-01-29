@@ -14,11 +14,13 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.smt.util.DateUtil;
 import com.smt.util.MogoDBUtil;
+import com.smt.vo.ConfigLogContentsVO;
 import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
 import com.smt.vo.ConfigLogSessionsVO;
 import com.smt.vo.ConfigLogVO;
-import com.smt.vo.ConfigOriginVO;
+import com.smt.vo.DirectoryTopVO;
+import com.smt.vo.DirectoryVO;
 
 @Repository
 public class ConfigLogDAO {
@@ -51,15 +53,50 @@ public class ConfigLogDAO {
 		mongoTemplate.insert(vo, "CONFIG_FILES_LOGS");
 	}
 	
-	public List<Document> selectConfigOriginFilePath(){
-		MongoCollection<Document> configFilesOriginListCol = mongoTemplate.getCollection("CONFIG_FILES_ORIGIN");
+	public void insertConfigLogDirectory(DirectoryVO vo) {
+		mongoTemplate.insert(vo, "CONFIG_FILE_DIRECTORY");
+	}
+	
+	public List<Document> selectConfigLogDirectory(DirectoryVO vo) {
+		MongoCollection<Document> configFileDirectoryCol = mongoTemplate.getCollection("CONFIG_FILE_DIRECTORY");
+		BasicDBObject findQuery = new BasicDBObject();
+		findQuery.put("hostIp", vo.getHostIp());
+		findQuery.put("filePath", vo.getFilePath());
+		return configFileDirectoryCol.find(findQuery).into(new ArrayList<>());
+	}
+	
+	public void updateConfigLogDirctoryFileNames(DirectoryVO vo, Document doc) {
 		
-		//GROUP BY
-		List<BasicDBObject> filePathQueryList = new ArrayList<BasicDBObject>();
-		BasicDBObject groupFilePathQuery = new BasicDBObject("$group", new BasicDBObject("_id", "$filePath"));
-		filePathQueryList.add(groupFilePathQuery);
+		MongoCollection<Document> configFileDirectoryCol = mongoTemplate.getCollection("CONFIG_FILE_DIRECTORY");
+		BasicDBObject findQuery = new BasicDBObject();
+		findQuery.put("hostIp", vo.getHostIp());
+		findQuery.put("filePath", vo.getFilePath());
+		configFileDirectoryCol.updateOne(findQuery, new Document("$set", doc) );
 		
-		return configFilesOriginListCol.aggregate(filePathQueryList).into(new ArrayList<>());
+	}
+	
+	public List<Document> selectConfigFileDirectory(DirectoryTopVO vo){
+		MongoCollection<Document> configFilesDirectoryListCol = mongoTemplate.getCollection("CONFIG_FILE_DIRECTORY");
+		BasicDBObject findQuery = new BasicDBObject();
+		findQuery.put("hostIp", vo.getHostIp());
+		findQuery.put("filePath", new BasicDBObject("$regex", vo.getTopDirectory()+"/*"));
+		
+		List<Document> dirListDoc = configFilesDirectoryListCol.find(findQuery).into(new ArrayList<>());
+		
+		return dirListDoc;
+	}
+	
+	public List<String> getFileNamesByFilePath(DirectoryTopVO vo){
+		MongoCollection<Document> configFilesDirectoryListCol = mongoTemplate.getCollection("CONFIG_FILE_DIRECTORY");
+		BasicDBObject findQuery = new BasicDBObject();
+		findQuery.put("hostIp", vo.getHostIp());
+		findQuery.put("filePath", vo.getTopDirectory());
+		
+		List<String> fileNameList = new ArrayList<String>();
+		List<Document> docList = configFilesDirectoryListCol.find(findQuery).into(new ArrayList<>());
+		if(docList.size()>0)
+			fileNameList = (List<String>) docList.get(0).get("fileNames");
+		return fileNameList;
 	}
 	
 	public List<Document> selectConfigLogFileList(ConfigLogListVO vo){
@@ -68,17 +105,17 @@ public class ConfigLogDAO {
 		
 		BasicDBObject findQuery = new BasicDBObject();
 		findQuery.put("hostIp", vo.getHostIp());
-		findQuery.put("filePath", vo.getFilePath());
+		findQuery.put("filePath", "/home/manager/HostServer/"+vo.getHostIp()+vo.getFilePath());
+		findQuery.put("fileName", vo.getFileName());
 		
 		//LIKE query 
-		if(vo.getSearchType() != "") {
+		if(vo.getSearchType() != "" && vo.getSearchWord() !="") {
 			
 			//TODO:BUG.OR쿼리 사용 시 LIKE 쿼리 안먹힘 
 			if(vo.getSearchType().equalsIgnoreCase("ALL")) {
 				List<BasicDBObject> searchQueryList = new ArrayList<BasicDBObject>();
 				searchQueryList.add(new BasicDBObject("fileName", vo.getSearchWord()));
-				searchQueryList.add(new BasicDBObject("uid", vo.getSearchWord()));
-				searchQueryList.add(new BasicDBObject("fileCreateDate", vo.getSearchWord()));
+				searchQueryList.add(new BasicDBObject("owner", vo.getSearchWord()));
 				findQuery.put("$or", searchQueryList);
 			}else { //전체 검색 조건
 				findQuery.put(vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE));
@@ -95,32 +132,25 @@ public class ConfigLogDAO {
 				 .into(new ArrayList<>());
 	}
 	
-	public Document selectConfigOriginLogFileContents(ConfigOriginVO vo){
+	public List<Document> selectConfigOriginLogFileContents(ConfigLogContentsVO vo){
 		
-		Document result = new Document();
+		List<Document> resultList = new ArrayList<Document>();
 		
-		MongoCollection<Document> configFilesOriginListCol = mongoTemplate.getCollection("CONFIG_FILES_ORIGIN");
+		MongoCollection<Document> configFilesOriginListCol = mongoTemplate.getCollection("CONFIG_FILES_LOGS");
 		
+		BasicDBObject orgFileQuery = new BasicDBObject("_id", new ObjectId(vo.getOrgObjId()));
+		BasicDBObject logFileQuery = new BasicDBObject("_id", new ObjectId(vo.getLogObjId()));
 		
-		BasicDBObject findQuery = new BasicDBObject("hostIp", vo.getHostIp());
-		findQuery.put("uid", vo.getUid());
-		findQuery.put("filePath", vo.getFilePath());
-		findQuery.put("fileName", vo.getFileName());
+		List<Document> docOrgFileList =  configFilesOriginListCol.find(orgFileQuery).into(new ArrayList<>());
+		List<Document> docLogFileList =  configFilesOriginListCol.find(logFileQuery).into(new ArrayList<>());
 		
-		System.out.println(findQuery.toJson());
-		List<Document> docList =  configFilesOriginListCol.find(findQuery).into(new ArrayList<>());
+		if(docOrgFileList.size()>0)
+			resultList.add(docOrgFileList.get(0));
 		
-		result.put("origin_config_file_contents", docList.size()<1?"":docList.get(0));
+		if(docLogFileList.size()>0)
+			resultList.add(docLogFileList.get(0));
 		
-		MongoCollection<Document> configFilesLogListCol = mongoTemplate.getCollection("CONFIG_FILES_LOGS");
-		BasicDBObject logFindQuery = new BasicDBObject("_id", new ObjectId(vo.getLogObjId()) );
-		System.out.println(logFindQuery.toJson());
-		
-		List<Document> docLogList =  configFilesLogListCol.find(logFindQuery).into(new ArrayList<>());
-		
-		result.put("log_config_file_contents", docLogList.size()<1?"":docLogList.get(0));
-		
-		return result;
+		return resultList;
 		
 	}
 	
@@ -151,22 +181,31 @@ public class ConfigLogDAO {
 	public List<Document> selectBeforDateAuditLogByConfigLog(ConfigLogHistoryVO vo) {
 		
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
-		
+		List<Document> resultList = new ArrayList<Document>();
 	    //month단위
-	    String beforeEndDate = DateUtil.beforDateMonthUnit(vo.getFileCreateDate(), vo.getTerm());
+	    String beforeEndDate = DateUtil.beforDateDayUnit(vo.getFileCreateDate(), vo.getTerm());
 		
 		BasicDBObject findQuery = new BasicDBObject();
 		findQuery.put("body_host_ip", vo.getHostIp());
-		findQuery.put("body_uid", vo.getUid());
-		findQuery.put("body_ses", vo.getSes());
-		findQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(beforeEndDate, vo.getFileCreateDate()) );
 		
-		if(!vo.getIsAll().equalsIgnoreCase("T")) {
-			findQuery.put("body_name", Pattern.compile(vo.getFileName(), Pattern.CASE_INSENSITIVE ));
-		}
+		String startDate = beforeEndDate+" 00:00:00";
+		String endDate = vo.getFileCreateDate();
+		
+		findQuery.put("body_event_time", new BasicDBObject("$gte", startDate).append( "$lte" , endDate ) );
+		findQuery.put("body_name", "\""+vo.getFilePath()+"/"+vo.getFileName()+"\"");
 		
 		System.out.println(findQuery.toJson());
-		return audtiLogListCol.find(findQuery).into(new ArrayList<>());
+		List<Document> auditLogDocList =  audtiLogListCol.find(findQuery).into(new ArrayList<>());
+		for(Document auditDoc : auditLogDocList) {
+			BasicDBObject headerMsgQuery = new BasicDBObject("header_msg", (String)auditDoc.get("header_msg"));
+			headerMsgQuery.put("header_message:type", "SYSCALL");
+			Document resultByMsg =  audtiLogListCol.find(headerMsgQuery).into(new ArrayList<>()).get(0);
+			
+			resultList.add(auditDoc);
+			resultList.add(resultByMsg);
+		}
+		
+		return resultList;
 		
 	}
 	

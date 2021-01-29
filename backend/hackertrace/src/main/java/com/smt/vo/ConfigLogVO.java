@@ -1,5 +1,7 @@
 package com.smt.vo;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,13 +20,14 @@ public class ConfigLogVO {
 	private String filePath;
 	
 	@ApiModelProperty(value="형상 관리 파일 내용", example = "* * * * File ./abc.sh ")
-	private String contents;
+	private List<String> contents;
 	
-	@ApiModelProperty(value="UID", example = "0")
-	private String uid;
+	@ApiModelProperty(value="파일 소유자 명", example = "")
+	private String owner;
 	
 	@ApiModelProperty(value="형상 관리 파일 생성 시간", example = "2021-01-13 01:00:01 ")
 	private String fileCreateDate; //파일 생성 시간
+	
 	
 	
 }
