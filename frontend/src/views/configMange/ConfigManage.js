@@ -16,7 +16,7 @@ import {
   CModalTitle,
   CModalBody,
   CModalFooter,
- // CCollapse
+  CInputCheckbox
 } from '@coreui/react'
 import axios from 'axios'
 import ReactDiffViewer from 'react-diff-viewer'
@@ -31,9 +31,12 @@ import Loading from '../pages/Loading/Loading'
 function ConfigManage() {
   //형상 변경 Hook
   const [configChange, setConfigChange] = useState(false)
-  const [configDatas, setConfigDatas] = useState(false);
+  const [configDatas, setConfigDatas] = useState(null);
   const [oldCode , setOldCode] = useState("old")
   const [newCode , setNewCode] = useState("new")
+  //contents View
+  const [contentsView, setContentsView ] =useState([null])
+  const [contentsModal, setContentsModal] = useState(false)
 
   //configHistroy Hook
   const [configHistory, setconfigHistory] = useState([null])
@@ -41,40 +44,12 @@ function ConfigManage() {
   //host Ip받아오는 부분
   const [hostDatas, setHostDatas] = useState(null);
   const [firsthostDatas, setFirHostDatas] = useState(null);
-  //const [dircList, setDircList] = useState([null]);
-  //const [firstdircList, setFirDircList] = useState(null);
 
   //file tree 부분
-  const treeSource = useState([
-    {
-      name: 'root',
-      children: [
-          {
-              name: 'parent',
-              children: [
-                  { name: 'child1' },
-                  { name: 'child2' }
-              ]
-          },
-          {
-              name: 'loading parent',
-              children: []
-          },
-          {
-              name: 'parent',
-              children: [
-                  {
-                      name: 'nested parent',
-                      children: [
-                          { name: 'nested child 1'},
-                          { name: 'nested child 2' }
-                      ]
-                  }
-              ]
-          }
-      ]
-  }
-  ])
+  const defaultTreeName = "/etc"
+  const [treeSource, setTreeSource] = useState([{name:null}])
+  const [treeChildSource, setTreeChildSource] = useState([{name:null},{children:[null]}])
+  const [treeFilesSource, setTreeFilesSource] = useState([null])
 
   //예외처리 Hook
   const [error, setError] = useState(null);
@@ -100,78 +75,86 @@ function ConfigManage() {
         //로딩 실패시 flag를 달아서 이동
         setLoading(false);
       };
-
-      //형상관리 디렉토리 리스트 
-      const getDircList = async() => {
-        try{
-          const response = await axios.get(
-            'http://210.114.18.175:8080/ht/config/directory'
-          )
-          //setDircList(response.data.data)
-         // setFirDircList(response.data.data)
-          console.log(response.data.data);
-        }catch(e){
-          setError(e);
-          console.log(e)
-        }
-      }
-    getDircList();
     hostResData();
   }, []);
-
   
   const[inputs, setInputs] = useState({
     search:'',
     startDate:'2021-01-01',
     endDate:'2021-01-30',
-    selectColum:'uid',
     selectHostIp: "",
     setDircList: ""
   });
 
-  const { search, startDate, endDate, selectColum, selectHostIp, selectDircList } = inputs;
+  const { search, startDate, endDate, selectHostIp } = inputs;
 
   function handlerChange(e){
-    const { value, name } = e.target;  
+    const { value, name } = e.target;
     setInputs({
     ...inputs,
     [name]:value
     });
   };
 
+  //형상관리 디렉토리 리스트 
+  const getDircList = async(selectHostIp, changeTreeName) => {
+    try{
+      setLoading(true);
+      const response = await axios.post(
+        'http://210.114.18.175:8080/ht/config/directory',
+        { 
+          hostIp        : selectHostIp,
+          topDirectory  : changeTreeName
+        }
+      )
+      if(response.data.data.length === 0){
+        setTreeSource([{name:null}]);
+        alert("형상변경 파일이 없습니다. 검색 조건을 변경하십시오.")
+      }else{
+        setTreeSource(response.data.data)
+      }
+      if(response.data.data.children.length === 0){
+        setTreeChildSource([{name:null},{children:[null]}]);
+      }else{
+        setTreeChildSource(response.data.data.children);
+      }
+      
+      if(response.data.data.files.length === 0){
+        setTreeFilesSource([null]);
+      }else{
+        setTreeFilesSource(response.data.data.files);
+      }
+ 
+    }catch(e){
+      setError(e);
+      console.log(e)
+    }
+    setLoading(false);
+  }
 
   //검색 버튼 및 Value값 넘겨주는 부분
-  function submitValue(){
+  function submitTreeLog(){
     if(!selectHostIp){
-      if(!selectDircList){
-        console.log("1")
-        tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas)
-      }else{
-        console.log("2")
-        tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas)
-      }
+      getDircList(firsthostDatas, defaultTreeName)
     }else{
-      if(!selectDircList){
-        console.log("3")
-        tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
-      }else{
-        console.log("4")
-        tableAxiosData(startDate, endDate, selectColum, search, selectHostIp)
-      }
+      getDircList(selectHostIp, defaultTreeName)
     }
   };
-
+ 
+  //CData Tables의 Fileds값
   const fields = [
     {label:"TIME", key:'fileCreateDate',_style:{width:'10%'}},
+    {label:"Id", key:'_id',_style:{width:'10%'}},
     {label:"HOST IP", key:'hostIp',_style:{width:'10%'}},
-    {label:"Uid", key:'uid',_style:{width:'10%'}},
+    {label:"Owner", key:'owner',_style:{width:'10%'}},
     {label:"File Name", key:'fileName',_style:{width:'10%'}}, 
     {label:"File Path", key:'filePath',_style:{width:'30%'}}, 
     {label:"Integerity Check", key:'Integrity',_style:{width:'10%'}},
+    {label:"Contents View",  key:'Contents View'}
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
-  const tableAxiosData = async(startDate, endDate, selectColum, search, selectHostIp) => {
+  const tableAxiosData = async(startDate, endDate, selectHostIp, fileName, filepath) => {
     try{
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
@@ -183,13 +166,14 @@ function ConfigManage() {
           hostIp    : selectHostIp,
           pageNumber: 1,
           pageSize  : 1000,
-          filePath  : "/etc",//selectFilePath
-          searchType: selectColum,
-          searchWord: search, 
+          filePath  : filepath,//selectFilePath,
+          fileName  : fileName,
+          searchType: "ALL",
+          searchWord: "", 
         }
       )
       setConfigDatas(response.data.data);
-      //console.log(response.data.data[0]._id);
+      console.log(response.data.data);
      
     }catch(e){
       //에러시 flag를 달아서 이동
@@ -200,34 +184,32 @@ function ConfigManage() {
     setLoading(false);
   };
 
-  function toggleModal(index,item){
-    
+  //Integrity check해서 modal에서 Diff하기
+  function toggleModal(item,index){
     var rowId = item._id;
     var rowPath = item.filePath;
     var rowFileNam = item.fileName;
     var rowHostIp = item.hostIp;
-    var rowUid = item.uid;
-    
-    IntgrityCheck(rowId, rowPath, rowFileNam, rowHostIp, rowUid)
+    console.log(rowId, rowPath, rowFileNam, rowHostIp)
+    IntgrityCheck()
     setConfigChange(!configChange);
   }
   
-  const IntgrityCheck = async(rowId, rowPath, rowFileNam, rowHostIp, rowUid) => {
+  //Integrity Check Axios
+  const IntgrityCheck = async() => {
     try{
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
         'http://210.114.18.175:8080/ht/config/origin-log/contents',
         { 
-          fileName  : rowFileNam,
-          filePath  : rowPath,
-          hostIp    : rowHostIp,
-          logObjId  : rowId,
-          uid       : rowUid
+          logObjId: "5ffeaaa38a35c62284cd8587",
+          orgObjId: "5ffeaaa38a35c62284cd8587"
         }
       )
-      setOldCode(response.data.data.origin_config_file_contents.contents);
-      setNewCode(response.data.data.log_config_file_contents.contents);
+      console.log(response.data.data)
+      setOldCode("asdf");//.origin_config_file_contents.contents
+      setNewCode("asdfasdfasdfasdf");//.log_config_file_contents.contents
      
     }catch(e){
       //에러시 flag를 달아서 이동
@@ -260,17 +242,75 @@ function ConfigManage() {
       console.log(e)
     }
   }
-  function alertSubmit(){
-    alert("asdfasdf")
-  }
-  const tree = treeSource[0]
-  console.log(tree[0].children)
 
+  //폴더 클릭시 하위 폴더 및 파일 검색 submit
+  function SendTreeValue(index){
+    const cilckValue = treeSource.name+treeChildSource[index].name
+    if(!selectHostIp){
+      if(!cilckValue){
+        getDircList(firsthostDatas, defaultTreeName)
+      }else{
+        getDircList(firsthostDatas, cilckValue)
+      }
+    }else{
+      if(!cilckValue){
+        getDircList(selectHostIp, defaultTreeName)
+      }else{
+        getDircList(selectHostIp, cilckValue) 
+      }
+    }
+  }
+
+  //선택한 파일의 형상변경 이력 로그 검색
+  function submitValue(index){
+    const fileName = treeFilesSource[index];
+    const filePath = treeSource.name;
+    console.log(startDate, endDate, selectHostIp, fileName, filePath)
+    if(!selectHostIp){
+      tableAxiosData(startDate, endDate, firsthostDatas, fileName, filePath)
+    }else{
+      tableAxiosData(startDate, endDate, selectHostIp, fileName, filePath)
+    }
+  }
+
+  function submitContentsView(item,index) {
+    const rowId= item._id
+    ContentsView(rowId)
+    setContentsModal(!contentsModal)
+  }
+
+  //클릭한 contents 내용 자세히 보기
+  const ContentsView = async(rowId) =>{
+    try{
+      setLoading(true);
+      const response = await axios.post(
+        'http://210.114.18.175:8080/ht/config/view/contents',
+        {
+          objId: rowId
+        }
+      )
+      if(response.data.data[0].contents.length === 0 ){
+        setContentsView([{contents:null}])
+      }else {
+        setContentsView(response.data.data[0].contents)
+      }
+      
+      console.log(response.data.data)
+
+    }catch(e){
+      setError(e);
+    }
+    setLoading(false);
+  }
+
+ 
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
   if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
-  if(!configDatas) return submitValue();
   if(!configHistory) return ConfigHistory()
+  if(!treeFilesSource[0]) return submitTreeLog();
+  
+
 
   return (
     <>
@@ -297,81 +337,52 @@ function ConfigManage() {
                       </CCol>
                     </CFormGroup>
                   </CCol>
-
-                  <CCol md="5">
-                    <CRow>
-                      <CCol md="3">
-                        <CFormGroup>
-                          <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="selectColum">
-                            <option value='uid'>uid</option>
-                            <option value='fileName'>fileName</option>
-                          </CSelect>
-                        </CFormGroup>
-                      </CCol>
-                      
-                      <CCol md="4">
-                        <CFormGroup>
-                          <CSelect custom name="selectHostIp" onChange={handlerChange} value={selectHostIp} id="selectHostIp">
-                            {hostDatas.map((item, index) => {
-                              return <option key={index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
-                            })}
-                          </CSelect>
-                        </CFormGroup>
-                      </CCol>
-                     
-                      <CCol md="5">
-                        <CInputGroup className="input-prepend">
-                          <CInput size="100" type="text" placeholder="search" onChange={handlerChange} value={search} name='search' />
-                          <CInputGroupAppend>
-                            <CButton color="info" onClick={submitValue}>검색</CButton>
-                          </CInputGroupAppend>
-                        </CInputGroup>
-                      </CCol>
-                    </CRow>
+                  <CCol md="2">
+                    <CFormGroup>
+                      <CSelect custom name="selectHostIp" onChange={handlerChange} value={selectHostIp} id="selectHostIp">
+                        {hostDatas.map((item, index) => {
+                          return <option key={index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
+                        })}
+                      </CSelect>
+                    </CFormGroup>
                   </CCol>
+                  
+                  <CCol md="3">
+                    <CInputGroup className="input-prepend">
+                      <CInput size="100" type="text" placeholder="search" onChange={handlerChange} value={search} name='search' />
+                      <CInputGroupAppend>
+                        <CButton color="info" onClick={() =>submitTreeLog()}>검색</CButton>
+                      </CInputGroupAppend>
+                    </CInputGroup>
+                  </CCol>
+                  
                 </CRow>
               <CRow>
               <CCol className="folderTree" md={2}>
-                {tree[0].children.map((item,index)=>{
-                  return <Tree content={item.name} type={<span className="folderimage">📁</span>} open/>
-                })}
-                
-                
-
-                <Tree content="./etc" type={<span className="folderimage">📁</span>} open>
-                  <Tree content="hello" type={<span className="folderimage">📁</span>} />
-                  <Tree content="subtree with children" >
-                    <Tree content="hello" />
-                    <Tree content="sub-subtree with children">
-                      <Tree content="child 1" style={{ color: '#63b1de' }} />
-                      <Tree content="child 2" style={{ color: '#63b1de' }} />
-                      <Tree content="child 3" style={{ color: '#63b1de' }} />
-                    </Tree>
-                    <Tree content="hello" />
-                  </Tree>
-                  <Tree content="hello"/>
-                  <Tree content="hello"/>
+                <CButton color="info"onClick={()=>submitTreeLog()}>최상위 폴더 이동</CButton>
+                <Tree content={treeSource.name} type={<button className="treeBtn folderimage" value={treeSource.name}>📁</button>} open>
+                  {treeChildSource.map((item,index) => {
+                    if(!treeChildSource[0].name){
+                      return null
+                    }else{
+                      return <Tree key={index} content={item.name} type={<button className="treeBtn folderimage" value={index} onClick={()=>SendTreeValue(index)}>📁</button>}/>
+                    }
+                  })}
+                  {treeFilesSource.map((item,index) => {
+                    if(treeFilesSource.length === 0){
+                      return null
+                    }else{
+                      return <Tree key={item} content={item} type={<button className="treeBtn folderimage" value={item} onClick={()=>submitValue(index)}>📄</button>}/>
+                    }
+                  
+                  })}
                 </Tree>
-                <Tree content="./bash" type={<span value="dlrkdus" className="folderimage">📁</span>} open>
-                  <Tree content="hello" type={<span className="folderimage">📁</span>} />
-                  <Tree content="subtree with children" >
-                    <Tree content="hello" />
-                    <Tree content="sub-subtree with children">
-                      <button content="child 1.png" style={{ color: '#63b1de' }} />
-                      <Tree content="child 2" style={{ color: '#63b1de' }} />
-                      <Tree content="child 3" style={{ color: '#63b1de' }} />
-                      <Tree content="child 3" type={<p content="hello" ></p>}></Tree>
-          
-                    </Tree>
-                    <button content="hello" />
-                  </Tree>
-                  <button content="hello" onClick={alertSubmit}>hello</button>
-                  <Tree content="hello"/>
-                </Tree>
+            
+               
               </CCol>
               <CCol className="folderTree" md={10}>
                 
-                <h1>history</h1>
+                <h1>History</h1>
                 <section>
                   <CRow>
                     <div className="attckGrouptLegend"/>
@@ -433,26 +444,42 @@ function ConfigManage() {
                   hover
                   pagination
                   clickableRows={true}
+                  onRowClick = {(item, index)=>{
+                    
+                  }}
                   scopedSlots = {{
                     'Integrity':
                     (item, index)=>{
                       return (
                         <td className="py-2">
+                          <CInputCheckbox 
+                          id="checkbox1" 
+                          name="checkbox1" 
+                          value="option1" 
+                          onClick={()=>{toggleModal(item, index)}}
+                          />
+                         
+                        </td>
+                        )
+                    },
+                    'Contents View':
+                    (item, index)=>{
+                      return (
+                        <td className="py-2">
                           <CButton 
-                          color="primary"
-                          variant="outline"
-                          shape="square"
-                          size="sm"
-                          onClick={() =>toggleModal(index, item)}>
-                            Integrity
-                          </CButton>
+                        
+                          value="option1" 
+                          color="info"
+                          onClick={()=>{submitContentsView(item, index)}}
+                          >Contents</CButton>
+                         
                         </td>
                         )
                     },
                     
                   }}
                 />
-               {/*형상변경 관련 내용 */} 
+               {/*형상변경 관련 내용 onClick={() =>toggleModal(index, item)} */} 
               <CModal show={configChange} onClose={setConfigChange}>
                 <CModalHeader closeButton>
                   <CModalTitle>형상 변경 내용</CModalTitle>
@@ -468,6 +495,26 @@ function ConfigManage() {
                   <CButton 
                     color="secondary" 
                     onClick={() => setConfigChange(false)}
+                  >Cancel</CButton>
+                </CModalFooter>
+              </CModal>
+
+               {/*형상변경 관련 내용 onClick={() =>toggleModal(index, item)} */} 
+               <CModal show={contentsModal} onClose={setContentsModal}>
+                <CModalHeader closeButton>
+                  <CModalTitle>형상 변경 내용</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                  <ul>
+                    {contentsView.map((item,index)=>{
+                      return <li key={item+index}>{item}</li>
+                    })}
+                  </ul>
+                </CModalBody>
+                <CModalFooter>
+                  <CButton 
+                    color="secondary" 
+                    onClick={() => setContentsModal(false)}
                   >Cancel</CButton>
                 </CModalFooter>
               </CModal>

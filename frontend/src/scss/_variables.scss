@@ -357,9 +357,23 @@ hr{
 
 .folderimage{
   font-size: 1rem;
+  margin: 0;
+  padding: 0;
 }
 
 .folderTree{
   height: 30rem;
   overflow: scroll;
+}
+.treeClickValue{
+  cursor: pointer;
+}
+
+.treeBtn{
+  background: none;
+  border: 0;
+  &:focus{
+    border: 0!important;
+    outline: none!important;
+  }
 }

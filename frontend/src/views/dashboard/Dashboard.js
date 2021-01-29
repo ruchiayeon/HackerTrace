@@ -248,7 +248,7 @@ function Dashboard() {
           <CRow>
             <CCol sm="5">
               <h4 className="abnormalTitle">형상관리</h4>
-              <h6>업데이트 일자 : {updat}</h6>
+              <h6 id="dd">업데이트 일자 : {updat}</h6>
             </CCol>
           </CRow>
           <CChartLine
