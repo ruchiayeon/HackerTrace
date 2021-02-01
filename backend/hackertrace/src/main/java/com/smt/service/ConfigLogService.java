@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.smt.dao.ConfigLogDAO;
 import com.smt.util.DateUtil;
 import com.smt.util.FileUtil;
+import com.smt.vo.ConfigContentsVO;
 import com.smt.vo.ConfigLogContentsVO;
 import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
@@ -230,6 +231,10 @@ public class ConfigLogService {
 	
 	public List<Document> selectConfigOriginLogFileContents(ConfigLogContentsVO vo) {
 		return dao.selectConfigOriginLogFileContents(vo);
+	}
+	
+	public List<Document> selectConfigContents(ConfigContentsVO vo) {
+		return dao.selectConfigContents(vo);
 	}
 	
 	public List<Document> selectBefroDateAuditLogSessionList(ConfigLogSessionsVO vo){

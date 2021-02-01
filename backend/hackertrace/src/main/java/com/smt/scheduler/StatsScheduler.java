@@ -27,9 +27,9 @@ public class StatsScheduler {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
-//	@Scheduled(cron = "${fixed.delay.string.audit.status}") 
+	@Scheduled(cron = "${fixed.delay.string.audit.status}") 
 	public void excuteCountMitreAttackAuditLog() {
-		
+			System.out.println("excuteCountMitreAttackAuditLog()");
 		try {
 			MongoCollection<Document> statsCountCol = mongoTemplate.getCollection("DB_STATS");
 			
@@ -65,9 +65,9 @@ public class StatsScheduler {
 		
 	}
 	
-//	@Scheduled(cron = "${fixed.delay.string.config.status}") 
+	@Scheduled(cron = "${fixed.delay.string.config.status}") 
 	public void excuteCountConfigModify() {
-		
+		System.out.println("excuteCountConfigModify()");
 		try {
 			
 			MongoCollection<Document> statsCountCol = mongoTemplate.getCollection("DB_STATS");

@@ -14,6 +14,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.smt.util.DateUtil;
 import com.smt.util.MogoDBUtil;
+import com.smt.vo.ConfigContentsVO;
 import com.smt.vo.ConfigLogContentsVO;
 import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
@@ -154,6 +155,23 @@ public class ConfigLogDAO {
 		
 	}
 	
+	public List<Document> selectConfigContents(ConfigContentsVO vo){
+		
+		List<Document> resultList = new ArrayList<Document>();
+		
+		MongoCollection<Document> configFilesOriginListCol = mongoTemplate.getCollection("CONFIG_FILES_LOGS");
+		
+		BasicDBObject orgFileQuery = new BasicDBObject("_id", new ObjectId(vo.getObjId()));
+		
+		List<Document> docFileList =  configFilesOriginListCol.find(orgFileQuery).into(new ArrayList<>());
+		
+		if(docFileList.size()>0)
+			resultList.add(docFileList.get(0));
+		
+		return resultList;
+		
+	}
+	
 	public List<Document> selectBefroDateAuditLogSessionList(ConfigLogSessionsVO vo){
 		
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
@@ -192,6 +210,7 @@ public class ConfigLogDAO {
 		String endDate = vo.getFileCreateDate();
 		
 		findQuery.put("body_event_time", new BasicDBObject("$gte", startDate).append( "$lte" , endDate ) );
+//		if(vo.getIsOnlyFileNameAuditLog().equalsIgnoreCase("Y"))
 		findQuery.put("body_name", "\""+vo.getFilePath()+"/"+vo.getFileName()+"\"");
 		
 		System.out.println(findQuery.toJson());

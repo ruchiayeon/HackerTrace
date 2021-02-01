@@ -11,6 +11,9 @@ public class ConfigLogHistoryVO {
 	@ApiModelProperty(value="호스트 아이피", example = "210.114.19.179")
 	private String hostIp; 
 	
+//	@ApiModelProperty(value="파일 내용 언급된 로그 여부", example = "Y")
+//	private String isOnlyFileNameAuditLog;
+	
 	@ApiModelProperty(value="형상관리 파일명", example = "1.txt")
 	private String fileName;
 	
