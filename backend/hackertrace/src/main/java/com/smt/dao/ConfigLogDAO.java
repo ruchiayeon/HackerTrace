@@ -1,9 +1,12 @@
 package com.smt.dao;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ import com.smt.vo.ConfigContentsVO;
 import com.smt.vo.ConfigLogContentsVO;
 import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
+import com.smt.vo.ConfigLogPathsVO;
 import com.smt.vo.ConfigLogSessionsVO;
 import com.smt.vo.ConfigLogVO;
 import com.smt.vo.DirectoryTopVO;
@@ -97,7 +101,19 @@ public class ConfigLogDAO {
 		List<Document> docList = configFilesDirectoryListCol.find(findQuery).into(new ArrayList<>());
 		if(docList.size()>0)
 			fileNameList = (List<String>) docList.get(0).get("fileNames");
+		
 		return fileNameList;
+	}
+	
+	public List<Document> selectConfigLogPathList(ConfigLogPathsVO vo){
+		MongoCollection<Document> configFilesLogsListCol = mongoTemplate.getCollection("CONFIG_FILES_LOGS");
+		String startDate = vo.getStartDate();
+		String endDate = vo.getEndDate();
+		
+		BasicDBObject findQuery = new BasicDBObject("fileCreateDate", MogoDBUtil.getDateTermFindQuery(startDate, endDate));
+		findQuery.put("hostIp", vo.getHostIp());
+		System.out.println(findQuery.toJson());
+		return configFilesLogsListCol.find(findQuery).into(new ArrayList<>());
 	}
 	
 	public List<Document> selectConfigLogFileList(ConfigLogListVO vo){
@@ -201,29 +217,58 @@ public class ConfigLogDAO {
 		MongoCollection<Document> audtiLogListCol = mongoTemplate.getCollection("AUDIT_LOG");
 		List<Document> resultList = new ArrayList<Document>();
 	    //month단위
-	    String beforeEndDate = DateUtil.beforDateDayUnit(vo.getFileCreateDate(), vo.getTerm());
 		
 		BasicDBObject findQuery = new BasicDBObject();
 		findQuery.put("body_host_ip", vo.getHostIp());
 		
-		String startDate = beforeEndDate+" 00:00:00";
-		String endDate = vo.getFileCreateDate();
+		String beforeStartDate = DateUtil.beforeDateDayUnit(vo.getFileCreateDate(),"0");
+		String startDate = beforeStartDate+" 00:00:00";
 		
-		findQuery.put("body_event_time", new BasicDBObject("$gte", startDate).append( "$lte" , endDate ) );
-//		if(vo.getIsOnlyFileNameAuditLog().equalsIgnoreCase("Y"))
+		String endDate = DateUtil.addSecondsDateTime(vo.getFileCreateDate(), 1);
+		
 		findQuery.put("body_name", "\""+vo.getFilePath()+"/"+vo.getFileName()+"\"");
-		
-		System.out.println(findQuery.toJson());
-		List<Document> auditLogDocList =  audtiLogListCol.find(findQuery).into(new ArrayList<>());
-		for(Document auditDoc : auditLogDocList) {
-			BasicDBObject headerMsgQuery = new BasicDBObject("header_msg", (String)auditDoc.get("header_msg"));
-			headerMsgQuery.put("header_message:type", "SYSCALL");
-			Document resultByMsg =  audtiLogListCol.find(headerMsgQuery).into(new ArrayList<>()).get(0);
+		findQuery.put("body_event_time", new BasicDBObject("$gte", startDate).append( "$lte" , endDate ) );
+		System.out.println("findQuery : "+findQuery.toJson());
+		Document sortDoc = new Document();
+		sortDoc.put("body_event_time", -1);
+		List<Document> auditLogList = audtiLogListCol.find(findQuery).sort(sortDoc).limit(1).into(new ArrayList<>());
+		if(auditLogList.size()>0) {
 			
-			resultList.add(auditDoc);
-			resultList.add(resultByMsg);
-		}
+			Document auditLogDoc = auditLogList.get(0);
+			System.out.println(auditLogDoc.get("body_event_time").toString());
+			
+			BasicDBObject headerQuery = new BasicDBObject();
+			headerQuery.put("header_msg", (String)auditLogDoc.get("header_msg"));
+			headerQuery.put("header_message:type", "SYSCALL");
+			Document resultMsg =  audtiLogListCol.find(headerQuery).limit(1).into(new ArrayList<>()).get(0);
+			
+			BasicDBObject auditLogFindQuery = new BasicDBObject();
+			auditLogFindQuery.put("body_host_ip", vo.getHostIp());
+			auditLogFindQuery.put("body_ses", (String)resultMsg.get("body_ses"));
+			
+			String sDate = DateUtil.beforeDateDayUnit(vo.getFileCreateDate(),vo.getBeforeTerm())+" 00:00:00";
+			String eDate = DateUtil.afterDateDayUnit(vo.getFileCreateDate(),vo.getAfterTerm())+" 23:59:59";
+			
+			auditLogFindQuery.put("body_event_time", new BasicDBObject("$gte", sDate).append( "$lte" , eDate ) );
+			System.out.println("auditLogFindQuery : "+auditLogFindQuery.toJson());
+			
+			List<Document> auditLogDocList = audtiLogListCol.find(auditLogFindQuery).into(new ArrayList<>());
+			
+			for(Document auditDoc : auditLogDocList) {
+//				System.out.println(auditDoc.toJson());
+				
+				BasicDBObject headerMsgQuery = new BasicDBObject();
+				headerMsgQuery.put("header_msg", (String)auditDoc.get("header_msg"));
+				headerMsgQuery.put("header_message:type", new BasicDBObject("$ne", "PROCTITLE"));
+				List<Document> resultByMsgList =  audtiLogListCol.find(headerMsgQuery).into(new ArrayList<>());
+				for(Document doc:resultByMsgList) {
+					resultList.add(doc);
+				}
+				
+			}
 		
+		}
+		System.out.println(resultList.size());
 		return resultList;
 		
 	}

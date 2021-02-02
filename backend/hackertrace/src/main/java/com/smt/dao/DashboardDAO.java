@@ -31,7 +31,7 @@ public class DashboardDAO {
 		if(term.equalsIgnoreCase("today")) //오늘
 			startDate = endDate;
 		else if(term.equalsIgnoreCase("week")) //일주일 전 
-			startDate = DateUtil.beforDateDayUnit(endDate, "7");
+			startDate = DateUtil.beforeDateDayUnit(endDate, "7");
 		else //1달전
 			startDate = DateUtil.beforDateMonthUnit(endDate, "1"); 
 			
@@ -72,7 +72,7 @@ public class DashboardDAO {
 		if(term.equalsIgnoreCase("today")) //오늘
 			startDate = endDate;
 		else if(term.equalsIgnoreCase("week")) //일주일 전 
-			startDate = DateUtil.beforDateDayUnit(endDate, "7");
+			startDate = DateUtil.beforeDateDayUnit(endDate, "7");
 		else //1달전
 			startDate = DateUtil.beforDateMonthUnit(endDate, "1"); 
 		
@@ -119,7 +119,7 @@ public class DashboardDAO {
 			List<Document> countDocList = new ArrayList<Document>();
 			for (int index = 6; index > -1; index--) {
 
-				String beforeDate = DateUtil.beforDateDayUnit(today, String.valueOf(index));
+				String beforeDate = DateUtil.beforeDateDayUnit(today, String.valueOf(index));
 
 				BasicDBObject findQuery = new BasicDBObject();
 				findQuery.put("hostIp", hostIp);
@@ -130,21 +130,27 @@ public class DashboardDAO {
 				List<Document> countList = statsCol.find(findQuery).into(new ArrayList<>());
 				Integer count = 0;
 				String updateTime = "";
+				List<String> pathList = new ArrayList<String>();
 
 				if (countList.size() > 0) {
 					Document countDoc = new Document();
 					countDoc = countList.get(0);
 					count = (int)(countDoc.get("count"));
 					updateTime = countDoc.getString("updateTime");
+					pathList = (List<String>) countDoc.get("pathList");
 				}
 
 				if(updateTime == "")
 					updateTime = "00-00-00 00:00:00";
 				
+				if(pathList == null)
+					pathList = new ArrayList<String>();
+				
 				Document doc = new Document();
 				doc.put(DateUtil.getDateDay(beforeDate), String.valueOf(count));
 				doc.put("date", beforeDate);
 				doc.put("updateTime", updateTime);
+				doc.put("pathList", pathList);
 				countDocList.add(doc);
 			}
 
@@ -165,7 +171,7 @@ public class DashboardDAO {
 		if(term.equalsIgnoreCase("today")) //오늘
 			startDate = endDate;
 		else if(term.equalsIgnoreCase("week")) //일주일 전 
-			startDate = DateUtil.beforDateDayUnit(endDate, "7");
+			startDate = DateUtil.beforeDateDayUnit(endDate, "7");
 		else //1달전
 			startDate = DateUtil.beforDateMonthUnit(endDate, "1"); 
 		

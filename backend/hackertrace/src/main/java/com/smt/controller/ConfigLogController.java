@@ -23,6 +23,7 @@ import com.smt.vo.ConfigLogContentsVO;
 import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
 import com.smt.vo.ConfigLogMessageVO;
+import com.smt.vo.ConfigLogPathsVO;
 import com.smt.vo.DirectoryTopVO;
 import com.smt.vo.ResultVO;
 
@@ -78,6 +79,20 @@ public class ConfigLogController {
 			resultDoc.put("children", service.selectConfigFileDirectory(directoryTopVO));
 			resultDoc.put("files", service.getFileNamesByFilePath(directoryTopVO));
 			return APIUtil.resResult(0, "형상 관리 파일 디렉터리 목록 조회가 완료되었습니다.", resultDoc);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return APIUtil.resResult(1, "형상 관리 파일 디렉터리 목록 조회가 실패되었습니다.", null);
+		}
+		
+	}
+	
+	@ApiOperation(value = "해당 기간의 변경된 고유한 파일 경로 를 조회함")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/log/paths", method = RequestMethod.POST)
+	public ResultVO selectConfigLogPathList(final @RequestBody ConfigLogPathsVO configLogPathsVO) {
+
+		try {
+			return APIUtil.resResult(0, "형상 관리 파일 디렉터리 목록 조회가 완료되었습니다.", service.selectConfigLogPathList(configLogPathsVO));
 		}catch(Exception e) {
 			e.printStackTrace();
 			return APIUtil.resResult(1, "형상 관리 파일 디렉터리 목록 조회가 실패되었습니다.", null);

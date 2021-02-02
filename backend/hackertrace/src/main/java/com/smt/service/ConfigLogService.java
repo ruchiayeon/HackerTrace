@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import com.smt.vo.ConfigLogContentsVO;
 import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
 import com.smt.vo.ConfigLogMessageVO;
+import com.smt.vo.ConfigLogPathsVO;
 import com.smt.vo.ConfigLogSessionsVO;
 import com.smt.vo.ConfigLogVO;
 import com.smt.vo.DirectoryTopVO;
@@ -101,17 +103,8 @@ public class ConfigLogService {
 		//설정 파일에 콤마(,)구분자가 없을 경우
 		try {
 			
-			String[] getHostIpConfigPath = env.getProperty(hostIp).split(",");
-		
-			if(getHostIpConfigPath.length > 0) {
+					insertConfigLogDataHandle(hostIp, configLogMsgVO);
 				
-				for(String commonPath : getHostIpConfigPath) {
-					insertConfigLogDataHandle(hostIp, configLogMsgVO, commonPath);
-				}
-				
-			}else {
-				insertConfigLogDataHandle(hostIp, configLogMsgVO, env.getProperty(hostIp));
-			}
 		
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -119,16 +112,15 @@ public class ConfigLogService {
 		
 	}
 
-	private void insertConfigLogDataHandle(String hostIp, ConfigLogMessageVO configLogMsgVO, String commonPath) throws IOException {
+	private void insertConfigLogDataHandle(String hostIp, ConfigLogMessageVO configLogMsgVO) throws IOException {
 
 		String filePath = configLogMsgVO.getMessage();
 		
 		// /호스트아이피/설정 파일 경로/fluentd 로그 파일 경로
-		filePath = "/home/manager/HostServer/"+hostIp+commonPath+filePath;
+		filePath = "/home/manager/HostServer/"+hostIp+filePath;
 		String passwdPath = "/home/manager/HostServer/"+hostIp+"/etc/passwd";
 		
 		if(FileUtil.existFile(filePath)) {
-			System.out.println("properties setting : "+commonPath);
 			System.out.println("success file check :"+filePath);
 			Map<String,String> fileInfoMap = FileUtil.getFileInfo(filePath);
 			
@@ -164,7 +156,8 @@ public class ConfigLogService {
 				Document findOneDoc = dao.selectConfigLogDirectory(dirVO).get(0);
 				
 				List<String> fileNameList = (List<String>) findOneDoc.get("fileNames");
-				fileNameList.add(vo.getFileName());
+				if(!fileNameList.contains(vo.getFileName()))
+					fileNameList.add(vo.getFileName());
 				
 				findOneDoc.put("fileNames", fileNameList);
 				findOneDoc.put("updateTime", DateUtil.getCurrentTime());
@@ -219,7 +212,8 @@ public class ConfigLogService {
 			fileLogDocument.put("_id", doc.get("_id").toString());
 			fileLogDocument.put("hostIp", doc.get("hostIp"));
 			fileLogDocument.put("fileName", doc.get("fileName"));
-			fileLogDocument.put("filePath", doc.get("filePath"));
+			String remainFilePath = FileUtil.getOnlyPathByRemainFullPath((String)doc.get("filePath"));
+			fileLogDocument.put("filePath", remainFilePath);
 			fileLogDocument.put("owner", doc.get("owner"));
 			fileLogDocument.put("fileCreateDate", doc.get("fileCreateDate"));
 			
@@ -243,6 +237,19 @@ public class ConfigLogService {
 	
 	public List<Document> selectBeforDateAuditLogByConfigLog(ConfigLogHistoryVO vo){
 		return dao.selectBeforDateAuditLogByConfigLog(vo);
+	}
+	
+	public List<String> selectConfigLogPathList(ConfigLogPathsVO vo ){
+		List<Document> docConfigLogList = dao.selectConfigLogPathList(vo);
+		List<String> pathList = new ArrayList<String>();
+		for(Document doc : docConfigLogList) {
+			String fullPath = doc.get("filePath")+"/"+doc.get("fileName");
+			pathList.add(FileUtil.getOnlyPathByRemainFullPath(fullPath));
+		}
+		
+		pathList = 	pathList.stream().distinct().collect(Collectors.toList());
+		
+		return pathList;
 	}
 	
 
