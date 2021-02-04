@@ -33,7 +33,6 @@ public class AuditLogController {
 	@RequestMapping(value = "/log/list", method = RequestMethod.POST)
 	public ResultVO getAuditLogList(final @Valid @RequestBody AuditLogListVO auditLogListVO) {
 		try {
-			System.out.println(auditLogListVO.toString());
 			return APIUtil.resResult(0, "조회가 완료되었습니다.", service.getAuditLogList(auditLogListVO));
 		} catch (Exception e) {
 			return APIUtil.resResult(1, "조회가 실패되었습니다.", null);

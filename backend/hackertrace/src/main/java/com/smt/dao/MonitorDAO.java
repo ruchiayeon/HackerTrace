@@ -2,7 +2,6 @@ package com.smt.dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,20 +20,18 @@ public class MonitorDAO {
 	private MongoTemplate mongoTemplate;
 	
 	public List<Document> getHostMonitorList(MonitorLogListVO vo){
-		MongoCollection<Document> hostMonitorCol = mongoTemplate.getCollection("HOSTS_MONITOR");
+		MongoCollection<Document> hostMonitorCol = mongoTemplate.getCollection("HOST_MONITOR");
 		
 		BasicDBObject findQuery = new BasicDBObject();
-		findQuery.put("body_host_ip", vo.getHostIp());
-		
-		if(vo.getSearchType() != "") {
-			findQuery.put(vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
-		}
-		
-		findQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(vo.getStartDate(), vo.getEndDate()) );
+		findQuery.put("HostIP", vo.getHostIp());
+		findQuery.put("date", MogoDBUtil.getDateTermFindQuery(vo.getStartDate(), vo.getEndDate()) );
 
 		System.out.println(findQuery.toJson());
+		Document sortDoc = new Document();
+		sortDoc.put("date", -1);
 		
 		return  hostMonitorCol.find(findQuery)
+									   .sort(sortDoc)
 								       .limit(vo.getPageSize())
 								       .skip(vo.getPageNumber()-1)
 								       .into(new ArrayList<>());

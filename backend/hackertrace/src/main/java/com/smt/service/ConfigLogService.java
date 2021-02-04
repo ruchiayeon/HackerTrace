@@ -23,6 +23,7 @@ import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
 import com.smt.vo.ConfigLogMessageVO;
 import com.smt.vo.ConfigLogPathsVO;
+import com.smt.vo.ConfigLogSesCondVO;
 import com.smt.vo.ConfigLogSessionsVO;
 import com.smt.vo.ConfigLogVO;
 import com.smt.vo.DirectoryTopVO;
@@ -102,10 +103,7 @@ public class ConfigLogService {
 		
 		//설정 파일에 콤마(,)구분자가 없을 경우
 		try {
-			
-					insertConfigLogDataHandle(hostIp, configLogMsgVO);
-				
-		
+			insertConfigLogDataHandle(hostIp, configLogMsgVO);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -118,7 +116,7 @@ public class ConfigLogService {
 		
 		// /호스트아이피/설정 파일 경로/fluentd 로그 파일 경로
 		filePath = "/home/manager/HostServer/"+hostIp+filePath;
-		String passwdPath = "/home/manager/HostServer/"+hostIp+"/etc/passwd";
+		//String passwdPath = "/home/manager/HostServer/"+hostIp+"/etc/passwd";
 		
 		if(FileUtil.existFile(filePath)) {
 			System.out.println("success file check :"+filePath);
@@ -130,6 +128,7 @@ public class ConfigLogService {
 			vo.setFileName(fileInfoMap.get("FILENAME"));
 			vo.setFilePath(fileInfoMap.get("FILEPATH"));
 			vo.setOwner(fileInfoMap.get("OWNER"));
+			vo.setLogTime(DateUtil.getCurrentMilleTime());
 			
 			List<String> readFileText = FileUtil.readFileTextList(filePath);
 			if(readFileText.size()>0) {
@@ -137,7 +136,8 @@ public class ConfigLogService {
 			}else {
 				vo.setContents(new ArrayList<String>());
 			}
-			
+			System.out.println("insert  :"+DateUtil.getCurrentMilleTime());
+			System.out.println("insert  :"+vo.getFileName());
 			dao.insertConfigLogFile(vo);
 			
 			DirectoryVO dirVO = new DirectoryVO();
@@ -162,6 +162,7 @@ public class ConfigLogService {
 				findOneDoc.put("fileNames", fileNameList);
 				findOneDoc.put("updateTime", DateUtil.getCurrentTime());
 				dao.updateConfigLogDirctoryFileNames(dirVO, findOneDoc);	
+				
 			}
 			
 		}
@@ -209,13 +210,15 @@ public class ConfigLogService {
 		List<Document> resultList = new ArrayList<Document>();
 		for(Document doc : dao.selectConfigLogFileList(vo)) {
 			Document fileLogDocument = new Document();
+			String remainFilePath = FileUtil.getOnlyPathByRemainFullPath((String)doc.get("filePath"));
+			
 			fileLogDocument.put("_id", doc.get("_id").toString());
 			fileLogDocument.put("hostIp", doc.get("hostIp"));
 			fileLogDocument.put("fileName", doc.get("fileName"));
-			String remainFilePath = FileUtil.getOnlyPathByRemainFullPath((String)doc.get("filePath"));
 			fileLogDocument.put("filePath", remainFilePath);
 			fileLogDocument.put("owner", doc.get("owner"));
 			fileLogDocument.put("fileCreateDate", doc.get("fileCreateDate"));
+			fileLogDocument.put("logTime", doc.get("logTime"));
 			
 			resultList.add(fileLogDocument);
 		}
@@ -233,6 +236,37 @@ public class ConfigLogService {
 	
 	public List<Document> selectBefroDateAuditLogSessionList(ConfigLogSessionsVO vo){
 		return dao.selectBefroDateAuditLogSessionList(vo);
+	}
+	
+	public List<String> selectBeforDateAuditLogSes(ConfigLogSesCondVO vo){
+		List<String> sesList = new ArrayList<>();
+		
+		try {
+			List<String> headerMsgList = new ArrayList<>();
+			//case 1: bodyName equal : path+filename or bobyName equal : fileaname
+			for(Document headerMsg : dao.historyConditionBodyName(vo)) {
+	//			System.out.println(headerMsg.toJson());
+				headerMsgList.add((String)headerMsg.get("_id"));
+			}
+			
+			//case 2: type excve , a0 ~ aN 까지 언급 된 경우
+			for(Document headerMsg : dao.historyConditionExecve(vo)) {
+				headerMsgList.add((String)headerMsg.getString("header_msg"));
+			}
+			
+			headerMsgList =  headerMsgList.stream().distinct().collect(Collectors.toList());
+			
+			for(String hMsg : headerMsgList) {
+				String ses = dao.getSesList(vo.getHostIp(), hMsg);
+				sesList.add(ses);
+			}
+			
+			sesList = sesList.stream().distinct().collect(Collectors.toList());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return sesList;
 	}
 	
 	public List<Document> selectBeforDateAuditLogByConfigLog(ConfigLogHistoryVO vo){

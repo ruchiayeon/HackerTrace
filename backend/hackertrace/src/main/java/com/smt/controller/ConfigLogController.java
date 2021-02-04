@@ -1,6 +1,5 @@
 package com.smt.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -24,6 +23,7 @@ import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
 import com.smt.vo.ConfigLogMessageVO;
 import com.smt.vo.ConfigLogPathsVO;
+import com.smt.vo.ConfigLogSesCondVO;
 import com.smt.vo.DirectoryTopVO;
 import com.smt.vo.ResultVO;
 
@@ -53,6 +53,7 @@ public class ConfigLogController {
 				if(message != "" || message != null ) {
 					Gson gson = new Gson();
 					ConfigLogMessageVO configLogMessageVO  = gson.fromJson(message.trim(), ConfigLogMessageVO.class);
+					System.out.println("INPUT==="+configLogMessageVO.getMessage());
 					service.insertConfigLogFile(hostIp, configLogMessageVO);
 				}	
 			}
@@ -64,7 +65,6 @@ public class ConfigLogController {
 		}
 		
 	}
-	
 	
 	
 	@ApiOperation(value = "하위 디렉터리 하나씩 보여줌(ex. /etc -> /a,/b, /etc/b -> /c1, /c2)")
@@ -119,8 +119,8 @@ public class ConfigLogController {
 	@RequestMapping(value = "/origin-log/contents", method = RequestMethod.POST)
 	public ResultVO selectConfigOriginFileContents(final @Valid @RequestBody ConfigLogContentsVO configLogContentsVO) {
 		try {
-			List<Document> result = new ArrayList<Document>();
-			result = service.selectConfigOriginLogFileContents(configLogContentsVO);
+			
+			List<Document> result = service.selectConfigOriginLogFileContents(configLogContentsVO);
 			return APIUtil.resResult(0, configLogContentsVO.getLogObjId()+"/"+configLogContentsVO.getLogObjId()
 												+"의 원본/로그 파일 내용 조회가 완료되었습니다.", result);
 		}catch(Exception e) {
@@ -134,14 +134,26 @@ public class ConfigLogController {
 	@RequestMapping(value = "/view/contents", method = RequestMethod.POST)
 	public ResultVO selectConfigFileContents(final @Valid @RequestBody ConfigContentsVO configContentsVO) {
 		try {
-			List<Document> result = new ArrayList<Document>();
-			result = service.selectConfigContents(configContentsVO);
+			List<Document> result = service.selectConfigContents(configContentsVO);
 			return APIUtil.resResult(0, configContentsVO.getObjId()+"의 원본/로그 파일 내용 조회가 완료되었습니다.", result);
 		}catch(Exception e) {
 			return APIUtil.resResult(1,configContentsVO.getObjId()+"의 원본/로그 파일 내용 조회가 실패되었습니다.", null);
 		} 
 	}
 	
+	@ApiOperation(value = "형상 로그 파일 이전 감사 로그 새션 목록")
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@RequestMapping(value = "/audit/history/ses", method = RequestMethod.POST)
+	public ResultVO selectBeforDateAuditLogSes(final @Valid @RequestBody ConfigLogSesCondVO configLogSesCondVO) {
+		
+		try {
+			List<String> result = service.selectBeforDateAuditLogSes(configLogSesCondVO);
+			return APIUtil.resResult(0, "형상 로그 파일 이전 감사로그 조회가 완료되었습니다.", result);
+			
+		}catch(Exception e) {
+			return APIUtil.resResult(1, "형상 로그 파일 이전 감사로그 조회가 실패되었습니다.", null);
+		}
+	}
 	
 	@ApiOperation(value = "형상 로그 파일 이전 감사 로그")
 	@CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -201,7 +213,5 @@ public class ConfigLogController {
 //		}
 //		
 //	}
-	
-	
 	
 }

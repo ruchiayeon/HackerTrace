@@ -65,9 +65,13 @@ public class AuditLogDAO {
 		}
 		
 		findQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(vo.getStartDate(), vo.getEndDate()) );
+		Document sortDoc = new Document();
+		sortDoc.put("body_event_time", -1);
+		
 		List<Document> docList  = new ArrayList<>();
 		System.out.println(findQuery.toJson());
 		docList = audtiLogListCol.find(findQuery)
+				   						   .sort(sortDoc)
 									       .limit(vo.getPageSize())
 									       .skip(vo.getPageNumber()-1)
 									       .into(new ArrayList<>());

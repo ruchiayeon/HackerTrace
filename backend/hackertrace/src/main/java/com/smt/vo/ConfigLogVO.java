@@ -25,6 +25,9 @@ public class ConfigLogVO {
 	@ApiModelProperty(value="파일 소유자 명", example = "")
 	private String owner;
 	
+	@ApiModelProperty(value="로그 수집시간", example = "2021-01-13 01:00:01.000 ")
+	private String logTime; //로그 수집 시간
+	
 	@ApiModelProperty(value="형상 관리 파일 생성 시간", example = "2021-01-13 01:00:01 ")
 	private String fileCreateDate; //파일 생성 시간
 	
