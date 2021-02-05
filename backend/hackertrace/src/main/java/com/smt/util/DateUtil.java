@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang3.time.DateUtils;
+
 public class DateUtil {
 
 	public static String beforDateMonthUnit(String date, String monthTerm) {
@@ -27,7 +29,7 @@ public class DateUtil {
 		return beforeEndDate;
 	}
 	
-	public static String beforDateDayUnit(String date, String monthTerm) {
+	public static String beforeDateDayUnit(String date, String monthTerm) {
 
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -45,6 +47,43 @@ public class DateUtil {
 		
 		String beforeEndDate = dateFormatter.format(cal.getTime());
 		return beforeEndDate;
+	}
+	
+	public static String afterDateDayUnit(String date, String monthTerm) {
+
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+
+		Date startDate = new Date();
+		try {
+			startDate = dateFormatter.parse(date);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startDate);
+		Integer term = Integer.parseInt(monthTerm);
+		cal.add(Calendar.DAY_OF_WEEK, +term);
+		
+		String beforeEndDate = dateFormatter.format(cal.getTime());
+		return beforeEndDate;
+	}
+	
+	public static String addSecondsDateTime(String date, int minuteTerm) {
+		
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		Date startDate = new Date();
+		try {
+			startDate = dateFormatter.parse(date);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+		Date addTimeDate = DateUtils.addSeconds(startDate, minuteTerm);
+		
+		return dateFormatter.format(addTimeDate);
+		
 	}
 	
 	

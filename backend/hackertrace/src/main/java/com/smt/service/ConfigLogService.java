@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +17,13 @@ import org.springframework.stereotype.Service;
 import com.smt.dao.ConfigLogDAO;
 import com.smt.util.DateUtil;
 import com.smt.util.FileUtil;
+import com.smt.vo.ConfigContentsVO;
 import com.smt.vo.ConfigLogContentsVO;
 import com.smt.vo.ConfigLogHistoryVO;
 import com.smt.vo.ConfigLogListVO;
 import com.smt.vo.ConfigLogMessageVO;
+import com.smt.vo.ConfigLogPathsVO;
+import com.smt.vo.ConfigLogSesCondVO;
 import com.smt.vo.ConfigLogSessionsVO;
 import com.smt.vo.ConfigLogVO;
 import com.smt.vo.DirectoryTopVO;
@@ -99,35 +103,22 @@ public class ConfigLogService {
 		
 		//설정 파일에 콤마(,)구분자가 없을 경우
 		try {
-			
-			String[] getHostIpConfigPath = env.getProperty(hostIp).split(",");
-		
-			if(getHostIpConfigPath.length > 0) {
-				
-				for(String commonPath : getHostIpConfigPath) {
-					insertConfigLogDataHandle(hostIp, configLogMsgVO, commonPath);
-				}
-				
-			}else {
-				insertConfigLogDataHandle(hostIp, configLogMsgVO, env.getProperty(hostIp));
-			}
-		
+			insertConfigLogDataHandle(hostIp, configLogMsgVO);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
 		
 	}
 
-	private void insertConfigLogDataHandle(String hostIp, ConfigLogMessageVO configLogMsgVO, String commonPath) throws IOException {
+	private void insertConfigLogDataHandle(String hostIp, ConfigLogMessageVO configLogMsgVO) throws IOException {
 
 		String filePath = configLogMsgVO.getMessage();
 		
 		// /호스트아이피/설정 파일 경로/fluentd 로그 파일 경로
-		filePath = "/home/manager/HostServer/"+hostIp+commonPath+filePath;
-		String passwdPath = "/home/manager/HostServer/"+hostIp+"/etc/passwd";
+		filePath = "/home/manager/HostServer/"+hostIp+filePath;
+		//String passwdPath = "/home/manager/HostServer/"+hostIp+"/etc/passwd";
 		
 		if(FileUtil.existFile(filePath)) {
-			System.out.println("properties setting : "+commonPath);
 			System.out.println("success file check :"+filePath);
 			Map<String,String> fileInfoMap = FileUtil.getFileInfo(filePath);
 			
@@ -137,6 +128,7 @@ public class ConfigLogService {
 			vo.setFileName(fileInfoMap.get("FILENAME"));
 			vo.setFilePath(fileInfoMap.get("FILEPATH"));
 			vo.setOwner(fileInfoMap.get("OWNER"));
+			vo.setLogTime(DateUtil.getCurrentMilleTime());
 			
 			List<String> readFileText = FileUtil.readFileTextList(filePath);
 			if(readFileText.size()>0) {
@@ -144,7 +136,8 @@ public class ConfigLogService {
 			}else {
 				vo.setContents(new ArrayList<String>());
 			}
-			
+			System.out.println("insert  :"+DateUtil.getCurrentMilleTime());
+			System.out.println("insert  :"+vo.getFileName());
 			dao.insertConfigLogFile(vo);
 			
 			DirectoryVO dirVO = new DirectoryVO();
@@ -163,11 +156,13 @@ public class ConfigLogService {
 				Document findOneDoc = dao.selectConfigLogDirectory(dirVO).get(0);
 				
 				List<String> fileNameList = (List<String>) findOneDoc.get("fileNames");
-				fileNameList.add(vo.getFileName());
+				if(!fileNameList.contains(vo.getFileName()))
+					fileNameList.add(vo.getFileName());
 				
 				findOneDoc.put("fileNames", fileNameList);
 				findOneDoc.put("updateTime", DateUtil.getCurrentTime());
 				dao.updateConfigLogDirctoryFileNames(dirVO, findOneDoc);	
+				
 			}
 			
 		}
@@ -215,12 +210,15 @@ public class ConfigLogService {
 		List<Document> resultList = new ArrayList<Document>();
 		for(Document doc : dao.selectConfigLogFileList(vo)) {
 			Document fileLogDocument = new Document();
+			String remainFilePath = FileUtil.getOnlyPathByRemainFullPath((String)doc.get("filePath"));
+			
 			fileLogDocument.put("_id", doc.get("_id").toString());
 			fileLogDocument.put("hostIp", doc.get("hostIp"));
 			fileLogDocument.put("fileName", doc.get("fileName"));
-			fileLogDocument.put("filePath", doc.get("filePath"));
+			fileLogDocument.put("filePath", remainFilePath);
 			fileLogDocument.put("owner", doc.get("owner"));
 			fileLogDocument.put("fileCreateDate", doc.get("fileCreateDate"));
+			fileLogDocument.put("logTime", doc.get("logTime"));
 			
 			resultList.add(fileLogDocument);
 		}
@@ -232,12 +230,60 @@ public class ConfigLogService {
 		return dao.selectConfigOriginLogFileContents(vo);
 	}
 	
+	public List<Document> selectConfigContents(ConfigContentsVO vo) {
+		return dao.selectConfigContents(vo);
+	}
+	
 	public List<Document> selectBefroDateAuditLogSessionList(ConfigLogSessionsVO vo){
 		return dao.selectBefroDateAuditLogSessionList(vo);
 	}
 	
+	public List<String> selectBeforDateAuditLogSes(ConfigLogSesCondVO vo){
+		List<String> sesList = new ArrayList<>();
+		
+		try {
+			List<String> headerMsgList = new ArrayList<>();
+			//case 1: bodyName equal : path+filename or bobyName equal : fileaname
+			for(Document headerMsg : dao.historyConditionBodyName(vo)) {
+	//			System.out.println(headerMsg.toJson());
+				headerMsgList.add((String)headerMsg.get("_id"));
+			}
+			
+			//case 2: type excve , a0 ~ aN 까지 언급 된 경우
+			for(Document headerMsg : dao.historyConditionExecve(vo)) {
+				headerMsgList.add((String)headerMsg.getString("header_msg"));
+			}
+			
+			headerMsgList =  headerMsgList.stream().distinct().collect(Collectors.toList());
+			
+			for(String hMsg : headerMsgList) {
+				String ses = dao.getSesList(vo.getHostIp(), hMsg);
+				sesList.add(ses);
+			}
+			
+			sesList = sesList.stream().distinct().collect(Collectors.toList());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return sesList;
+	}
+	
 	public List<Document> selectBeforDateAuditLogByConfigLog(ConfigLogHistoryVO vo){
 		return dao.selectBeforDateAuditLogByConfigLog(vo);
+	}
+	
+	public List<String> selectConfigLogPathList(ConfigLogPathsVO vo ){
+		List<Document> docConfigLogList = dao.selectConfigLogPathList(vo);
+		List<String> pathList = new ArrayList<String>();
+		for(Document doc : docConfigLogList) {
+			String fullPath = doc.get("filePath")+"/"+doc.get("fileName");
+			pathList.add(FileUtil.getOnlyPathByRemainFullPath(fullPath));
+		}
+		
+		pathList = 	pathList.stream().distinct().collect(Collectors.toList());
+		
+		return pathList;
 	}
 	
 

@@ -1,5 +1,7 @@
 package com.smt.scheduler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.bson.Document;
@@ -13,6 +15,7 @@ import com.mongodb.client.MongoCollection;
 import com.smt.service.DashboardService;
 import com.smt.service.HostsService;
 import com.smt.util.DateUtil;
+import com.smt.util.FileUtil;
 import com.smt.util.MogoDBUtil;
 
 @Component
@@ -27,9 +30,9 @@ public class StatsScheduler {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
-//	@Scheduled(cron = "${fixed.delay.string.audit.status}") 
+	@Scheduled(cron = "${fixed.delay.string.audit.status}") 
 	public void excuteCountMitreAttackAuditLog() {
-		
+			System.out.println("excuteCountMitreAttackAuditLog()");
 		try {
 			MongoCollection<Document> statsCountCol = mongoTemplate.getCollection("DB_STATS");
 			
@@ -65,9 +68,9 @@ public class StatsScheduler {
 		
 	}
 	
-//	@Scheduled(cron = "${fixed.delay.string.config.status}") 
+	@Scheduled(cron = "${fixed.delay.string.config.status}") 
 	public void excuteCountConfigModify() {
-		
+		System.out.println("excuteCountConfigModify()");
 		try {
 			
 			MongoCollection<Document> statsCountCol = mongoTemplate.getCollection("DB_STATS");
@@ -84,14 +87,20 @@ public class StatsScheduler {
 				BasicDBObject findLogQuery =new BasicDBObject();
 				findLogQuery.put("hostIp", hostIp);
 				findLogQuery.put("fileCreateDate", MogoDBUtil.getDateTermFindQuery(DateUtil.getTodayDate(), DateUtil.getTodayDate()) );
-				int countConfigLog = (int) configFileCol.countDocuments(findLogQuery);
+				List<Document> countConfigLog =configFileCol.find(findLogQuery).into(new ArrayList<Document>());
+				List<String> filePathList = new ArrayList<String>();
+				for(Document doc : countConfigLog) {
+					String filePath = FileUtil.getOnlyPathByRemainFullPath((String)doc.get("filePath"));
+					filePathList.add(filePath+"/"+(String)doc.get("fileName"));
+				}
 				
 				Document countResult = new Document();
 				countResult.put("type", type);
 				countResult.put("hostIp", hostIp);
 				countResult.put("createDate", todayDate);
 				countResult.put("updateTime", current);
-				countResult.put("count", countConfigLog);
+				countResult.put("count", countConfigLog.size());
+				countResult.put("pathList", filePathList);
 				
 				BasicDBObject findQuery = new BasicDBObject("hostIp", hostIp);
 				findQuery.put("type", type);

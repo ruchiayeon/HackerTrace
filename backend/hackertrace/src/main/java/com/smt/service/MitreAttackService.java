@@ -214,6 +214,8 @@ public class MitreAttackService {
 					Document doc = new Document();
 					doc.put("external_ids", matrixT);
 					doc.put("_ids", auditLogObjIdList);
+					List<String> killChainPahsesList = (List<String>) getKillChainPhaseByT(matrixT).get("kill_chain_phases");
+					doc.put("kill_chain_phases", killChainPahsesList);
 					userAuditLogMatchObjIdList.add(doc);
 				}
 		}

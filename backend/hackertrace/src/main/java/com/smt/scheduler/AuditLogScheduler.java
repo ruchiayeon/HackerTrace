@@ -25,9 +25,9 @@ public class AuditLogScheduler {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 	
-//	@Scheduled(cron = "${fixed.delay.string.audit.uid.ses}") 
+	@Scheduled(cron = "${fixed.delay.string.audit.uid.ses}") 
 	public void excuteAggregateUid() throws InterruptedException {
-		
+			System.out.println("excuteAggregateUid()");
 		try {
 			MongoCollection<Document> auditLogCol = mongoTemplate.getCollection("AUDIT_LOG");
 			MongoCollection<Document> auditLogUidSesCol =  mongoTemplate.getCollection("AUDIT_LOG_UID_SES");

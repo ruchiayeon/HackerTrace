@@ -124,5 +124,20 @@ public class FileUtil {
 		}
 		return onlyPath;
 	}
+	
+	public static String getOnlyPathByRemainFullPath(String msgFilePath) {
+		String[] pathNames = msgFilePath.split("\\/");
+		String onlyPath = "";
+		for(int i=5; i< pathNames.length; i++) {
+			String path= pathNames[i];
+			if(!path.isEmpty())
+				onlyPath += "/"+path;
+		}
+		return onlyPath;
+	}
+	public static void main(String[] args) {
+		String filePath = "/home/manager/HostServer/210.114.19.179/etc/ji3/ji3_1";
+		System.out.println(	getOnlyPathByRemainFullPath(filePath));
+	}
 
 }
