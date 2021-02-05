@@ -1,4 +1,4 @@
-import React, { lazy, useState,useEffect } from 'react'
+import React, {useState,useEffect } from 'react'
 import {
   CCard,
   CCardBody,
@@ -7,6 +7,7 @@ import {
   CRow,
   CFormGroup,
   CSelect,
+  CWidgetDropdown
 } from '@coreui/react'
 import axios from 'axios'
 import { CChartLine } from '@coreui/react-chartjs'
@@ -17,16 +18,23 @@ import Loading from "../pages/Loading/Loading"
 
 
 function Dashboard() {
-  const WidgetsDropdown = lazy(() => import('../widgets/WidgetsDropdown.js'))
   
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   //이상행위 대시보드 Count 조회
   const [abnormalData, setAbnormalData] = useState(null) 
+
   //host Ip받아오는 부분
   const [hostDatas, setHostDatas] = useState(null);
   const [frishostDatas, setFrisHostDatas] = useState(null);
+
+  //형상관리 Count 받아오는 부분
+  const [configCount, setconfigCount] = useState([
+    {count: "0", updateTime: "0000-00-00 00:00:00", term: "TODAY"}, 
+    {count: "0", updateTime: "0000-00-00 00:00:00", term: "WEEK"},
+    {count: "0", updateTime: "0000-00-00 00:00:00", term: "MONTH"}
+  ])
 
   //Chart Datas
   const [updat, setupdate] = useState(null)
@@ -142,6 +150,19 @@ function Dashboard() {
           setsubChartDatas(response.data.data.chart_data[i].일)
         }
       }
+
+      const responseCount = await axios.post(
+        'http://210.114.18.175:8080/ht/dashboard/statics/config',
+        {
+          hostIp: selectHostIp
+        }
+      )
+      console.log(responseCount.data.data)
+      setconfigCount(responseCount.data.data)
+
+
+
+
     }catch(e){
       setError(e)
     }
@@ -171,7 +192,7 @@ function Dashboard() {
   
     return [
       {
-        label: '형상관리 변경 현황',
+        label: '유저행위 현황',
         backgroundColor: "#321fdbb0",
         borderColor:"#321fdb",
         pointHoverBackgroundColor: "#321fdb",
@@ -221,11 +242,13 @@ function Dashboard() {
       }
     }
   )()
-  
+
+
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
   if(!hostDatas) return <Page404/>;
   if(!abnormalData) return submitAbnormal();
+
 
   return (
     <>
@@ -241,13 +264,47 @@ function Dashboard() {
         </CCol>
       </div>
       {/*첫번째 숫자위젯 */}
-      <WidgetsDropdown />
+      <CRow>
+      <CCol md="4">
+        <CWidgetDropdown
+          color="gradient-primary"
+          header={configCount[0].count}
+          text={configCount[0].term}
+          footerSlot={<br/>}
+        >
+        </CWidgetDropdown>
+      </CCol>
+
+      <CCol  md="4">
+        <CWidgetDropdown
+          color="gradient-info"
+          header={configCount[1].count}
+          text={configCount[1].term}
+          footerSlot={<br/>}
+        >
+        </CWidgetDropdown>
+      </CCol>
+
+      <CCol md="4">
+        <CWidgetDropdown
+          color="gradient-warning"
+          header={configCount[2].count}
+          text={configCount[2].term}
+          footerSlot={<br/>}
+        >
+    
+        </CWidgetDropdown>
+        
+      </CCol>
+      
+     
+    </CRow>
       {/*형상관리 template */}
       <CCard>
         <CCardBody>
           <CRow>
             <CCol sm="5">
-              <h4 className="abnormalTitle">형상관리</h4>
+              <h4 className="abnormalTitle">유저행위</h4>
               <h6 id="dd">업데이트 일자 : {updat}</h6>
             </CCol>
           </CRow>
@@ -257,7 +314,6 @@ function Dashboard() {
             options={defaultOptions}
             labels={['월', '화', '수', '목', '금', '토', '일']}
           />
-     
         </CCardBody>
       </CCard>
       <CRow>
@@ -266,7 +322,7 @@ function Dashboard() {
             <CCardBody>
               <CRow>
                 <CCol >
-                  <h4 className="abnormalTitle">이상행위</h4>
+                  <h4 className="abnormalTitle">감사로그</h4>
                   <h6>업데이트 일자 : {abnormalData[0].updateTime}</h6>
                   <CDataTable
                     items={abnormalData}

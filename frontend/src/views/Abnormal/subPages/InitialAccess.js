@@ -30,6 +30,12 @@ function InitialAccess() {
   const [hostDatas, setHostDatas] = useState(null);
   const [firsthostDatas, setFirHostDatas] = useState(null);
 
+  let today = new Date();   
+  let year = today.getFullYear(); // 년도
+  let month = ("00"+ (today.getMonth() + 1)).slice(-2);  // 월
+  let date = ("00" + today.getDate()).slice(-2);  // 날짜
+  const formatdate = year + '-' + month + '-' + date
+
   //host ip 받아오기
   useEffect(()=>{
     const hostResData = async() => {
@@ -54,8 +60,8 @@ function InitialAccess() {
 
   const[inputs, setInputs] = useState({
     search:'',
-    startDate:'2020-01-01',
-    endDate:'2021-01-30',
+    startDate:formatdate,
+    endDate:formatdate,
     selectColum:'uid',
     selectHostIp: firsthostDatas
   });
@@ -82,13 +88,14 @@ function InitialAccess() {
   };
 
   const fields = [
-    {key:'time', _style:{width:'20%'}, label:"TIME"},
-    {key:'body_host_ip', _style:{width:'10%'}, label:"HOST IP"},
-    {key:'body_key', _style:{width:'10%'}, label:"Mitter T Value"},
-    {key:'header_message:type', _style:{width:'10%'}, label:"Audit Type"}, 
-    {key:'body_ses', _style:{width:'10%'}, label:"Session"},
-    {key:'body_uid', _style:{width:'10%'}, label:"Uid"},
-    {key:'header_msg', _style:{width:'30%'}, label:"Messages"},
+    {key:'time', label:"TIME"},
+    {key:'body_success', label:"Success"},
+    {key:'body_key',label:"Mitter T Value"},
+    {key:'header_message:type', label:"Audit Type"}, 
+    {key:'body_ses', label:"Session"},
+    {key:'body_uid', label:"Uid"},
+    {key:'body_exe', label:"Exe"},
+    {key:'body_comm', label:"Comm"}
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -109,6 +116,7 @@ function InitialAccess() {
           searchWord: search, 
         }
       )
+      console.log(response.data.data)
       if(pageNumbers>1){
         for(let i =0; i<1000; i++){
           privilegeDatas.push(response.data.data[i])
@@ -157,10 +165,12 @@ function InitialAccess() {
                       <CCol md="4">
                         <CFormGroup>
                           <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="selectColum">
-                            <option value='type'>type</option>
-                            <option value='uid'>uid</option>
-                            <option value='ses'>session</option>
-                            <option value='key'>T value</option>
+                            <option value='success'>Success</option>
+                            <option value='key'>Mitter T Value</option>
+                            <option value='uid'>Uid</option>
+                            <option value='ses'>Session</option>
+                            <option value='exe'>Exe</option>
+                            <option value='comm'>Comm</option>
                           </CSelect>
                         </CFormGroup>
                       </CCol>

@@ -51,13 +51,16 @@ function TheHeader() {
           <CHeaderNavLink to="/dashboard">대시보드</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem  className="px-3">
-          <CHeaderNavLink to="/config">형상관리</CHeaderNavLink>
+          <CHeaderNavLink to="/config">유저행위</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem className="px-3">
-          <CHeaderNavLink to="/abnormal/initial">이상행위</CHeaderNavLink>
+          <CHeaderNavLink to="/abnormal/initial">감사로그</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem className="px-3">
           <CHeaderNavLink to="/correlation">상관분석</CHeaderNavLink>
+        </CHeaderNavItem>
+        <CHeaderNavItem className="px-3">
+          <CHeaderNavLink to="/monitor">모니터링</CHeaderNavLink>
         </CHeaderNavItem>
       </CHeaderNav>
 
@@ -70,11 +73,6 @@ function TheHeader() {
         className="border-0 c-subheader-nav m-0 px-0 px-md-3" 
         routes={routes} 
       />
-       
-             
-      
-             
-       
       </CSubheader>
     </CHeader>
   )

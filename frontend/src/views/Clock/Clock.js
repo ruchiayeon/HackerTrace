@@ -5,8 +5,10 @@ export class Clock extends Component {
         super(props)
         this.state = {date: new Date()}
     }
+    
 
     render() {
+        
         return (
             <>
                 <h6>{this.state.date.toDateString()} {this.state.date.toLocaleTimeString()}</h6>

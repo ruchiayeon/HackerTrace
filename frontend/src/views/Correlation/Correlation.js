@@ -52,6 +52,12 @@ function Correlation() {
   const [Exfiltration, setExfiltration] = useState("")
   const [Impact, setImpact] = useState("")
 
+  let today = new Date();   
+  let year = today.getFullYear(); // 년도
+  let month = ("00"+ (today.getMonth() + 1)).slice(-2);  // 월
+  let date = ("00" + today.getDate()).slice(-2);  // 날짜
+  const formatdate = year + '-' + month + '-' + date
+
   useLayoutEffect(()=>{
     const hostResData = async() => {
     try{
@@ -75,8 +81,8 @@ function Correlation() {
   }, []);
 
   const [inputs, setInputs] = useState({
-    startDate:'2021-01-01',
-    endDate:'2021-01-30',
+    startDate: formatdate,
+    endDate: formatdate,
     selectHostColum: "",
     selectSESSColum : ""
   });
@@ -203,6 +209,7 @@ function Correlation() {
 
   //선학님이 DB넘겨주는것 확인하고 fields key값 변경하기.
   const fields = [
+    {key:'kill_chain_phases',_style:{width:'20%'}, label: "kill_chain_phases"},
     {key:'external_ids',_style:{width:'20%'}, label: "Mattrix T Value"}
   ]
 
@@ -263,8 +270,10 @@ function Correlation() {
 
   //input selector를 따로 선택 안해도 받아오는 부분
   function submitTableValue(){
-    if(frisuidDatas[0] === null || frissessDatas[0] === null){
-      alert("상관분석 데이터가 존재 하지 않습니다.")
+    if(!frisuidDatas || !frissessDatas){
+      alert("상관분석 데이터가 존재 하지 않습니다. 검색 날짜를 변경해주십시오.")
+    }else if(!frisuidDatas[0] || !frissessDatas[0]){
+      alert("상관분석 데이터가 존재 하지 않습니다. 검색 날짜를 변경해주십시오.")
     }else{ 
       if(!selectHostColum || selectHostColum === firsthostDatas){
         if(!selectUIDColum || selectUIDColum === frisuidDatas){
@@ -300,14 +309,14 @@ function Correlation() {
 
   //Matrix-table --> 나중에 쪼개기 
   //Att&CK map info
-  const matrixResData = async() => {
+  const matrixResData = async(value) => {
     try{
         //요청이 왔을때 원래 있던 값을 초기화해준다.
         setLoading(true);
 
         //axios를 이용하여 해당 url에서 값을 받아온다.
         const response = await axios.get(
-            'http://210.114.18.175:8080/ht/mitre/matrix?isSubT=T'
+            `http://210.114.18.175:8080/ht/mitre/matrix?isSubT=${value}`
         )
 
         //받아온 값을 setMiterData에 넣어준다.
@@ -332,6 +341,19 @@ function Correlation() {
         //로딩 실패시 flag를 달아서 이동
         setLoading(false);
   };
+  const [toggleState, setToggleState] = useState("T");
+  const [switchtitle, setswitchtitle] = useState("+")
+
+  function toggle() {
+    setToggleState(toggleState === "T" ? "F" : "T");
+    setswitchtitle(switchtitle === "-" ? "+" : "-");
+    matrixResData(toggleState)
+  }
+
+  function SubmitMatrix() {
+    const valueT = "T"
+    matrixResData(valueT)
+  }
 
   //<table 검색된 부분을 가지고 className 변경 파트>
   //2021-01-15 해당 부분 확인 필
@@ -1003,7 +1025,7 @@ function Correlation() {
   //로딩관련 예외처리를 해준다. --> 페이지 만들어졌을때 변경 하기 
   if(loading) return <Loading/>;
   if(error) return <Page404/>
-  if(!attackMatrixs) return matrixResData();
+  if(!attackMatrixs) return SubmitMatrix();
 
   //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
   if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
@@ -1014,10 +1036,103 @@ function Correlation() {
         <CCol>
           <CCard>
             <CCardBody>
+              {/*상관분석 관련 검색하는 테이블을 표기한다. Axios쪽에 넘겨야하는 Value가 useEffect에 정의되어있다. 확인 필.*/}
+              <div className="searchtoolbar">
+                <CRow>
+                  <CCol sm="6" md="2">
+                    <CFormGroup row>
+                      <CCol  md="12">
+                        <CInput type="date" id="startDate" placeholder="start_date" onChange={handlerChange} value={startDate} name='startDate'/>
+                      </CCol>
+                    </CFormGroup>
+                  </CCol>
+                  <CCol sm="6"md="2">
+                    <CFormGroup row>
+                      <CCol md="12">
+                        <CInput type="date" id="endDate" placeholder="end_date" onChange={handlerChange} value={endDate} name='endDate'/>
+                      </CCol>
+                    </CFormGroup>
+                  </CCol>   
+                  <CCol sm="6" md="2">
+                    <CFormGroup>
+                      <CSelect custom name="selectHostColum" onChange={handlerChange} value={selectHostColum} id="selectHostColum">
+                        {hostDatas.map((item, index) => {
+                          return <option key={index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
+                        })}
+                      </CSelect>
+                    </CFormGroup>
+                  </CCol>
+                  <CCol md="2"> 
+                    <CButton onClick={submitValue} color="info">uid | session 확인</CButton>
+                  </CCol>
+                  <CCol md="4">
+                    <CRow>
+                      <CCol md="4"sm="3">
+                      <CFormGroup>
+                        <CSelect custom name="selectUIDColum" onChange={deephandlerChange} value={selectUIDColum} id="selectUIDColum">
+                          {uidDatas.map((item, index) => {
+                            return <option className='selectUIDColum' key={index} value={item}>UID : {item}</option>
+                          })}
+                        </CSelect>
+                      </CFormGroup>
+                      </CCol>
+                      <CCol md="5"sm="3">
+                      <CFormGroup>
+                        <CSelect custom name="selectSESSColum" onChange={handlerChange} value={selectSESSColum} id="selectSESSColum">
+                           {sessDatas.map((item, index) => {
+                            return <option key={index} value={item}>Session : {item}</option>
+                          })}
+                        </CSelect>
+                      </CFormGroup>
+                      </CCol>
+                      <CCol md="3"sm="2">
+                        <CButton onClick={submitTableValue} color="info">검색</CButton>
+                        
+                      </CCol>
+                    </CRow>
+                  </CCol>
+                </CRow>
+              </div>
+              <CDataTable
+                items={corrDatas}
+                fields={fields}
+                itemsPerPage= {5}
+                hover
+                pagination
+              />
+               <hr className="tableTopMargin"/>
                {/*사용자와 유사한 공격그룹을 보여주는 section*/}
-               <h4 className="posiab">ATT&CK Mattix Table</h4>
-               <section className="corrlresult col-md-4">
-               <h6>TOP 3 유사공격 그룹</h6>
+               <CRow>
+                <section className="restbtn">
+                
+                  <CButton title="ATTCK Map초기화" onClick={resetMattrix} color="info" target="초기화">초기화</CButton>
+           
+               
+                   <CButton title="ATTCK Map 상세보기" value={`switch ${toggleState}`}onClick={toggle} color="info">{switchtitle}</CButton>
+           
+               
+                </section>
+              </CRow>
+               
+              <CRow className='legend'>
+                <div className="LegendRow" onClick={resultMatrix}>
+                  <CRow>
+                    <div className="searchTLegend"/><p>ATT&CK Mapping Data</p> 
+                  </CRow>
+                </div>  
+                <div className="LegendRow">
+                  <CRow>
+                    <div className="matchTLegend"/><p>일치확인</p>
+                  </CRow>
+                </div>  
+                <div className="LegendRow">
+                  <CRow>
+                    <div className="attckGrouptLegend"/><p>유사공격그룹 유형</p>
+                  </CRow>
+                </div>  
+    
+                <div className="corrlresult col-md-4">
+                <h6>TOP 3 유사공격 그룹</h6>
                 <CRow >
                   <CCol className="attgroupResult">
                     <CButton onClick={changeColors}>1위 :<br/> {matchAttGroupDatas[0].attack_group_name}[{matchAttGroupDatas[0].matching_rate}]</CButton>
@@ -1029,33 +1144,12 @@ function Correlation() {
                     <CButton onClick={changeColors2}>3위 :<br/> {matchAttGroupDatas[2].attack_group_name}[{matchAttGroupDatas[2].matching_rate}]</CButton>
                   </CCol>
                   </CRow>
-               </section>
-              <CRow className='legend'>
-                <CPopover header='사용자공격 유형' content="사용자의 검색 결과 검출된 Mattrix T Value를 보여준다." >
-                  <div className="LegendRow" onClick={resultMatrix}>
-                    <CRow>
-                      <div className="searchTLegend"/><p>사용자공격 유형</p> 
-                    </CRow>
-                  </div>  
-                </CPopover>
-                <CPopover header='사용자와 일치한 공격유형' content="사용자의 검색 결과 검출된 Mattrix T Value를 보여준다." >
-                  <div className="LegendRow">
-                    <CRow>
-                    <div className="matchTLegend"/><p>사용자와 일치한 공격유형</p>
-                    </CRow>
-                  </div>  
-                </CPopover>
-                <CPopover header='유사공격그룹 유형' content="사용자의 검색 결과 검출된 Mattrix T Value를 보여준다." >
-                  <div className="LegendRow">
-                    <CRow>
-                    <div className="attckGrouptLegend"/><p>유사공격그룹 유형</p>
-                    </CRow>
-                  </div>  
-                </CPopover>
+               </div>
               </CRow>
 
+            
+              {/*Attack Mattrix tempalte */}
               <CRow>
-                 {/*Attack Mattrix tempalte */}
                 <CCol md={12}>
                   <div className="matrixtotal">
                     <CRow> 
@@ -1163,70 +1257,6 @@ function Correlation() {
                 </CCol>
 
               </CRow>
-              <hr className="tableTopMargin"/>
-               {/*상관분석 관련 검색하는 테이블을 표기한다. Axios쪽에 넘겨야하는 Value가 useEffect에 정의되어있다. 확인 필.*/}
-              <div className="searchtoolbar">
-                <CRow>
-                  <CCol sm="6" md="2">
-                    <CFormGroup row>
-                      <CCol  md="12">
-                        <CInput type="date" id="startDate" placeholder="start_date" onChange={handlerChange} value={startDate} name='startDate'/>
-                      </CCol>
-                    </CFormGroup>
-                  </CCol>
-                  <CCol sm="6"md="2">
-                    <CFormGroup row>
-                      <CCol md="12">
-                        <CInput type="date" id="endDate" placeholder="end_date" onChange={handlerChange} value={endDate} name='endDate'/>
-                      </CCol>
-                    </CFormGroup>
-                  </CCol>   
-                  <CCol sm="6" md="2">
-                    <CFormGroup>
-                      <CSelect custom name="selectHostColum" onChange={handlerChange} value={selectHostColum} id="selectHostColum">
-                        {hostDatas.map((item, index) => {
-                          return <option key={index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
-                        })}
-                      </CSelect>
-                    </CFormGroup>
-                  </CCol>
-                  <CCol md="2"> 
-                    <CButton onClick={submitValue} color="info">uid | session 확인</CButton>
-                  </CCol>
-                  <CCol md="4">
-                    <CRow>
-                      <CCol md="4"sm="3">
-                      <CFormGroup>
-                        <CSelect custom name="selectUIDColum" onChange={deephandlerChange} value={selectUIDColum} id="selectUIDColum">
-                          {uidDatas.map((item, index) => {
-                            return <option className='selectUIDColum' key={index} value={item}>UID : {item}</option>
-                          })}
-                        </CSelect>
-                      </CFormGroup>
-                      </CCol>
-                      <CCol md="5"sm="3">
-                      <CFormGroup>
-                        <CSelect custom name="selectSESSColum" onChange={handlerChange} value={selectSESSColum} id="selectSESSColum">
-                           {sessDatas.map((item, index) => {
-                            return <option key={index} value={item}>Session : {item}</option>
-                          })}
-                        </CSelect>
-                      </CFormGroup>
-                      </CCol>
-                      <CCol md="3"sm="2">
-                        <CButton onClick={submitTableValue} color="info">검색</CButton>
-                      </CCol>
-                    </CRow>
-                  </CCol>
-                </CRow>
-              </div>
-              <CDataTable
-                items={corrDatas}
-                fields={fields}
-                itemsPerPage= {5}
-                hover
-                pagination
-              />
             </CCardBody>
           </CCard>
         </CCol>

@@ -11,35 +11,24 @@ const _nav =  [
     name: '대시보드',
     to: '/dashboard',
     icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
-  //  badge: {
-   //   color: 'info',
-    //  text: 'NEW',
-   // }
   },
   {
     _tag: 'CSidebarNavTitle',
-    _children: ['형상관리']
+    _children: ['유저행위']
   },
   {
-    _tag: 'CSidebarNavDropdown',
-    name: '형상관리',
-    route:'/config',
-    icon: 'cil-puzzle',
-    _children: [
-      {
-        _tag: 'CSidebarNavItem',
-        name: '/etc/',
-        to: '/config',
-      }
-    ]
+    _tag: 'CSidebarNavItem',
+    name: '유저행위',
+    to:'/config',
+    icon: 'cil-puzzle'
   },
   {
     _tag: 'CSidebarNavTitle',
-    _children: ['이상행위']
+    _children: ['감사로그']
   },
   {
     _tag: 'CSidebarNavDropdown',
-    name: '이상행위',
+    name: '감사로그',
     route:'/abnormal/initial',
     icon: 'cil-puzzle',
     _children: [
@@ -109,6 +98,16 @@ const _nav =  [
     _tag: 'CSidebarNavItem',
     name: '상관분석',
     to: '/correlation',
+    icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
+  },
+  {
+    _tag: 'CSidebarNavTitle',
+    _children: ['모니터링']
+  },
+  {
+    _tag: 'CSidebarNavItem',
+    name: '모니터링',
+    to: '/monitor',
     icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
   }
 ]

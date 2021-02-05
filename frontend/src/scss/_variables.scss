@@ -5,7 +5,16 @@
   padding: 0rem 1rem;
   background: linear-gradient(13deg, #c9c4f780, #f5d5d500);
 }
-
+.btmholl{
+  width: 100%;
+}
+.textBold{
+  font-weight: 600;
+}
+.textMonitor{
+  font-weight: 8700;
+  margin: 0 1rem;
+}
 ::-webkit-scrollbar {
     width: 5px;  /* 세로축 스크롤바 길이 */
     height: 0px;  /* 가로축 스크롤바 길이 */
@@ -231,7 +240,7 @@ hr{
   border-radius: 1rem;
 }
 .LegendRow{
-  margin: 0rem 1rem 0rem 1rem;
+  margin: auto 1rem 0rem 1rem;
   cursor: pointer;
 }
 .legend{
@@ -249,7 +258,12 @@ hr{
   margin-bottom: 3rem;
   opacity: 0.3;
 }
-
+.restbtn{
+  margin: 0 1rem 0.5rem auto;
+}
+.restbtn button{
+  margin: 0 0.5rem;
+}
 
 //side bar style
 .c-sidebar {
@@ -264,7 +278,7 @@ hr{
   font-weight: 600;
 }
 .searchtoolbar{
-  margin: 1rem 0;
+  margin: 1rem;
 }
 .hiddenUidSelec{
   display: none;
@@ -272,8 +286,12 @@ hr{
 
 //modal style 
 .modal-dialog{
-  max-width: 100%!important;
-  margin: 3rem 16rem!important;
+  max-width: 50% !important;
+  margin: 3rem auto!important;
+}
+.modal-body{
+  height: 30rem;
+  overflow: scroll;
 }
 
 ///spiner-center
@@ -362,7 +380,7 @@ hr{
 }
 
 .folderTree{
-  height: 30rem;
+  height: 35rem;
   overflow: scroll;
 }
 .treeClickValue{
@@ -376,4 +394,93 @@ hr{
     border: 0!important;
     outline: none!important;
   }
+}
+.folderTree .treeview>div{
+  border-left: 1px dashed rgba(0, 0, 0, 0.4)!important;
+}
+.contentsList{
+  list-style:none;
+}
+
+.changeDirList{
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  text-align: left;
+  cursor: pointer;
+}
+.folderTree li{
+  transition: 0.3s ease-in-out;
+  border-radius: 0px;
+  &:hover{
+    transition: 0.3s ease-in-out;
+    background: #0066ff46;
+    border-radius: 10px;
+  }
+}
+.folderTree ul{
+  list-style: none;
+  padding-left: 0rem;
+}
+
+.ulListStyle{
+  padding: 0 1rem;
+  border-left: 1px dashed #afafaf;
+  margin: 1rem 1rem;
+}
+
+.historyList{
+  width: 80%;
+  padding: 1rem;
+  background: #eee;
+  margin: 0.5rem 0;
+  border-radius: 10px;
+  transition: 0.3s ease-in-out;
+  &:hover{
+    box-shadow: 0 0 9px 1px rgba(50, 31, 219, 0.5);
+    transition: 0.3s ease-in-out;
+  }
+}
+.historyLin{
+  width: 2rem;
+    border-bottom: 1px dashed #afafaf;
+    margin: auto 0;
+}
+.totalHistoryLog{
+  white-space: break-spaces;
+  line-height: 2rem;
+  //text-decoration-line: underline;
+  margin-left: 1rem;
+}
+.centerTime{
+  text-align: center;
+  margin: 0.3rem 0;
+  cursor: pointer;
+}
+.footerlogCount{
+  margin: 0 auto 0 1rem!important;
+}
+.tableclass{
+  width: 100%;
+}
+.itemTimeValue{
+  width: 20%;
+  vertical-align: top;
+  padding: 1rem;
+  font-weight: 600;
+}
+.totalLog{
+  padding: 1rem 1rem;
+  text-align: justify;
+}
+.historytr{
+  border-bottom: 1px solid #7b7b7b45;
+  border-top: 1px solid #7b7b7b45;
+}
+.logsection{
+  padding: 1rem 0.5rem;
+}
+strong{
+  background: #eee;
+  font-weight: 600!important;
 }

@@ -7,8 +7,6 @@ import {
   CRow,
   CFormGroup,
   CInput,
-  CInputGroup,
-  CInputGroupAppend,
   CButton,
   CSelect,
   CModal,
@@ -34,13 +32,40 @@ function ConfigManage() {
   const [configDatas, setConfigDatas] = useState(null);
   const [oldCode , setOldCode] = useState("old")
   const [newCode , setNewCode] = useState("new")
+  const [IntegrityNull, setIntegrityNull] = useState(null)
+
   //contents View
   const [contentsView, setContentsView ] =useState([null])
   const [contentsModal, setContentsModal] = useState(false)
 
   //configHistroy Hook
-  const [configHistory, setconfigHistory] = useState([null])
+  const [historyModal, setHistoryModal] = useState(false)
+  const [configChangeHistory, setconfigChangeHistory] = useState([null])
   
+  //config Audit History hook
+  const [fristSes, setfirstSes] = useState(null)
+  const [historyAuditlog, setHistoryAuditLog] = useState([null])
+  const [historySes, setHistorySes] = useState([""])
+  const [rowHistoryTime, setRowHistroyTime] = useState({
+    afterTerm: 1,
+    beforeTerm: 1,
+    fileCreateDate: '',
+    fileName: '',
+    filePath: '',
+    hostIp: '',
+    session: fristSes
+  })
+  
+  const { afterTerm, beforeTerm, session} = rowHistoryTime;
+
+  function HistoryViewHandler(e){
+    const { value, name } = e.target;
+    setRowHistroyTime({
+    ...rowHistoryTime,
+    [name]:value
+    });
+  };
+
   //host Ip받아오는 부분
   const [hostDatas, setHostDatas] = useState(null);
   const [firsthostDatas, setFirHostDatas] = useState(null);
@@ -54,6 +79,13 @@ function ConfigManage() {
   //예외처리 Hook
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  //오늘 날짜 받아오기
+  let today = new Date();   
+  let year = today.getFullYear(); // 년도
+  let month = ("00"+ (today.getMonth() + 1)).slice(-2);  // 월
+  let date = ("00" + today.getDate()).slice(-2);  // 날짜
+  const formatdate = year + '-' + month + '-' + date
 
   //host ip 받아오기
   useEffect(()=>{
@@ -79,14 +111,13 @@ function ConfigManage() {
   }, []);
   
   const[inputs, setInputs] = useState({
-    search:'',
-    startDate:'2021-01-01',
-    endDate:'2021-01-30',
+    startDate: formatdate,
+    endDate: formatdate,
     selectHostIp: "",
     setDircList: ""
   });
 
-  const { search, startDate, endDate, selectHostIp } = inputs;
+  const { startDate, endDate, selectHostIp } = inputs;
 
   function handlerChange(e){
     const { value, name } = e.target;
@@ -107,12 +138,14 @@ function ConfigManage() {
           topDirectory  : changeTreeName
         }
       )
+       
       if(response.data.data.length === 0){
         setTreeSource([{name:null}]);
         alert("형상변경 파일이 없습니다. 검색 조건을 변경하십시오.")
       }else{
         setTreeSource(response.data.data)
       }
+
       if(response.data.data.children.length === 0){
         setTreeChildSource([{name:null},{children:[null]}]);
       }else{
@@ -135,22 +168,33 @@ function ConfigManage() {
   //검색 버튼 및 Value값 넘겨주는 부분
   function submitTreeLog(){
     if(!selectHostIp){
-      getDircList(firsthostDatas, defaultTreeName)
+      if(!startDate || !endDate){
+        alert("검색 날짜를 지정해주십시오.")
+      }else{
+        getDircList(firsthostDatas, defaultTreeName)
+       ConfigChangeDirList(startDate,endDate,firsthostDatas)
+      }
+      
     }else{
-      getDircList(selectHostIp, defaultTreeName)
+      if(!startDate || !endDate){
+        alert("검색 날짜를 지정해주십시오.")
+      }else{
+        ConfigChangeDirList(startDate,endDate,selectHostIp)
+        getDircList(selectHostIp, defaultTreeName)
+      }
     }
   };
  
   //CData Tables의 Fileds값
   const fields = [
-    {label:"TIME", key:'fileCreateDate',_style:{width:'10%'}},
-    {label:"Id", key:'_id',_style:{width:'10%'}},
-    {label:"HOST IP", key:'hostIp',_style:{width:'10%'}},
+    {label:"Time", key:'logTime',_style:{width:'10%'}},
+    {label:"File Edit Time", key:'fileCreateDate',_style:{width:'10%'}},
     {label:"Owner", key:'owner',_style:{width:'10%'}},
     {label:"File Name", key:'fileName',_style:{width:'10%'}}, 
     {label:"File Path", key:'filePath',_style:{width:'30%'}}, 
     {label:"Integerity Check", key:'Integrity',_style:{width:'10%'}},
-    {label:"Contents View",  key:'Contents View'}
+    {label:"Contents",  key:'Contents'},
+    {label:"History",  key:'History'}
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -173,7 +217,6 @@ function ConfigManage() {
         }
       )
       setConfigDatas(response.data.data);
-      console.log(response.data.data);
      
     }catch(e){
       //에러시 flag를 달아서 이동
@@ -184,33 +227,60 @@ function ConfigManage() {
     setLoading(false);
   };
 
+  const [rowDatas1, setRowDatas1] = useState([null])
+  const [rowDatas2, setRowDatas2] = useState([null])
+
   //Integrity check해서 modal에서 Diff하기
   function toggleModal(item,index){
-    var rowId = item._id;
-    var rowPath = item.filePath;
-    var rowFileNam = item.fileName;
-    var rowHostIp = item.hostIp;
-    console.log(rowId, rowPath, rowFileNam, rowHostIp)
-    IntgrityCheck()
-    setConfigChange(!configChange);
+
+    if(!rowDatas1[0]){
+      setRowDatas1(item._id)
+    }else if(!rowDatas2[0] && rowDatas1 !== rowDatas2){
+      setRowDatas2(item._id)
+    }else if(rowDatas1 !== item._id){
+      setRowDatas1(item._id)
+    }else if(rowDatas2 !== item._id){
+      setRowDatas2(item._id)
+    }
+  }
+
+  function SubmitIntegrity(){
+    if(!rowDatas1[0] | !rowDatas2[0]){
+      alert("Integrity 대상을 클릭하십시오.")
+    }else{
+      IntegrityCheck(rowDatas1, rowDatas2)
+      setConfigChange(!configChange);
+      setRowDatas1([null])
+      setRowDatas2([null])
+    }
+    
   }
   
   //Integrity Check Axios
-  const IntgrityCheck = async() => {
+  const IntegrityCheck = async(rowDatas1, rowDatas2) => {
     try{
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
         'http://210.114.18.175:8080/ht/config/origin-log/contents',
         { 
-          logObjId: "5ffeaaa38a35c62284cd8587",
-          orgObjId: "5ffeaaa38a35c62284cd8587"
+          logObjId: rowDatas1,
+          orgObjId: rowDatas2
         }
       )
-      console.log(response.data.data)
-      setOldCode("asdf");//.origin_config_file_contents.contents
-      setNewCode("asdfasdfasdfasdf");//.log_config_file_contents.contents
-     
+      const oldValue = response.data.data[0].contents.toString()
+      const newValue = response.data.data[1].contents.toString()
+      console.log(oldValue, newValue)
+      if(oldValue === newValue){
+        setIntegrityNull("선택한 형상이 동일합니다.")
+        setOldCode(oldValue.replace(/,/gi,"\r\n"))
+        setNewCode(newValue.replace(/,/gi,"\r\n"))
+      }else{
+        setIntegrityNull(null)
+        setOldCode(oldValue.replace(/,/gi,"\r\n"))
+        setNewCode(newValue.replace(/,/gi,"\r\n"))
+      }
+
     }catch(e){
       //에러시 flag를 달아서 이동
       setError(e);
@@ -221,22 +291,17 @@ function ConfigManage() {
   }
 
   //Config History
-  const ConfigHistory =  async() =>{
+  const ConfigChangeDirList =  async(startDate,endDate,selectHostIp) =>{
     try{
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/config/log/modify/history',
+        'http://210.114.18.175:8080/ht/config/log/paths',
         {
-          fileCreateDate: "2021-01-30 01:00:01",
-          fileName: "crontab",
-          hostIp: "127.0.0.1",
-          isAll: "T",
-          ses: 0,
-          term: 1,
-          uid: 0
+          endDate: endDate,
+          hostIp: selectHostIp,
+          startDate: startDate
         }
       )
-      console.log(response.data.data)
-      setconfigHistory(response.data.data)
+      setconfigChangeHistory(response.data.data)
     }catch(e){
       setError(e);
       console.log(e)
@@ -261,11 +326,35 @@ function ConfigManage() {
     }
   }
 
+  function changeListSendTreeValue(item, index){
+    if(!item){
+      alert("검색을 먼저 해주십시오.")
+    }else{
+      const splitpoint = item.lastIndexOf("/")
+      const submitValueitempath =item.substring(0,splitpoint)
+    
+      if(!selectHostIp){
+        if(!submitValueitempath){
+          getDircList(firsthostDatas, defaultTreeName)
+        }else{
+          getDircList(firsthostDatas, submitValueitempath)
+        }
+      }else{
+        if(!submitValueitempath){
+          getDircList(selectHostIp, defaultTreeName)
+        }else{
+          getDircList(selectHostIp, submitValueitempath) 
+        }
+      }
+    }
+    
+  }
+
+
   //선택한 파일의 형상변경 이력 로그 검색
   function submitValue(index){
     const fileName = treeFilesSource[index];
     const filePath = treeSource.name;
-    console.log(startDate, endDate, selectHostIp, fileName, filePath)
     if(!selectHostIp){
       tableAxiosData(startDate, endDate, firsthostDatas, fileName, filePath)
     }else{
@@ -289,13 +378,13 @@ function ConfigManage() {
           objId: rowId
         }
       )
+      
       if(response.data.data[0].contents.length === 0 ){
         setContentsView([{contents:null}])
       }else {
         setContentsView(response.data.data[0].contents)
       }
-      
-      console.log(response.data.data)
+    
 
     }catch(e){
       setError(e);
@@ -303,12 +392,97 @@ function ConfigManage() {
     setLoading(false);
   }
 
- 
+  
+  function submitHistoryView(item,index) {
+    const rowCreateDate= item.fileCreateDate
+    const rowFileName= item.fileName
+    const rowFilePath= item.filePath
+    const rowHostIp= item.hostIp
+    const afterTerm = 1
+    const beforeTerm = 1
+    HistorySess(rowCreateDate, rowFileName, rowFilePath, rowHostIp, afterTerm, beforeTerm)
+    setRowHistroyTime({
+      afterTerm: afterTerm,
+      beforeTerm: beforeTerm,
+      fileCreateDate: rowCreateDate,
+      fileName: rowFileName,
+      filePath: rowFilePath,
+      hostIp: rowHostIp,
+      session: fristSes 
+    })
+    setHistoryModal(!historyModal)
+  }
+
+  function HistoryInnerCheck() {
+    const rowCreateDate = rowHistoryTime.fileCreateDate
+    const rowHostIp = rowHistoryTime.hostIp
+    const afterTerm = Number(rowHistoryTime.afterTerm)
+    const beforTerm = Number(rowHistoryTime.beforeTerm)
+    if(!session){
+      HistoryView(rowCreateDate, rowHostIp, afterTerm, beforTerm, fristSes)
+    }else{
+      HistoryView(rowCreateDate, rowHostIp, afterTerm, beforTerm, session)
+    }
+    
+  }
+  
+  const HistoryView = async(rowCreateDate, rowHostIp, afterTerm, beforeterm, session) => {
+    setHistoryAuditLog([null])
+    try{
+      setLoading(true);
+      const response = await axios.post(
+        'http://210.114.18.175:8080/ht/config/audit/history',
+        {
+          afterTerm: afterTerm,
+          beforeTerm: beforeterm,
+          fileCreateDate: rowCreateDate,
+          hostIp: rowHostIp,
+          pageNumber: 1,
+          pageSize: 1000,
+          ses: session
+        }
+      )
+      if(response.data.data.length === 0){
+        alert("검출된 유저행위 Audit log History가 없습니다.")
+      }else{
+        setHistoryAuditLog(response.data.data)
+      }
+    }catch(e){
+      setError(e);
+    }
+    setLoading(false);
+  }
+
+  const HistorySess = async(rowCreateDate, rowFileName, rowFilePath, rowHostIp, afterTerm, beforeTerm) => {
+    try{
+      setLoading(true);
+      const response = await axios.post(
+        'http://210.114.18.175:8080/ht/config/audit/history/ses',
+        {
+          afterTerm: afterTerm,
+          beforeTerm: beforeTerm,
+          fileCreateDate: rowCreateDate,
+          fileName: rowFileName,
+          filePath: rowFilePath,
+          hostIp: rowHostIp
+        }
+      )
+      setHistorySes(response.data.data)
+      setfirstSes(response.data.data[0])
+
+    }catch(e){
+      setError(e);
+    }
+    setLoading(false);
+  }
+
+
+
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
   if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
-  if(!configHistory) return ConfigHistory()
-  if(!treeFilesSource[0]) return submitTreeLog();
+  //if(!configChangeHistory[0]) return submitTreeLog()
+  
   
 
 
@@ -320,44 +494,42 @@ function ConfigManage() {
             <CCardBody>
             <Clock/>
               <CRow className="searchtoolbar"> 
-                  <CCol md="3"> 
-                  
-                  </CCol>
-                  <CCol md="2">
-                    <CFormGroup row>
-                      <CCol xs="12" md="12">
-                        <CInput type="date" id="startDate" placeholder="start_date" onChange={handlerChange} value={startDate} name='startDate'/>
-                      </CCol>
-                    </CFormGroup>
-                  </CCol>
-                  <CCol md="2">
-                    <CFormGroup row>
-                      <CCol xs="12" md="12">
-                        <CInput type="date" id="endDate" placeholder="end_date" onChange={handlerChange} value={endDate} name='endDate'/>
-                      </CCol>
-                    </CFormGroup>
-                  </CCol>
-                  <CCol md="2">
-                    <CFormGroup>
-                      <CSelect custom name="selectHostIp" onChange={handlerChange} value={selectHostIp} id="selectHostIp">
-                        {hostDatas.map((item, index) => {
-                          return <option key={index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
-                        })}
-                      </CSelect>
-                    </CFormGroup>
-                  </CCol>
-                  
-                  <CCol md="3">
-                    <CInputGroup className="input-prepend">
-                      <CInput size="100" type="text" placeholder="search" onChange={handlerChange} value={search} name='search' />
-                      <CInputGroupAppend>
-                        <CButton color="info" onClick={() =>submitTreeLog()}>검색</CButton>
-                      </CInputGroupAppend>
-                    </CInputGroup>
-                  </CCol>
-                  
-                </CRow>
+             <CCol md={4}></CCol>
+                
+                <CCol>
+                  <CFormGroup row>
+                    <CCol xs="12" md="12">
+                      <CInput type="date" id="startDate" placeholder="start_date" onChange={handlerChange} value={startDate} name='startDate'/>
+                    </CCol>
+                  </CFormGroup>
+                </CCol>
+                <CCol>
+                  <CFormGroup row>
+                    <CCol xs="12" md="12">
+                      <CInput type="date" id="endDate" placeholder="end_date" onChange={handlerChange} value={endDate} name='endDate'/>
+                    </CCol>
+                  </CFormGroup>
+                </CCol >
+                <CCol md={2}>
+                  <CFormGroup>
+                    <CSelect custom name="selectHostIp" onChange={handlerChange} value={selectHostIp} id="selectHostIp">
+                      {hostDatas.map((item, index) => {
+                        return <option key={item.hostIp+index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
+                      })}
+                    </CSelect>
+                  </CFormGroup>
+                </CCol>
+                <CCol sm={1}>
+                  <CButton className="btmholl" color="info" onClick={() =>submitTreeLog()}>검색</CButton>
+                </CCol>
+                <CCol>
+                <CButton  className="btmholl" onClick={SubmitIntegrity} color="info">Integrity Check</CButton>
+                </CCol>
+              </CRow>
+           
+
               <CRow>
+                
               <CCol className="folderTree" md={2}>
                 <CButton color="info"onClick={()=>submitTreeLog()}>최상위 폴더 이동</CButton>
                 <Tree content={treeSource.name} type={<button className="treeBtn folderimage" value={treeSource.name}>📁</button>} open>
@@ -365,14 +537,14 @@ function ConfigManage() {
                     if(!treeChildSource[0].name){
                       return null
                     }else{
-                      return <Tree key={index} content={item.name} type={<button className="treeBtn folderimage" value={index} onClick={()=>SendTreeValue(index)}>📁</button>}/>
+                      return <Tree key={item.name+index} content={item.name} type={<button className="treeBtn folderimage" value={index} onClick={()=>SendTreeValue(index)}>📁</button>}/>
                     }
                   })}
                   {treeFilesSource.map((item,index) => {
                     if(treeFilesSource.length === 0){
                       return null
                     }else{
-                      return <Tree key={item} content={item} type={<button className="treeBtn folderimage" value={item} onClick={()=>submitValue(index)}>📄</button>}/>
+                      return <Tree key={item+index} content={item} type={<button className="treeBtn folderimage" value={item} onClick={()=>submitValue(index)}>📄</button>}/>
                     }
                   
                   })}
@@ -380,89 +552,40 @@ function ConfigManage() {
             
                
               </CCol>
-              <CCol className="folderTree" md={10}>
-                
-                <h1>History</h1>
-                <section>
-                  <CRow>
-                    <div className="attckGrouptLegend"/>
-                    <div><Clock/> 파일 위치/</div>
-                  </CRow>
-                  <ul>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                  </ul>
-                </section>
-                <section>
-                  <CRow>
-                    <div className="attckGrouptLegend"/>
-                    <div><Clock/> 파일 위치/</div>
-                  </CRow>
-                  <ul>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                  </ul>
-                </section>
-                <section>
-                  <CRow>
-                    <div className="attckGrouptLegend"/>
-                    <div><Clock/> 파일 위치/</div>
-                  </CRow>
-                  <ul>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                    <li>safasdf</li>
-                  </ul>
-                </section>
+              <CCol className="folderTree" md={2}>
+                <h5 className="textBold">변경 파일 리스트</h5>
+
+                <ul>
+                  {configChangeHistory.map((item,index) =>{
+                    if(configChangeHistory.length === 0){
+                      return null
+                    }else{
+                      return <li key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {item}</li>
+                    }
+                  })}
+                </ul>
               </CCol>
-              </CRow>
-              <br/>
+              <CCol md={8}>
                 <CDataTable
                   items={configDatas}
                   fields={fields}
-                  itemsPerPage= {10}
+                  itemsPerPage= {6}
                   hover
                   pagination
-                  clickableRows={true}
-                  onRowClick = {(item, index)=>{
-                    
-                  }}
                   scopedSlots = {{
                     'Integrity':
                     (item, index)=>{
                       return (
                         <td className="py-2">
                           <CInputCheckbox 
-                          id="checkbox1" 
-                          name="checkbox1" 
-                          value="option1" 
+                          id="checkbox" 
+                          name="checkbox"
                           onClick={()=>{toggleModal(item, index)}}
                           />
-                         
                         </td>
                         )
                     },
-                    'Contents View':
+                    'History':
                     (item, index)=>{
                       return (
                         <td className="py-2">
@@ -470,26 +593,39 @@ function ConfigManage() {
                         
                           value="option1" 
                           color="info"
-                          onClick={()=>{submitContentsView(item, index)}}
-                          >Contents</CButton>
+                          onClick={()=>{submitHistoryView(item, index)}}
+                          >History</CButton>
+                         
+                        </td>
+                        )
+                    },
+                    'Contents':
+                    (item, index)=>{
+                      return (
+                        <td className="py-2">
+                          <CButton 
+                            value="option1" 
+                            color="info"
+                            onClick={()=>{submitContentsView(item, index)}}
+                            >Contents</CButton>
                          
                         </td>
                         )
                     },
                     
                   }}
-                />
-               {/*형상변경 관련 내용 onClick={() =>toggleModal(index, item)} */} 
+                />  
+              </CCol>
+              </CRow>
+              <br/>
+               {/*Integrity Check*/} 
               <CModal show={configChange} onClose={setConfigChange}>
                 <CModalHeader closeButton>
-                  <CModalTitle>형상 변경 내용</CModalTitle>
+                  <CModalTitle>Integrity Check</CModalTitle>
                 </CModalHeader>
-                <CModalBody>
-                  <CRow>
-                    <CCol><h5>원본</h5></CCol>
-                    <CCol><h5>비교본</h5></CCol>
-                  </CRow>
-                  <ReactDiffViewer oldValue={oldCode} newValue={newCode} splitView={true} showDiffOnly={true}/>
+                <CModalBody>   
+                  <h5>{IntegrityNull}</h5>
+                  <ReactDiffViewer oldValue={oldCode} newValue={newCode} splitView={false} showDiffOnly={true}/>
                 </CModalBody>
                 <CModalFooter>
                   <CButton 
@@ -499,15 +635,15 @@ function ConfigManage() {
                 </CModalFooter>
               </CModal>
 
-               {/*형상변경 관련 내용 onClick={() =>toggleModal(index, item)} */} 
+               {/*Contents*/} 
                <CModal show={contentsModal} onClose={setContentsModal}>
                 <CModalHeader closeButton>
-                  <CModalTitle>형상 변경 내용</CModalTitle>
+                  <CModalTitle>Contents</CModalTitle>
                 </CModalHeader>
-                <CModalBody>
+                <CModalBody className="cus_modal_body">
                   <ul>
                     {contentsView.map((item,index)=>{
-                      return <li key={item+index}>{item}</li>
+                      return <li className="contentsList" key={index+item}>{item}</li>
                     })}
                   </ul>
                 </CModalBody>
@@ -518,6 +654,121 @@ function ConfigManage() {
                   >Cancel</CButton>
                 </CModalFooter>
               </CModal>
+
+              {/*History*/} 
+              <CModal show={historyModal} onClose={setHistoryModal}>
+                <CModalHeader closeButton>
+                  <CModalTitle>History</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                <CFormGroup row>
+                    <CCol title="기준시간 대비 과거" xs="3" md="3">
+                      <CSelect custom name="afterTerm" onChange={HistoryViewHandler} value={afterTerm} id="afterTerm">
+                        <option value="1">- 1일</option>
+                        <option value="2">- 2일</option>
+                        <option value="3">- 3일</option>
+                        <option value="4">- 4일</option>
+                        <option value="5">- 5일</option>
+                        <option value="6">- 6일</option>
+                      </CSelect>
+                    </CCol>
+                    <CCol title="기준시간" xs="2" md="2">
+                      <h5 className="centerTime">{rowHistoryTime.fileCreateDate.substring(0,10)}</h5>
+                    </CCol>
+                    <CCol title="기준시간 대비 미래" xs="3" md="3">
+                      <CSelect custom name="beforeTerm" onChange={HistoryViewHandler} value={beforeTerm} id="beforeTerm">
+                        <option value="1">+ 1일</option>
+                        <option value="2">+ 2일</option>
+                        <option value="3">+ 3일</option>
+                        <option value="4">+ 4일</option>
+                        <option value="5">+ 5일</option>
+                        <option value="g">+ 6일</option>
+                      </CSelect>
+                    </CCol>
+                    <CCol title="세션선택" xs="2" md="2">
+                    <CSelect custom name="session" onChange={HistoryViewHandler} value={session} id="session">
+                      {historySes.map((item, index) => {
+                        return <option value={item}>{item}</option>
+                      })}
+                    </CSelect>
+                  </CCol>
+                    <CCol >
+                      <CButton title="히스토리 변경기간 검색" className="btmholl" color="info" onClick={() =>HistoryInnerCheck()}>검색</CButton>
+                    </CCol>
+                  </CFormGroup>
+              
+                  <section className="logsection">
+                    <table className="tableclass">
+                      <thead>
+                        <tr>
+                          <th>Time</th>
+                          <th>로그내용</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {historyAuditlog.map((item,index)=>{
+                          if(!historyAuditlog[0]){
+                            return <h5>검색 결과가 없습니다.</h5>
+                          }else{
+                            const itemTime = item.time.lastIndexOf(".") 
+                            const itemTimeValue = item.time.substring(0,itemTime).replace(/T/gi, "\r\n")
+                            
+                            const replacetotalLog = JSON.stringify(item).replace(/,/gi,'\r\n , \r\n ').replace("header_message:type", 'headerType')
+                            const parser = JSON.parse(replacetotalLog)
+                            if(parser.headerType === "SYSCALL"){
+                              return  <tr className="historytr">
+                                        <td className="itemTimeValue">{itemTimeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
+                                        <td className="totalLog">
+                                          <strong>a0: </strong>{parser.body_a0}, <strong>a1: </strong>{parser.body_a1},
+                                          <strong>a2:</strong>{parser.body_a3}, <strong>a3: </strong>{parser.body_a3},<strong>arch: </strong>{parser.body_arch}, <strong>auid: </strong>{parser.body_auid},
+                                          <strong>comm: </strong>{parser.body_comm}, <strong>egid: </strong>{parser.body_egid}, <strong>euid:</strong>{parser.body_euid}, <strong>event_time: </strong>{parser.body_event_time},   
+                                          <strong>exe: </strong>{parser.body_exe}, <strong>exit: </strong>{parser.body_exit}, <strong>fsgid: </strong>{parser.body_fsgid}, <strong>fsuid: </strong>{parser.body_fsuid},   
+                                          <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name}, <strong>items: </strong>{parser.body_items}, <strong>key: </strong>{parser.body_key},  
+                                          <strong>pid: </strong>{parser.body_pid}, <strong>ppid: </strong>{parser.body_ppid}, <strong>ses: </strong>{parser.body_ses}, <strong>sgid: </strong>{parser.body_sgid},    
+                                          <strong>success: </strong>{parser.body_success}, <strong>suid: </strong>{parser.body_suid}, <strong>syscall: </strong>{parser.body_syscall}, <strong>tty: </strong>{parser.body_tty},   
+                                          <strong>uid: </strong>{parser.body_uid}, <strong>header_msg: </strong>{parser.header_msg}
+                                        </td>
+                                      </tr>
+                            }else if(parser.headerType === "CWD"){
+                              return  <tr className="historytr">
+                                        <td className="itemTimeValue">{itemTimeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
+                                        <td className="totalLog">
+                                          <strong>cwd: </strong>{parser.body_cwd}, <strong>event_time: </strong>{parser.body_event_time},
+                                          <strong>host_ip:</strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name}, <strong>header_msg: </strong>{parser.header_msg},
+                                        </td>
+                                      </tr>
+                            }else if(parser.headerType === "PATH"){
+                              return  <tr className="historytr">
+                                        <td className="itemTimeValue">{itemTimeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
+                                        <td className="totalLog">
+                                          <strong>cap_fe: </strong>{parser.body_cap_fe}, <strong>cap_fi: </strong>{parser.body_cap_fi},
+                                          <strong>cap_fp:</strong>{parser.body_cap_fp}, <strong>cap_fver: </strong>{parser.body_cap_fver}, <strong>dev: </strong>{parser.body_dev},
+                                          <strong>event_time:</strong>{parser.body_event_time}, <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name},
+                                          <strong>inode:</strong>{parser.body_inode}, <strong>item: </strong>{parser.body_item}, <strong>mode: </strong>{parser.body_mode},
+                                          <strong>name:</strong>{parser.body_name}, <strong>objtype: </strong>{parser.body_objtype}, <strong>ogid: </strong>{parser.body_ogid},
+                                          <strong>ouid:</strong>{parser.body_ouid}, <strong>rdev: </strong>{parser.body_rdev}, <strong>header_msg: </strong>{parser.header_msg}
+                                        </td>
+                                      </tr>
+                            }else{
+                              return <h5>검색 결과가 없습니다.</h5>
+                            }
+                          }
+                        })}
+                      </tbody>
+                    </table>
+                  </section>
+                </CModalBody>
+                <CModalFooter>
+                  <p className="footerlogCount">검출된 로그 갯수 : {historyAuditlog.length}</p>
+                  <CButton 
+                    color="secondary" 
+                    onClick={() => setHistoryModal(false)}
+                  >Cancel</CButton>
+                </CModalFooter>
+              </CModal>
+
+
+
             </CCardBody>
           </CCard>
         </CCol>

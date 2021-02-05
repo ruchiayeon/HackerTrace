@@ -25,13 +25,17 @@ function PrivilegeEscalation() {
   const [loading, setLoading] = useState(false);
   const [privilegeDatas, setPrivilegeDatas] = useState(false);
   const [pageNumbers, setpageNumbers] = useState(1)
-  const [logCount, setlogCount] = useState(null);
+  //const [logCount, setlogCount] = useState(null);
   
   //host Ip받아오는 부분
   const [hostDatas, setHostDatas] = useState(null);
   const [firsthostDatas, setFirHostDatas] = useState(null);
 
-
+  let today = new Date();   
+  let year = today.getFullYear(); // 년도
+  let month = ("00"+ (today.getMonth() + 1)).slice(-2);  // 월
+  let date = ("00" + today.getDate()).slice(-2);  // 날짜
+  const formatdate = year + '-' + month + '-' + date
 
   //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
   useEffect(()=>{
@@ -57,8 +61,8 @@ function PrivilegeEscalation() {
 
   const[inputs, setInputs] = useState({
     search:'',
-    startDate:'2021-01-01',
-    endDate:'2021-01-30',
+    startDate:formatdate,
+    endDate:formatdate,
     selectColum:'uid',
     selectHostIp: firsthostDatas
   });
@@ -84,13 +88,14 @@ function PrivilegeEscalation() {
   };
 
   const fields = [
-    {key:'time', _style:{width:'20%'}, label:"TIME"},
-    {key:'body_host_ip', _style:{width:'10%'}, label:"HOST IP"},
-    {key:'body_key', _style:{width:'10%'}, label:"Mitter T Value"},
-    {key:'header_message:type', _style:{width:'10%'}, label:"Audit Type"}, 
-    {key:'body_ses', _style:{width:'10%'}, label:"Session"},
-    {key:'body_uid', _style:{width:'10%'}, label:"Uid"},
-    {key:'header_msg', _style:{width:'30%'}, label:"Messages"},
+    {key:'time', label:"TIME"},
+    {key:'body_success', label:"Success"},
+    {key:'body_key',label:"Mitter T Value"},
+    {key:'header_message:type', label:"Audit Type"}, 
+    {key:'body_ses', label:"Session"},
+    {key:'body_uid', label:"Uid"},
+    {key:'body_exe', label:"Exe"},
+    {key:'body_comm', label:"Comm"}
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -111,14 +116,15 @@ function PrivilegeEscalation() {
           searchWord: search, 
         }
       )
- 
+      //const string = response.data.data
+      //console.log(string.replace(/"/g, ""))
       if(pageNumbers>1){
         for(let i =0; i<1000; i++){
           privilegeDatas.push(response.data.data[i])
-          setlogCount(privilegeDatas.length)
+          //setlogCount(privilegeDatas.length)
         }
       }else{
-        setlogCount(response.data.data.length)
+        //setlogCount(response.data.data.length)
         setPrivilegeDatas(response.data.data);
       }
     }catch(e){
@@ -142,7 +148,6 @@ function PrivilegeEscalation() {
             <CCardBody>
               <CRow>
                 <CCol> <Clock/></CCol>
-                <CCol><h5 className="logCount">Total Log Count : {logCount}</h5></CCol>
               </CRow>
              
                 <CRow className="searchtoolbar"> 
@@ -166,10 +171,12 @@ function PrivilegeEscalation() {
                       <CCol md="4">
                         <CFormGroup>
                           <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="selectColum">
-                            <option value='type'>type</option>
-                            <option value='uid'>uid</option>
-                            <option value='ses'>session</option>
-                            <option value='key'>T value</option>
+                            <option value='success'>Success</option>
+                            <option value='key'>Mitter T Value</option>
+                            <option value='uid'>Uid</option>
+                            <option value='ses'>Session</option>
+                            <option value='exe'>Exe</option>
+                            <option value='comm'>Comm</option>
                           </CSelect>
                         </CFormGroup>
                       </CCol>
