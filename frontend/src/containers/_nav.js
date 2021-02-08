@@ -10,7 +10,7 @@ const _nav =  [
     _tag: 'CSidebarNavItem',
     name: '대시보드',
     to: '/dashboard',
-    icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
+    icon: <CIcon name="cil-list" customClasses="c-sidebar-nav-icon"/>,
   },
   {
     _tag: 'CSidebarNavTitle',

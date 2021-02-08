@@ -1,4 +1,4 @@
-import React, {useState,useEffect } from 'react'
+import React, {useState,/*useContext*/} from 'react'
 import {
   CCard,
   CCardBody,
@@ -14,11 +14,9 @@ import { CChartLine } from '@coreui/react-chartjs'
 
 import Page404 from "../pages/page404/Page404"
 import Loading from "../pages/Loading/Loading"
-
-
+//import LangContext from "../Context"
 
 function Dashboard() {
-  
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -38,23 +36,28 @@ function Dashboard() {
 
   //Chart Datas
   const [updat, setupdate] = useState(null)
-  const [monchartDatas, setMonChartDatas] = useState(null);
-  const [tuechartDatas, settueChartDatas] = useState(null);
-  const [wedchartDatas, setwedChartDatas] = useState(null);
-  const [thuchartDatas, setthuChartDatas] = useState(null);
-  const [frichartDatas, setfriChartDatas] = useState(null);
-  const [satchartDatas, setsatChartDatas] = useState(null);
-  const [sunchartDatas, setsubChartDatas] = useState(null);
+  const [chartDatas, setChartDatas] = useState(null);
+  const [chartDate, setchartDate] = useState(null);
 
 
+  //change file path
+ /* const [monchange, setMonchange] = useState(null)
+  const [tuechange, settuechange] = useState(null)
+  const [wedchange, setwedchange] = useState(null)
+  const [thuchange, setthuchange] = useState(null)
+  const [frichange, setfrichange] = useState(null)
+  const [satchange, setsatchange] = useState(null)
+  const [sunchange, setsunchange] = useState(null)*/
+  
   //input data handeling 전혀 코딩 안함
-  useEffect(()=>{
-    const hostResData = async() => {
+  //const contextValue = useContext(LangContext)
+  //console.log(contextValue)
+  const hostResData = async() => {
     try{
     setLoading(true);
     //axios를 이용하여 해당 url에서 갑을 받아온다.
     const response = await axios.get(
-        'http://210.114.18.175:8080/ht/host/list'
+      'http://210.114.18.175:8080/ht/host/list'
     )
     //받아온 값을 setMiterData에 넣어준다.
     
@@ -67,9 +70,9 @@ function Dashboard() {
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
-    };
-    hostResData();
-  }, []);
+  };
+    
+
 
   const[inputs, setInputs] = useState({
     selectHostIp: "",
@@ -122,47 +125,23 @@ function Dashboard() {
         }
       )
       setupdate(response.data.data.chart_data[6].updateTime)
+      const jsonchartData = JSON.stringify(response.data.data).replace(/월/gi,"count").replace(/화/gi,"count").replace(/수/gi,"count").replace(/목/gi,"count").replace(/금/gi,"count").replace(/토/gi,"count").replace(/일/gi,"count")
+      const parsingData =  JSON.parse(jsonchartData)
+      const arrayData = []
+      const arryLegend =[]      
       for(let i=0; i<7;i++){
-        if(response.data.data.chart_data[i].월){
-          setMonChartDatas(response.data.data.chart_data[i].월)
-        }
-
-        if(response.data.data.chart_data[i].화){
-          settueChartDatas(response.data.data.chart_data[i].화)
-        }
-
-        if(response.data.data.chart_data[i].수){
-          setwedChartDatas(response.data.data.chart_data[i].수)
-        }
-
-        if(response.data.data.chart_data[i].목){
-          setthuChartDatas(response.data.data.chart_data[i].목)
-        }
-        if(response.data.data.chart_data[i].금){
-          setfriChartDatas(response.data.data.chart_data[i].금)
-        }
-
-        if(response.data.data.chart_data[i].토){
-          setsatChartDatas(response.data.data.chart_data[i].토)
-        }
-
-        if(response.data.data.chart_data[i].일){
-          setsubChartDatas(response.data.data.chart_data[i].일)
-        }
+        arrayData.push(Number(parsingData.chart_data[i].count))
+        arryLegend.push(parsingData.chart_data[i].date)
       }
-
+      setchartDate(arryLegend)
+      setChartDatas(arrayData)
       const responseCount = await axios.post(
         'http://210.114.18.175:8080/ht/dashboard/statics/config',
         {
           hostIp: selectHostIp
         }
       )
-      console.log(responseCount.data.data)
       setconfigCount(responseCount.data.data)
-
-
-
-
     }catch(e){
       setError(e)
     }
@@ -186,13 +165,13 @@ function Dashboard() {
   ]
 
   //Chart 부분 
-
   const defaultDatasets = (()=>{
-    const defaultChartDatas = [monchartDatas,tuechartDatas,wedchartDatas,thuchartDatas,frichartDatas,satchartDatas,sunchartDatas]
-  
+    const defaultChartDatas = chartDatas
+    //const pathDatas = [monchange,tuechange,wedchange,thuchange,frichange,satchange,sunchange]
+    //console.log(pathDatas)
     return [
       {
-        label: '유저행위 현황',
+        label:"유저행위",
         backgroundColor: "#321fdbb0",
         borderColor:"#321fdb",
         pointHoverBackgroundColor: "#321fdb",
@@ -246,7 +225,7 @@ function Dashboard() {
 
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
-  if(!hostDatas) return <Page404/>;
+  if(!hostDatas) return hostResData();
   if(!abnormalData) return submitAbnormal();
 
 
@@ -309,11 +288,13 @@ function Dashboard() {
             </CCol>
           </CRow>
           <CChartLine
+            //innerRef ={(index)=> console.log(index)} 
             style={{height: '300px', marginTop: '40px'}}
             datasets={defaultDatasets}
             options={defaultOptions}
-            labels={['월', '화', '수', '목', '금', '토', '일']}
+            labels={chartDate}
           />
+
         </CCardBody>
       </CCard>
       <CRow>
@@ -322,6 +303,7 @@ function Dashboard() {
             <CCardBody>
               <CRow>
                 <CCol >
+             
                   <h4 className="abnormalTitle">감사로그</h4>
                   <h6>업데이트 일자 : {abnormalData[0].updateTime}</h6>
                   <CDataTable

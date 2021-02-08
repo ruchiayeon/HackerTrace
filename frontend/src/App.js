@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { createContext, useState } from 'react';
 import { HashRouter, Route, Switch } from 'react-router-dom';
 import './scss/style.scss';
 
@@ -13,13 +13,15 @@ const TheLayout = React.lazy(() => import('./containers/TheLayout'));
 
 // Pages
 const Login = React.lazy(() => import('./views/pages/login/Login'));
-const Register = React.lazy(() => import('./views/pages/register/Register'));
+const Register = React.lazy(() => import('./views/pages/login/Login'));
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'));
 
-class App extends Component {
+export const LangContext = createContext(null)
 
-  render() {
-    return (
+function App(){
+  const [userid, setUserId] = useState(null)
+  return (
+    <LangContext.Provider value={{userid, setUserId}}>
       <HashRouter>
           <React.Suspense fallback={loading}>
             <Switch>
@@ -30,8 +32,8 @@ class App extends Component {
             </Switch>
           </React.Suspense>
       </HashRouter>
-    );
+    </LangContext.Provider>
+  );
   }
-}
 
 export default App;

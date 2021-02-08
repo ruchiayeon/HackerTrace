@@ -41,8 +41,9 @@
   margin: 0.7rem 0rem;
   border-radius: 8px;
   background: #fff;
-  box-shadow: 0px 0px 8px 0px #00000011;
+  box-shadow: 0px 0px 8px 0px #0000002d;
   transition: 0.3s ease-in-out;
+  border: 1px solid #321fdb80;
   &:hover{
     background: #0065ff3d;
     transition: 0.3s ease-in-out;
@@ -198,7 +199,7 @@
   margin-bottom:0!important;
 }
 .matrixtable section{
-  height: 4rem;
+  height: 3rem;
   border-bottom: 2px solid #321fdb94;
 }
 .matrixtable section p{
@@ -399,7 +400,10 @@ hr{
   border-left: 1px dashed rgba(0, 0, 0, 0.4)!important;
 }
 .contentsList{
-  list-style:none;
+  list-style:decimal-leading-zero;
+}
+.contentsList::marker {
+  color:#b9b9b9;
 }
 
 .changeDirList{
@@ -471,7 +475,7 @@ hr{
 }
 .totalLog{
   padding: 1rem 1rem;
-  text-align: justify;
+  line-height: 1.5rem;
 }
 .historytr{
   border-bottom: 1px solid #7b7b7b45;
@@ -483,4 +487,26 @@ hr{
 strong{
   background: #eee;
   font-weight: 600!important;
+  padding: 0 0.1rem;
+  margin: 0 0.3rem;
+}
+
+.redLegend{
+  margin: 0.2rem 1rem 0.2rem 0rem;
+  background: #ff0000;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 1rem;
+}
+.greenLegend{
+  margin: 0.2rem 1rem 0.2rem 1rem;
+  background: #00ff2a;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 1rem;
+}
+.submatrix{
+  background: #321fdb21!important;
+  border:none!important;
+  box-shadow: none!important;
 }

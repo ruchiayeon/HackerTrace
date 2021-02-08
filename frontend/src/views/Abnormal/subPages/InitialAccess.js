@@ -60,8 +60,8 @@ function InitialAccess() {
 
   const[inputs, setInputs] = useState({
     search:'',
-    startDate:formatdate,
-    endDate:formatdate,
+    startDate: formatdate,
+    endDate: formatdate,
     selectColum:'uid',
     selectHostIp: firsthostDatas
   });
@@ -88,14 +88,14 @@ function InitialAccess() {
   };
 
   const fields = [
-    {key:'time', label:"TIME"},
+    {key:'body_event_time', label:"TIME"},
     {key:'body_success', label:"Success"},
     {key:'body_key',label:"Mitter T Value"},
     {key:'header_message:type', label:"Audit Type"}, 
     {key:'body_ses', label:"Session"},
     {key:'body_uid', label:"Uid"},
     {key:'body_exe', label:"Exe"},
-    {key:'body_comm', label:"Comm"}
+    {key:'body_syscall', label:"syscall number"}
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -116,17 +116,17 @@ function InitialAccess() {
           searchWord: search, 
         }
       )
-      console.log(response.data.data)
       if(pageNumbers>1){
         for(let i =0; i<1000; i++){
           privilegeDatas.push(response.data.data[i])
         }
       }else{
+        console.log(response.data.data)
         setPrivilegeDatas(response.data.data);
       }
     }catch(e){
       //에러시 flag를 달아서 이동
-      if(!privilegeDatas) return <div>일치하는 데이터가 없습니다.</div>;
+      setError(e)
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);

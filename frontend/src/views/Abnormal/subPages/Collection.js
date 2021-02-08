@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useContext } from 'react'
 import {
   CCard,
   CCardBody,
@@ -17,6 +17,7 @@ import axios from 'axios'
 import Clock from '../../Clock/Clock'
 import Page404 from '../../pages/page404/Page404'
 import Loading from '../../pages/Loading/Loading'
+import Context from "../../Context"
 
 function Collection() {
 
@@ -37,28 +38,27 @@ function Collection() {
  
 
   //host ip 받아오기
-   //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
-  useEffect(()=>{
-    const hostResData = async() => {
-      try{
-        setLoading(true);
-        //axios를 이용하여 해당 url에서 갑을 받아온다.
-        const response = await axios.get(
-          'http://210.114.18.175:8080/ht/host/list'
-        )
-        //받아온 값을 hostDatas에 넣어준다.
-        setHostDatas(response.data.data);
-        setFirHostDatas(response.data.data[0].hostIp)
-      }catch(e){
-        //에러시 flag를 달아서 이동
-        setError(e);
-      }
-        //로딩 실패시 flag를 달아서 이동
-        setLoading(false);
-      };
-    hostResData();
-  }, []);
-
+  //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
+  const contextValue = useContext(Context)
+  console.log(contextValue)
+  const hostResData = async() => {
+    try{
+      setLoading(true);
+      //axios를 이용하여 해당 url에서 갑을 받아온다.
+      const response = await axios.get(
+        'http://210.114.18.175:8080/ht/host/list'
+    )
+      //받아온 값을 hostDatas에 넣어준다.
+      console.log(response.data.data)
+      setHostDatas(response.data.data);
+      setFirHostDatas(response.data.data[0].hostIp)
+    }catch(e){
+      //에러시 flag를 달아서 이동
+      setError(e);
+    }
+      //로딩 실패시 flag를 달아서 이동
+      setLoading(false);
+  };
 
   const[inputs, setInputs] = useState({
     search:'',
@@ -82,21 +82,21 @@ function Collection() {
   //검색 버튼 및 Value값 넘겨주는 부분
   function submitValue(){
     if(!selectHostIp){
-      tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas,pageNumbers)
+      tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas, pageNumbers)
     }else{
-      tableAxiosData(startDate, endDate, selectColum, search, selectHostIp,pageNumbers)
+      tableAxiosData(startDate, endDate, selectColum, search, selectHostIp, pageNumbers)
     }
   };
 
   const fields = [
-    {key:'time', label:"TIME"},
+    {key:'body_event_time', label:"TIME"},
     {key:'body_success', label:"Success"},
     {key:'body_key',label:"Mitter T Value"},
     {key:'header_message:type', label:"Audit Type"}, 
     {key:'body_ses', label:"Session"},
     {key:'body_uid', label:"Uid"},
     {key:'body_exe', label:"Exe"},
-    {key:'body_comm', label:"Comm"}
+    {key:'body_syscall', label:"syscall number"}
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.
@@ -122,6 +122,7 @@ function Collection() {
           privilegeDatas.push(response.data.data[i])
         }
       }else{
+        console.log(response.data.dat)
         setPrivilegeDatas(response.data.data);
       }
     }catch(e){
@@ -132,10 +133,12 @@ function Collection() {
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
   };
+  
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
-  if(!privilegeDatas) return submitValue()
-  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
+  if(!hostDatas) return hostResData();
+  //if(!privilegeDatas) return submitValue()
+  
 
   return (
     <>

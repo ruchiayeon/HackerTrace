@@ -86,14 +86,14 @@ function Execution() {
   };
 
   const fields = [
-    {key:'time', label:"TIME"},
+    {key:'body_event_time', label:"TIME"},
     {key:'body_success', label:"Success"},
     {key:'body_key',label:"Mitter T Value"},
     {key:'header_message:type', label:"Audit Type"}, 
     {key:'body_ses', label:"Session"},
     {key:'body_uid', label:"Uid"},
     {key:'body_exe', label:"Exe"},
-    {key:'body_comm', label:"Comm"}
+    {key:'body_syscall', label:"syscall number"}
   ]
   
   //Table axios 연결 부분. submitValue()를 통해서 값을 받아온다.

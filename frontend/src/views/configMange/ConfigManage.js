@@ -43,7 +43,7 @@ function ConfigManage() {
   const [configChangeHistory, setconfigChangeHistory] = useState([null])
   
   //config Audit History hook
-  const [fristSes, setfirstSes] = useState(null)
+  const [fristSes, setfirstSes] = useState("0000")
   const [historyAuditlog, setHistoryAuditLog] = useState([null])
   const [historySes, setHistorySes] = useState([""])
   const [rowHistoryTime, setRowHistroyTime] = useState({
@@ -60,6 +60,7 @@ function ConfigManage() {
 
   function HistoryViewHandler(e){
     const { value, name } = e.target;
+    setHistoryAuditLog([null])
     setRowHistroyTime({
     ...rowHistoryTime,
     [name]:value
@@ -172,7 +173,7 @@ function ConfigManage() {
         alert("검색 날짜를 지정해주십시오.")
       }else{
         getDircList(firsthostDatas, defaultTreeName)
-       ConfigChangeDirList(startDate,endDate,firsthostDatas)
+        ConfigChangeDirList(startDate,endDate,firsthostDatas)
       }
       
     }else{
@@ -187,12 +188,12 @@ function ConfigManage() {
  
   //CData Tables의 Fileds값
   const fields = [
-    {label:"Time", key:'logTime',_style:{width:'10%'}},
-    {label:"File Edit Time", key:'fileCreateDate',_style:{width:'10%'}},
-    {label:"Owner", key:'owner',_style:{width:'10%'}},
-    {label:"File Name", key:'fileName',_style:{width:'10%'}}, 
-    {label:"File Path", key:'filePath',_style:{width:'30%'}}, 
-    {label:"Integerity Check", key:'Integrity',_style:{width:'10%'}},
+    {label:"Time", key:'logTime'},
+    {label:"Owner", key:'owner'},
+    {label:"File Name", key:'fileName'}, 
+    {label:"File Modify Time", key:'fileCreateDate'},
+    {label:"File Path", key:'filePath'}, 
+    {label:"Integerity Check", key:'Integrity'},
     {label:"Contents",  key:'Contents'},
     {label:"History",  key:'History'}
   ]
@@ -229,18 +230,24 @@ function ConfigManage() {
 
   const [rowDatas1, setRowDatas1] = useState([null])
   const [rowDatas2, setRowDatas2] = useState([null])
+  const [filedate1, setfiledate1] = useState(null)
+  const [filedate2, setfiledate2] = useState(null)
 
   //Integrity check해서 modal에서 Diff하기
   function toggleModal(item,index){
 
     if(!rowDatas1[0]){
       setRowDatas1(item._id)
+      setfiledate1(item.logTime)
     }else if(!rowDatas2[0] && rowDatas1 !== rowDatas2){
       setRowDatas2(item._id)
+      setfiledate2(item.logTime)
     }else if(rowDatas1 !== item._id){
       setRowDatas1(item._id)
+      setfiledate1(item.logTime)
     }else if(rowDatas2 !== item._id){
       setRowDatas2(item._id)
+      setfiledate2(item.logTime)
     }
   }
 
@@ -270,7 +277,6 @@ function ConfigManage() {
       )
       const oldValue = response.data.data[0].contents.toString()
       const newValue = response.data.data[1].contents.toString()
-      console.log(oldValue, newValue)
       if(oldValue === newValue){
         setIntegrityNull("선택한 형상이 동일합니다.")
         setOldCode(oldValue.replace(/,/gi,"\r\n"))
@@ -301,7 +307,12 @@ function ConfigManage() {
           startDate: startDate
         }
       )
-      setconfigChangeHistory(response.data.data)
+      if(response.data.data.length === 0){
+        setconfigChangeHistory([null])
+      }else{
+        setconfigChangeHistory(response.data.data)
+      }
+     
     }catch(e){
       setError(e);
       console.log(e)
@@ -394,6 +405,7 @@ function ConfigManage() {
 
   
   function submitHistoryView(item,index) {
+    setHistoryAuditLog([null])
     const rowCreateDate= item.fileCreateDate
     const rowFileName= item.fileName
     const rowFilePath= item.filePath
@@ -413,12 +425,35 @@ function ConfigManage() {
     setHistoryModal(!historyModal)
   }
 
+  const HistorySess = async(rowCreateDate, rowFileName, rowFilePath, rowHostIp, afterTerm, beforeTerm) => {
+    try{
+      setLoading(true);
+      const response = await axios.post(
+        'http://210.114.18.175:8080/ht/config/audit/history/ses',
+        {
+          afterTerm: afterTerm,
+          beforeTerm: beforeTerm,
+          fileCreateDate: rowCreateDate,
+          fileName: rowFileName,
+          filePath: rowFilePath,
+          hostIp: rowHostIp
+        }
+      )
+      setHistorySes(response.data.data)
+      setfirstSes(response.data.data[0])
+
+    }catch(e){
+      setError(e);
+    }
+    setLoading(false);
+  }
+
   function HistoryInnerCheck() {
     const rowCreateDate = rowHistoryTime.fileCreateDate
     const rowHostIp = rowHistoryTime.hostIp
     const afterTerm = Number(rowHistoryTime.afterTerm)
     const beforTerm = Number(rowHistoryTime.beforeTerm)
-    if(!session){
+    if(session === "0000"){
       HistoryView(rowCreateDate, rowHostIp, afterTerm, beforTerm, fristSes)
     }else{
       HistoryView(rowCreateDate, rowHostIp, afterTerm, beforTerm, session)
@@ -445,46 +480,24 @@ function ConfigManage() {
       if(response.data.data.length === 0){
         alert("검출된 유저행위 Audit log History가 없습니다.")
       }else{
-        setHistoryAuditLog(response.data.data)
+        const responseDatas = response.data.data
+        const replacetotalLog = JSON.stringify(responseDatas).replace(/header_message:type/gi, 'headerType')
+        const parser = JSON.parse(replacetotalLog)
+        setHistoryAuditLog(parser)
       }
     }catch(e){
       setError(e);
+      console.log(e)
     }
     setLoading(false);
   }
-
-  const HistorySess = async(rowCreateDate, rowFileName, rowFilePath, rowHostIp, afterTerm, beforeTerm) => {
-    try{
-      setLoading(true);
-      const response = await axios.post(
-        'http://210.114.18.175:8080/ht/config/audit/history/ses',
-        {
-          afterTerm: afterTerm,
-          beforeTerm: beforeTerm,
-          fileCreateDate: rowCreateDate,
-          fileName: rowFileName,
-          filePath: rowFilePath,
-          hostIp: rowHostIp
-        }
-      )
-      setHistorySes(response.data.data)
-      setfirstSes(response.data.data[0])
-
-    }catch(e){
-      setError(e);
-    }
-    setLoading(false);
-  }
-
 
 
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
   if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
-  //if(!configChangeHistory[0]) return submitTreeLog()
+  if(treeSource.length <= 2) return submitTreeLog()
   
-  
-
 
   return (
     <>
@@ -494,7 +507,7 @@ function ConfigManage() {
             <CCardBody>
             <Clock/>
               <CRow className="searchtoolbar"> 
-             <CCol md={4}></CCol>
+             <CCol md={2}></CCol>
                 
                 <CCol>
                   <CFormGroup row>
@@ -510,7 +523,7 @@ function ConfigManage() {
                     </CCol>
                   </CFormGroup>
                 </CCol >
-                <CCol md={2}>
+                <CCol>
                   <CFormGroup>
                     <CSelect custom name="selectHostIp" onChange={handlerChange} value={selectHostIp} id="selectHostIp">
                       {hostDatas.map((item, index) => {
@@ -522,8 +535,8 @@ function ConfigManage() {
                 <CCol sm={1}>
                   <CButton className="btmholl" color="info" onClick={() =>submitTreeLog()}>검색</CButton>
                 </CCol>
-                <CCol>
-                <CButton  className="btmholl" onClick={SubmitIntegrity} color="info">Integrity Check</CButton>
+                <CCol >
+                  <CButton  className="btmholl" onClick={SubmitIntegrity} color="info">Integrity Check</CButton>
                 </CCol>
               </CRow>
            
@@ -557,10 +570,15 @@ function ConfigManage() {
 
                 <ul>
                   {configChangeHistory.map((item,index) =>{
-                    if(configChangeHistory.length === 0){
-                      return null
+                    if(!configChangeHistory[0]){
+                      return <li>변경된 파일이 없습니다.</li>
                     }else{
-                      return <li key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {item}</li>
+                      if (item.length > 30) {
+                        const enditem = item.substr(0, 30) + "...";
+                        return <li title={item} key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {enditem}</li>
+                      }else{
+                        return <li title={item} key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {item}</li>
+                      }
                     }
                   })}
                 </ul>
@@ -628,6 +646,13 @@ function ConfigManage() {
                   <ReactDiffViewer oldValue={oldCode} newValue={newCode} splitView={false} showDiffOnly={true}/>
                 </CModalBody>
                 <CModalFooter>
+                  <div className="footerlogCount">
+                    <CRow>
+                      <div className="redLegend"/><p>{filedate1}</p>
+                      <div className="greenLegend"/><p>{filedate2}</p>
+                    </CRow>
+                  </div>
+                
                   <CButton 
                     color="secondary" 
                     onClick={() => setConfigChange(false)}
@@ -682,13 +707,13 @@ function ConfigManage() {
                         <option value="3">+ 3일</option>
                         <option value="4">+ 4일</option>
                         <option value="5">+ 5일</option>
-                        <option value="g">+ 6일</option>
+                        <option value="6">+ 6일</option>
                       </CSelect>
                     </CCol>
                     <CCol title="세션선택" xs="2" md="2">
                     <CSelect custom name="session" onChange={HistoryViewHandler} value={session} id="session">
                       {historySes.map((item, index) => {
-                        return <option value={item}>{item}</option>
+                        return <option key={item+index} value={item}>{item}</option>
                       })}
                     </CSelect>
                   </CCol>
@@ -706,54 +731,64 @@ function ConfigManage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {historyAuditlog.map((item,index)=>{
-                          if(!historyAuditlog[0]){
-                            return <h5>검색 결과가 없습니다.</h5>
+                      {historyAuditlog.map((parser,index) => {
+                        if(historyAuditlog.length === 1) {
+                          return  <tr key={"null"+index}>
+                                    <td>검색 결과가 없습니다.</td>
+                                  </tr>
+                        }else{
+                          const timeformating = parser.time.lastIndexOf(".") 
+                          const timeValue = parser.time.substring(0,timeformating).replace(/T/gi, "\r\n")
+                          if(parser.headerType === "SYSCALL"){
+                            return  <tr key={"history"+index} className="historytr">
+                                      <td className="itemTimeValue">{timeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
+                                      <td className="totalLog">
+                                        <strong>a0: </strong>{parser.body_a0}, <strong>a1: </strong>{parser.body_a1},
+                                        <strong>a2:</strong>{parser.body_a3}, <strong>a3: </strong>{parser.body_a3},<strong>arch: </strong>{parser.body_arch}, <strong>auid: </strong>{parser.body_auid},
+                                        <strong>comm: </strong>{parser.body_comm}, <strong>egid: </strong>{parser.body_egid}, <strong>euid:</strong>{parser.body_euid}, <strong>event_time: </strong>{parser.body_event_time},   
+                                        <strong>exe: </strong>{parser.body_exe}, <strong>exit: </strong>{parser.body_exit}, <strong>fsgid: </strong>{parser.body_fsgid}, <strong>fsuid: </strong>{parser.body_fsuid},   
+                                        <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name}, <strong>items: </strong>{parser.body_items}, <strong>key: </strong>{parser.body_key},  
+                                        <strong>pid: </strong>{parser.body_pid}, <strong>ppid: </strong>{parser.body_ppid}, <strong>ses: </strong>{parser.body_ses}, <strong>sgid: </strong>{parser.body_sgid},    
+                                        <strong>success: </strong>{parser.body_success}, <strong>suid: </strong>{parser.body_suid}, <strong>syscall: </strong>{parser.body_syscall}, <strong>tty: </strong>{parser.body_tty},   
+                                        <strong>uid: </strong>{parser.body_uid}, <strong>header_msg: </strong>{parser.header_msg}
+                                      </td>
+                                    </tr>
+                          }else if(parser.headerType === "CWD"){
+                            return  <tr key={"history"+index}  className="historytr">
+                                      <td className="itemTimeValue">{timeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
+                                      <td className="totalLog">
+                                        <strong>cwd: </strong>{parser.body_cwd}, <strong>event_time: </strong>{parser.body_event_time},
+                                        <strong>host_ip:</strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name}, <strong>header_msg: </strong>{parser.header_msg},
+                                      </td>
+                                    </tr>
+                          }else if(parser.headerType === "PATH"){
+                            return  <tr key={"history"+index}  className="historytr">
+                                      <td className="itemTimeValue">{timeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
+                                      <td className="totalLog">
+                                        <strong>cap_fe: </strong>{parser.body_cap_fe}, <strong>cap_fi: </strong>{parser.body_cap_fi},
+                                        <strong>cap_fp:</strong>{parser.body_cap_fp}, <strong>cap_fver: </strong>{parser.body_cap_fver}, <strong>dev: </strong>{parser.body_dev},
+                                        <strong>event_time:</strong>{parser.body_event_time}, <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name},
+                                        <strong>inode:</strong>{parser.body_inode}, <strong>item: </strong>{parser.body_item}, <strong>mode: </strong>{parser.body_mode},
+                                        <strong>name:</strong>{parser.body_name}, <strong>objtype: </strong>{parser.body_objtype}, <strong>ogid: </strong>{parser.body_ogid},
+                                        <strong>ouid:</strong>{parser.body_ouid}, <strong>rdev: </strong>{parser.body_rdev}, <strong>header_msg: </strong>{parser.header_msg}
+                                      </td>
+                                    </tr>
+                          }else if( parser.headerType === "EXECVE"){
+                            return  <tr key={"history"+index}  className="historytr">
+                                      <td className="itemTimeValue">{timeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
+                                      <td className="totalLog">
+                                        <strong>a0:</strong>{parser.body_a0}, <strong>body_a1: </strong>{parser.body_a1}, <strong>argc: </strong>{parser.body_argc},
+                                        <strong>event_time:</strong>{parser.body_event_time}, <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name},
+                                        <strong>header_msg:</strong>{parser.header_msg}
+                                      </td>
+                                    </tr>
                           }else{
-                            const itemTime = item.time.lastIndexOf(".") 
-                            const itemTimeValue = item.time.substring(0,itemTime).replace(/T/gi, "\r\n")
-                            
-                            const replacetotalLog = JSON.stringify(item).replace(/,/gi,'\r\n , \r\n ').replace("header_message:type", 'headerType')
-                            const parser = JSON.parse(replacetotalLog)
-                            if(parser.headerType === "SYSCALL"){
-                              return  <tr className="historytr">
-                                        <td className="itemTimeValue">{itemTimeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
-                                        <td className="totalLog">
-                                          <strong>a0: </strong>{parser.body_a0}, <strong>a1: </strong>{parser.body_a1},
-                                          <strong>a2:</strong>{parser.body_a3}, <strong>a3: </strong>{parser.body_a3},<strong>arch: </strong>{parser.body_arch}, <strong>auid: </strong>{parser.body_auid},
-                                          <strong>comm: </strong>{parser.body_comm}, <strong>egid: </strong>{parser.body_egid}, <strong>euid:</strong>{parser.body_euid}, <strong>event_time: </strong>{parser.body_event_time},   
-                                          <strong>exe: </strong>{parser.body_exe}, <strong>exit: </strong>{parser.body_exit}, <strong>fsgid: </strong>{parser.body_fsgid}, <strong>fsuid: </strong>{parser.body_fsuid},   
-                                          <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name}, <strong>items: </strong>{parser.body_items}, <strong>key: </strong>{parser.body_key},  
-                                          <strong>pid: </strong>{parser.body_pid}, <strong>ppid: </strong>{parser.body_ppid}, <strong>ses: </strong>{parser.body_ses}, <strong>sgid: </strong>{parser.body_sgid},    
-                                          <strong>success: </strong>{parser.body_success}, <strong>suid: </strong>{parser.body_suid}, <strong>syscall: </strong>{parser.body_syscall}, <strong>tty: </strong>{parser.body_tty},   
-                                          <strong>uid: </strong>{parser.body_uid}, <strong>header_msg: </strong>{parser.header_msg}
-                                        </td>
-                                      </tr>
-                            }else if(parser.headerType === "CWD"){
-                              return  <tr className="historytr">
-                                        <td className="itemTimeValue">{itemTimeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
-                                        <td className="totalLog">
-                                          <strong>cwd: </strong>{parser.body_cwd}, <strong>event_time: </strong>{parser.body_event_time},
-                                          <strong>host_ip:</strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name}, <strong>header_msg: </strong>{parser.header_msg},
-                                        </td>
-                                      </tr>
-                            }else if(parser.headerType === "PATH"){
-                              return  <tr className="historytr">
-                                        <td className="itemTimeValue">{itemTimeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
-                                        <td className="totalLog">
-                                          <strong>cap_fe: </strong>{parser.body_cap_fe}, <strong>cap_fi: </strong>{parser.body_cap_fi},
-                                          <strong>cap_fp:</strong>{parser.body_cap_fp}, <strong>cap_fver: </strong>{parser.body_cap_fver}, <strong>dev: </strong>{parser.body_dev},
-                                          <strong>event_time:</strong>{parser.body_event_time}, <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name},
-                                          <strong>inode:</strong>{parser.body_inode}, <strong>item: </strong>{parser.body_item}, <strong>mode: </strong>{parser.body_mode},
-                                          <strong>name:</strong>{parser.body_name}, <strong>objtype: </strong>{parser.body_objtype}, <strong>ogid: </strong>{parser.body_ogid},
-                                          <strong>ouid:</strong>{parser.body_ouid}, <strong>rdev: </strong>{parser.body_rdev}, <strong>header_msg: </strong>{parser.header_msg}
-                                        </td>
-                                      </tr>
-                            }else{
-                              return <h5>검색 결과가 없습니다.</h5>
-                            }
+                            console.log(parser.headerType)
                           }
-                        })}
+                        }
+
+
+                      })}
                       </tbody>
                     </table>
                   </section>

@@ -37,43 +37,43 @@ function Monitoring () {
  
   //reflesh btn toggle
   const [toggleState, setToggleState] = useState(false);
-  const [switchtitle, setswitchtitle] = useState("멈춤")
+  const [switchtitle, setswitchtitle] = useState("STOP")
 
   function toggle() {
     setToggleState(toggleState === true ? false : true);
-    setswitchtitle(switchtitle === "실시간" ? "멈춤" : "실시간");
+    setswitchtitle(switchtitle === "START" ? "STOP" : "START");
   }
 
   const [cputoggleState, setCpuToggleState] = useState(false);
-  const [cpuswitchtitle, setCpuswitchtitle] = useState("멈춤")
+  const [cpuswitchtitle, setCpuswitchtitle] = useState("STOP")
 
   function cputoggle() {
     setCpuToggleState(cputoggleState === true ? false : true);
-    setCpuswitchtitle(cpuswitchtitle === "실시간" ? "멈춤" : "실시간");
+    setCpuswitchtitle(cpuswitchtitle === "START" ? "STOP" : "START");
   }
 
   const [memotoggleState, setMemoToggleState] = useState(false);
-  const [memoswitchtitle, setMemoswitchtitle] = useState("멈춤")
+  const [memoswitchtitle, setMemoswitchtitle] = useState("STOP")
 
   function memotoggle() {
     setMemoToggleState(memotoggleState === true ? false : true);
-    setMemoswitchtitle(memoswitchtitle === "실시간" ? "멈춤" : "실시간");
+    setMemoswitchtitle(memoswitchtitle === "START" ? "STOP" : "START");
   }
 
   const [stortoggleState, setStorToggleState] = useState(false);
-  const [storswitchtitle, setStorswitchtitle] = useState("멈춤")
+  const [storswitchtitle, setStorswitchtitle] = useState("STOP")
 
   function stortoggle() {
     setStorToggleState(stortoggleState === true ? false : true);
-    setStorswitchtitle(storswitchtitle === "실시간" ? "멈춤" : "실시간");
+    setStorswitchtitle(storswitchtitle === "START" ? "STOP" : "START");
   }
 
   const [nettoggleState, setNetToggleState] = useState(false);
-  const [netswitchtitle, setNetswitchtitle] = useState("멈춤")
+  const [netswitchtitle, setNetswitchtitle] = useState("STOP")
 
   function nettoggle() {
     setNetToggleState(nettoggleState === true ? false : true);
-    setNetswitchtitle(netswitchtitle === "실시간" ? "멈춤" : "실시간");
+    setNetswitchtitle(netswitchtitle === "START" ? "STOP" : "START");
   }
 
 
@@ -429,7 +429,7 @@ function netlotation() {
 
   const fields_Network = [
     {label:"Time", key:'date',_style:{width:'10%'}},
-    {label:"Storage", key:'Network'},
+    {label:"Network", key:'Network'},
   ]
 
   if(loading) return <Loading/>;

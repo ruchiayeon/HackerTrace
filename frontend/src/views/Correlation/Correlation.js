@@ -36,9 +36,6 @@ function Correlation() {
    const [sessDatas, setSessDatas] = useState([null]);
    const [frissessDatas, setFirsSessDatas] = useState([null]);
 
-  //matrix받아오는 부분
-  const [attackMatrixs, setMiterData] = useState(null);
-
   // matrix 값 맞춰서 변경하기 
   const [initialAccess, setinitialAccess]=  useState("")
   const [Execution, setExecution] = useState("")
@@ -144,6 +141,7 @@ function Correlation() {
       }else{
         setUidDatas(response.data.data.uid_list);
         setFirsUidDatas(response.data.data.uid_list[0]);
+        sessubmitValue(response.data.data.uid_list[0])
       }
       
     }catch(e){
@@ -173,7 +171,6 @@ function Correlation() {
   };
 
   const sesResDatas = async(startDate, endDate, selectHostColum, selectUIDColum) => {
-    console.log(startDate, endDate, selectHostColum, selectUIDColum)
     try{
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
@@ -319,8 +316,6 @@ function Correlation() {
             `http://210.114.18.175:8080/ht/mitre/matrix?isSubT=${value}`
         )
 
-        //받아온 값을 setMiterData에 넣어준다.
-        setMiterData(response.data.data.attack_matrix);
         //각 section당 값
         setinitialAccess(response.data.data.attack_matrix[0])
         setExecution(response.data.data.attack_matrix[1])
@@ -341,8 +336,8 @@ function Correlation() {
         //로딩 실패시 flag를 달아서 이동
         setLoading(false);
   };
-  const [toggleState, setToggleState] = useState("T");
-  const [switchtitle, setswitchtitle] = useState("+")
+  const [toggleState, setToggleState] = useState("F");
+  const [switchtitle, setswitchtitle] = useState("-")
 
   function toggle() {
     setToggleState(toggleState === "T" ? "F" : "T");
@@ -1025,7 +1020,7 @@ function Correlation() {
   //로딩관련 예외처리를 해준다. --> 페이지 만들어졌을때 변경 하기 
   if(loading) return <Loading/>;
   if(error) return <Page404/>
-  if(!attackMatrixs) return SubmitMatrix();
+  if(!initialAccess) return SubmitMatrix();
 
   //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
   if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
@@ -1057,7 +1052,7 @@ function Correlation() {
                     <CFormGroup>
                       <CSelect custom name="selectHostColum" onChange={handlerChange} value={selectHostColum} id="selectHostColum">
                         {hostDatas.map((item, index) => {
-                          return <option key={index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
+                          return <option key={"selectHostColum"+index} value={item.hostIp}>{item.hostName}({item.hostIp})</option>
                         })}
                       </CSelect>
                     </CFormGroup>
@@ -1071,7 +1066,7 @@ function Correlation() {
                       <CFormGroup>
                         <CSelect custom name="selectUIDColum" onChange={deephandlerChange} value={selectUIDColum} id="selectUIDColum">
                           {uidDatas.map((item, index) => {
-                            return <option className='selectUIDColum' key={index} value={item}>UID : {item}</option>
+                            return <option className='selectUIDColum' key={index+"selectUIDColum"} value={item}>UID : {item}</option>
                           })}
                         </CSelect>
                       </CFormGroup>
@@ -1080,7 +1075,7 @@ function Correlation() {
                       <CFormGroup>
                         <CSelect custom name="selectSESSColum" onChange={handlerChange} value={selectSESSColum} id="selectSESSColum">
                            {sessDatas.map((item, index) => {
-                            return <option key={index} value={item}>Session : {item}</option>
+                            return <option key={index+"selectSESSColum"} value={item}>Session : {item}</option>
                           })}
                         </CSelect>
                       </CFormGroup>
@@ -1156,100 +1151,144 @@ function Correlation() {
                       <CCol className= {initcolor} value={initsearched}>
                         <section className="title">
                           <h5 value="initial-access">Initial-access</h5>
-                          <p>초기 접근</p>
                         </section>
                         {initialAccess.map((item, index) => {
-                          return <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} className={item.external_ids[0]} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return <CPopover key={"initialAccess"+index} header='Description' content={item.description} placement="right" trigger="click"><div className="submatrix" value=""> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return <CPopover key={"initialAccess"+index} header='Description' content={item.description} placement="right" trigger="click"><div className={item.external_ids[0]} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                          
                         })}
                       </CCol>
                       <CCol className={execolor} value={exesearched}>
                         <section className="title">
                           <h5 value="execution">Execution</h5>
-                          <p>실행</p>
                         </section>
                         {Execution.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Execution"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"Execution"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                          
+                          
                         })}
                       </CCol>
                       <CCol className={persiscolor} value={persissearched}>
                         <section className="title"> 
                           <h5 value="persistence">Persistence</h5>
-                          <p>지속성 행위</p>
                         </section>
                         {Persistence.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Persistence"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"Persistence"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                          
                         })}
                       </CCol>
                       <CCol className={preEcolor} value={presearched}>
                         <section className="title">
                           <h5>Privilege Escalation</h5>
-                          <p>권한 상승 행위</p>
                         </section>
                         {Privilege.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Privilege"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"Privilege"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                          
                         })}
                       </CCol>
                       <CCol className={defencolor} value={defensearched}>
                         <section className="title">
                           <h5>Defense Evasion</h5>
-                          <p>방어 회피</p>
                         </section>
                         {Defense.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name}</div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Defense"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name}</div></CPopover>
+                          }else{
+                            return  <CPopover key={"Defense"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name}</div></CPopover>
+                          }
+                          
                         })}
                       </CCol>
                       <CCol className={credicolor} value={credisearched}>
                         <section className="title">
                           <h5>Credential Access</h5>
-                          <p>자격증명 접근</p>
                         </section>
                         {Credential.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Credential"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"Credential"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                          
                         })}
                       </CCol>    
                       <CCol className={discocolor} value={discosearched}>
                         <section className="title">
                           <h5>Discovery</h5>
-                          <p>뭐라고 이야기하지</p>
                         </section>
                         {Discovery.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Discovery"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"Discovery"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                          
                         })}
                       </CCol>
                       <CCol className={collcolor} value={collsearched}>
                         <section className="title">
                           <h5>Collection</h5>
-                          <p>수집행위</p>
                         </section>
                         {Collection.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Collection"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"Collection"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                          
                         })}
                       </CCol>
                       <CCol className={commcolor} value={commsearched}>
                         <section className="title">
                           <h5>Command and Control</h5>
-                          <p>CLI 접근 및 조작행위</p>
                         </section>
                         {Command.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Command"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"Command"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                         
                         })}
                       </CCol>
                       <CCol className={exfcolor} value={exfsearched}>
                         <section className="title">
                           <h5>Exfiltration</h5>
-                          <p>유출 행위</p>
                         </section>
                         {Exfiltration.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Exfiltration"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"Exfiltration"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
                         })}
                       </CCol>
                       <CCol className= {impaccolor} value={impacsearched}>
                         <section className="title">
                           <h5>Impact</h5>
-                          <p>뭐라고 할까..</p>
                         </section>
                         {Impact.map((item, index) => {
-                          return  <CPopover header='Description' content={item.description} placement="right" trigger="click"><div key={index} name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name}</div></CPopover>
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Impact"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name}</div></CPopover>
+                          }else{
+                            return  <CPopover key={"Impact"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name}</div></CPopover>
+                          }
+                          
                         })}
                       </CCol>              
                     </CRow>
