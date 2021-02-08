@@ -306,7 +306,7 @@ public class ConfigLogDAO {
 		sortDoc.put("body_event_time", -1);
 		List<Document> auditLogList = audtiLogListCol.find(findQuery)
 																		  .sort(sortDoc)
-																		  .limit(vo.getPageSize())
+																		  .limit(vo.getPageSize()/2)
 																	      .skip(vo.getPageNumber()-1)
 																		  .into(new ArrayList<>());
 		

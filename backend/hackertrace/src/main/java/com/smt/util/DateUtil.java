@@ -86,7 +86,6 @@ public class DateUtil {
 		
 	}
 	
-	
 	public static String getTodayDate() {
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 		

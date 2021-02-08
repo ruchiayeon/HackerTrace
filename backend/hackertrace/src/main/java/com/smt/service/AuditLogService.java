@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.smt.dao.AuditLogDAO;
+import com.smt.util.DateUtil;
 import com.smt.util.TimeUtils;
 import com.smt.vo.AuditLogListVO;
 import com.smt.vo.AuditLogVO;
@@ -22,7 +23,30 @@ public class AuditLogService {
 	AuditLogDAO dao;
 	
 	public List<Document> getAuditLogList(AuditLogListVO vo){
-		return dao.getAuditLogList(vo);
+		List<Document> list = new ArrayList<Document>();
+		for(Document doc : dao.getAuditLogList(vo)) {
+			Document dataDoc = new Document();
+			String eventTime = (String)doc.get("body_event_time");
+			String[] splitEventTime = eventTime.split("\\+");
+			
+			String bodyKey = (String)doc.get("body_key");
+			String bodyExe = (String)doc.get("body_exe");
+			String bodyComm = (String)doc.get("body_comm");
+			
+			dataDoc.put("body_event_time",splitEventTime[0].trim());
+			dataDoc.put("body_success", (String)doc.get("body_success"));
+			dataDoc.put("body_key", bodyKey.replaceAll("\\\"", ""));
+			dataDoc.put("header_message:type", (String)doc.get("header_message:type"));
+			dataDoc.put("body_ses", (String)doc.get("body_ses"));
+			dataDoc.put("body_uid", (String)doc.get("body_uid"));
+			dataDoc.put("body_exe", bodyExe.replaceAll("\\\"", ""));
+			dataDoc.put("body_comm", bodyComm.replaceAll("\\\"", ""));
+			dataDoc.put("body_syscall", (String)doc.get("body_syscall"));
+			
+			
+			list.add(dataDoc);
+		}
+		return list;
 	}
 	
 	public void insertAuditLogByLogFile(String filePath) {

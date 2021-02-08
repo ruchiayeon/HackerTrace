@@ -1,6 +1,8 @@
 package com.smt.dao;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,9 +61,33 @@ public class MitreAttackDAO {
 			resultDocList.add(doc);
 			
 		}
+		
+		sortMitreExternalIdx(resultDocList);
 
 		return resultDocList; 
 		
+	}
+	
+	//일치율에 따른 sorting
+	private void sortMitreExternalIdx(List<Document> attackGroupMatchingList) {
+		Collections.sort(attackGroupMatchingList, new Comparator<Document>() {
+			
+			@Override
+			public int compare(Document o1, Document o2) {
+				List<String> externalIdsO1List = (List<String>) o1.get("external_ids");
+				List<String> externalIdsO2List = (List<String>) o2.get("external_ids");
+				
+				Double exIdO1 = Double.valueOf(externalIdsO1List.get(0).replaceAll("T", ""));
+				Double exIdO2 = Double.valueOf(externalIdsO2List.get(0).replaceAll("T", ""));
+				  if (exIdO1 < exIdO2 ) {
+	                    return -1;
+	                } else if (exIdO1> exIdO2) {
+	                    return 1;
+	                }
+	                return 0;
+			}
+
+		});
 	}
 	
 //	public Document selectMitreAuditCondition(MitreAuditConditionVO vo){
