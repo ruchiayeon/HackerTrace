@@ -306,18 +306,25 @@ public class ConfigLogDAO {
 		sortDoc.put("body_event_time", -1);
 		List<Document> auditLogList = audtiLogListCol.find(findQuery)
 																		  .sort(sortDoc)
-																		  .limit(vo.getPageSize()/2)
+																		  .limit(vo.getPageSize()/3)
 																	      .skip(vo.getPageNumber()-1)
 																		  .into(new ArrayList<>());
 		
 		for(Document doc : auditLogList) {
 			String headerMsg = (String)doc.get("header_msg");
 			BasicDBObject headerFindQuery = new BasicDBObject();
-			headerFindQuery.put("header_message:type", new BasicDBObject("$ne", "PROCTITLE"));
+			headerFindQuery.put("header_message:type", new BasicDBObject("$ne", "CWD"));
 			headerFindQuery.put("header_msg", headerMsg);
-			System.out.println(headerFindQuery.toJson());
+//			System.out.println(headerFindQuery.toJson());
 			List<Document> resDoc = audtiLogListCol.find(headerFindQuery).into(new ArrayList<>());
 			for(Document allDoc : resDoc) {
+				String type = (String)allDoc.get("header_message:type");
+				if(type.equals("PROCTITLE")) {
+					String procTitle = (String)allDoc.get("body_proctitle");
+					String convertedProcTitle = MogoDBUtil.hexStringToStr(procTitle);
+					allDoc.put("body_proctitle", convertedProcTitle);
+				}
+				
 				resultList.add(allDoc);
 			}
 		}

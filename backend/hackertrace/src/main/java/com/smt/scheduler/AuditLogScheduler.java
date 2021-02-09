@@ -61,6 +61,9 @@ public class AuditLogScheduler {
 					for(Document uidDoc : uidDocList) {
 						
 						String uid = (String)uidDoc.get("_id");
+					
+						if(uid == null) //로그에 uid필드가 없는 경우
+							continue;
 						
 						resultDoc.put("createDate",  startDate);
 						resultDoc.put("hostIp", hostIp);
