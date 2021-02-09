@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useContext } from 'react'
 import {
   CCard,
   CCardBody,
@@ -16,7 +16,7 @@ import axios from 'axios'
 import Clock from '../../Clock/Clock'
 import Page404 from '../../pages/page404/Page404'
 import Loading from '../../pages/Loading/Loading'
-
+import Context from "../../Context"
 
 function Impact() {
 
@@ -36,26 +36,26 @@ function Impact() {
   const formatdate = year + '-' + month + '-' + date
 
   //host ip 받아오기
-  useEffect(()=>{
-    const hostResData = async() => {
-      try{
-        setLoading(true);
-        //axios를 이용하여 해당 url에서 갑을 받아온다.
-        const response = await axios.get(
-            'http://210.114.18.175:8080/ht/host/list'
-        )
-        //받아온 값을 hostDatas에 넣어준다.
-        setHostDatas(response.data.data);
-        setFirHostDatas(response.data.data[0].hostIp)
-      }catch(e){
-        //에러시 flag를 달아서 이동
-        setError(e);
-      }
-        //로딩 실패시 flag를 달아서 이동
-        setLoading(false);
-      };
-    hostResData();
-  }, []);
+  const {state} = useContext(Context)
+  const hostResData = async() => {
+    try{
+    setLoading(true);
+    //axios를 이용하여 해당 url에서 갑을 받아온다.
+    const response = await axios.post(
+      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
+    )
+    //받아온 값을 setMiterData에 넣어준다.
+    
+    setHostDatas(response.data.data);
+    setFirHostDatas(response.data.data[0].hostIp)
+
+    }catch(e){
+    //에러시 flag를 달아서 이동
+    setError(e);
+    }
+    //로딩 실패시 flag를 달아서 이동
+    setLoading(false);
+  };
 
   const[inputs, setInputs] = useState({
     search:'',
@@ -88,7 +88,7 @@ function Impact() {
   const fields = [
     {key:'body_event_time', label:"TIME"},
     {key:'body_success', label:"Success"},
-    {key:'body_key',label:"Mitter T Value"},
+    {key:'body_key',label:"Mitre ID"},
     {key:'header_message:type', label:"Audit Type"}, 
     {key:'body_ses', label:"Session"},
     {key:'body_uid', label:"Uid"},
@@ -132,7 +132,7 @@ function Impact() {
   };
   if(loading) return <Loading/>;;
   if(error) return <Page404/>;
-  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
+  if(!hostDatas) return hostResData();
   if(!impactDatas) return submitValue()
   
 
@@ -164,12 +164,12 @@ function Impact() {
                       <CCol md="4">
                         <CFormGroup>
                           <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="selectColum">
-                            <option value='success'>Success</option>
-                            <option value='key'>Mitter T Value</option>
-                            <option value='uid'>Uid</option>
-                            <option value='ses'>Session</option>
-                            <option value='exe'>Exe</option>
-                            <option value='comm'>Comm</option>
+                            <option value='body_success'>Success</option>
+                            <option value='body_key'>Mitre ID</option>
+                            <option value='body_uid'>Uid</option>
+                            <option value='body_ses'>Session</option>
+                            <option value='body_exe'>Exe</option>
+                            <option value='body_syscall'>Syscall Number</option>
                           </CSelect>
                         </CFormGroup>
                       </CCol>

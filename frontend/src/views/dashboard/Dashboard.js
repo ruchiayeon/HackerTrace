@@ -1,4 +1,4 @@
-import React, {useState,/*useContext*/} from 'react'
+import React, {useContext, useState} from 'react'
 import {
   CCard,
   CCardBody,
@@ -14,9 +14,11 @@ import { CChartLine } from '@coreui/react-chartjs'
 
 import Page404 from "../pages/page404/Page404"
 import Loading from "../pages/Loading/Loading"
-//import LangContext from "../Context"
+import Context from "../Context"
+
 
 function Dashboard() {
+  const {state} = useContext(Context)
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -41,23 +43,15 @@ function Dashboard() {
 
 
   //change file path
- /* const [monchange, setMonchange] = useState(null)
-  const [tuechange, settuechange] = useState(null)
-  const [wedchange, setwedchange] = useState(null)
-  const [thuchange, setthuchange] = useState(null)
-  const [frichange, setfrichange] = useState(null)
-  const [satchange, setsatchange] = useState(null)
-  const [sunchange, setsunchange] = useState(null)*/
-  
+ 
   //input data handeling 전혀 코딩 안함
-  //const contextValue = useContext(LangContext)
-  //console.log(contextValue)
-  const hostResData = async() => {
+  
+    const hostResData = async() => {
     try{
     setLoading(true);
     //axios를 이용하여 해당 url에서 갑을 받아온다.
-    const response = await axios.get(
-      'http://210.114.18.175:8080/ht/host/list'
+    const response = await axios.post(
+      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
     )
     //받아온 값을 setMiterData에 넣어준다.
     
@@ -70,7 +64,7 @@ function Dashboard() {
     }
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
-  };
+    };
     
 
 
@@ -242,42 +236,6 @@ function Dashboard() {
           </CFormGroup>
         </CCol>
       </div>
-      {/*첫번째 숫자위젯 */}
-      <CRow>
-      <CCol md="4">
-        <CWidgetDropdown
-          color="gradient-primary"
-          header={configCount[0].count}
-          text={configCount[0].term}
-          footerSlot={<br/>}
-        >
-        </CWidgetDropdown>
-      </CCol>
-
-      <CCol  md="4">
-        <CWidgetDropdown
-          color="gradient-info"
-          header={configCount[1].count}
-          text={configCount[1].term}
-          footerSlot={<br/>}
-        >
-        </CWidgetDropdown>
-      </CCol>
-
-      <CCol md="4">
-        <CWidgetDropdown
-          color="gradient-warning"
-          header={configCount[2].count}
-          text={configCount[2].term}
-          footerSlot={<br/>}
-        >
-    
-        </CWidgetDropdown>
-        
-      </CCol>
-      
-     
-    </CRow>
       {/*형상관리 template */}
       <CCard>
         <CCardBody>
@@ -286,6 +244,42 @@ function Dashboard() {
               <h4 className="abnormalTitle">유저행위</h4>
               <h6 id="dd">업데이트 일자 : {updat}</h6>
             </CCol>
+          </CRow>
+           {/*첫번째 숫자위젯 */}
+            <CRow>
+            <CCol md="4">
+              <CWidgetDropdown
+                color="gradient-primary"
+                header={configCount[0].count}
+                text={"/"+configCount[0].term+" ["+configCount[0].startDate+" ~ "+configCount[0].endDate+"] "}
+                footerSlot={<br/>}
+              >
+              </CWidgetDropdown>
+            </CCol>
+
+            <CCol  md="4">
+              <CWidgetDropdown
+                color="gradient-info"
+                header={configCount[1].count}
+                text={"/"+configCount[1].term+" ["+configCount[1].startDate+" ~ "+configCount[1].endDate+"] "}
+                footerSlot={<br/>}
+              >
+              </CWidgetDropdown>
+            </CCol>
+
+            <CCol md="4">
+              <CWidgetDropdown
+                color="gradient-warning"
+                header={configCount[2].count}
+                text={"/"+configCount[2].term+" ["+configCount[2].startDate+" ~ "+configCount[2].endDate+"] "}
+                footerSlot={<br/>}
+              >
+          
+              </CWidgetDropdown>
+              
+            </CCol>
+            
+          
           </CRow>
           <CChartLine
             //innerRef ={(index)=> console.log(index)} 

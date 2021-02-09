@@ -54,10 +54,10 @@ function TheHeader() {
           <CHeaderNavLink to="/config">유저행위</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem className="px-3">
-          <CHeaderNavLink to="/abnormal/initial">감사로그</CHeaderNavLink>
+          <CHeaderNavLink to="/correlation">상관분석</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem className="px-3">
-          <CHeaderNavLink to="/correlation">상관분석</CHeaderNavLink>
+          <CHeaderNavLink to="/abnormal/initial">감사로그</CHeaderNavLink>
         </CHeaderNavItem>
         <CHeaderNavItem className="px-3">
           <CHeaderNavLink to="/monitor">모니터링</CHeaderNavLink>

@@ -28,14 +28,6 @@ const TheHeaderDropdown = () => {
         </div>
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        <CDropdownItem
-          header
-          tag="div"
-          color="light"
-          className="text-center"
-        >
-          <strong>사용자 이름</strong>
-        </CDropdownItem>
         <CDropdownItem to="/register">
           <CIcon name="cil-lock-locked" className="mfe-2"/>
           로그아웃

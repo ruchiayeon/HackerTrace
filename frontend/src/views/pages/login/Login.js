@@ -15,14 +15,13 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import axios from "axios"
-//import LangContext from "../../Context"
+import Context from "../../Context"
 
-const Login = () => {
+const Login = () => { 
   const [loginData, setLoginData] = useState({
     password: "",
     userId: ""
   })
-  //const contextValue = useContext(LangContext)
 
   const { password, userId } = loginData;
 
@@ -36,7 +35,6 @@ const Login = () => {
 
   function submitValue(){
     Loginfunc(password,userId)
-    //contextValue.setUserId(userId)
   }
   const Loginfunc = async(password,userId) => {
     try{
@@ -48,7 +46,7 @@ const Login = () => {
         }
       )
       if(response.data.return_code === 0){
-        return document.location.href="/dashboard" 
+        return document.location.href="/" 
       }else{
         alert("아이디또는 비밀번호가 틀렸습니다.")
       }
@@ -56,11 +54,11 @@ const Login = () => {
 
     }
   }
-//<LangContext.Provider value={userId}> </LangContext.Provider>
+
 
   return (
     <div className="c-app c-default-layout flex-row align-items-center">
-      
+      <Context.Provider onChange={handlerChange} value={userId} name="userId" id="userId">
       <CContainer>
         <CRow className="justify-content-center">
           <CCol md="8">
@@ -99,7 +97,7 @@ const Login = () => {
           </CCol>
         </CRow>
       </CContainer>
-     
+     </Context.Provider>
       
     </div>
   )

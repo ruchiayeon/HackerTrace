@@ -24,7 +24,13 @@ const _nav =  [
   },
   {
     _tag: 'CSidebarNavTitle',
-    _children: ['감사로그']
+    _children: ['상관분석']
+  },
+  {
+    _tag: 'CSidebarNavItem',
+    name: '상관분석',
+    to: '/correlation',
+    icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
   },
   {
     _tag: 'CSidebarNavDropdown',
@@ -79,13 +85,13 @@ const _nav =  [
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Command and Control',
-        to: '/abnormal/command',
+        name: 'Exfiltration',
+        to: '/abnormal/exfiltration',
       },
       {
         _tag: 'CSidebarNavItem',
-        name: 'Exfiltration',
-        to: '/abnormal/exfiltration',
+        name: 'Command and Control',
+        to: '/abnormal/command',
       },
       {
         _tag: 'CSidebarNavItem',
@@ -93,12 +99,6 @@ const _nav =  [
         to: '/abnormal/impact',
       }
     ],
-  },
-  {
-    _tag: 'CSidebarNavItem',
-    name: '상관분석',
-    to: '/correlation',
-    icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
   },
   {
     _tag: 'CSidebarNavTitle',

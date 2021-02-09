@@ -1,4 +1,4 @@
-import React,{useLayoutEffect, useState} from 'react'
+import React,{useContext, useState} from 'react'
 
 import axios from 'axios'
 import {
@@ -11,13 +11,14 @@ import {
   CInput,
   CSelect,
   CButton,
-  CPopover
+  CPopover,
+  CHeaderNavLink
 } from '@coreui/react'
 
 //import MatrixTable from './MatrixTable'
 import Loading from '../pages/Loading/Loading'
 import Page404 from '../pages/page404/Page404';
-
+import Context from "../Context"
 
 function Correlation() {
 
@@ -46,6 +47,7 @@ function Correlation() {
   const [Discovery, setDiscovery] = useState("")
   const [Collection, setCollection] = useState("")
   const [Command, setCommand] = useState("")
+  const [LateralMove, setLateralMove] = useState("")
   const [Exfiltration, setExfiltration] = useState("")
   const [Impact, setImpact] = useState("")
 
@@ -54,28 +56,28 @@ function Correlation() {
   let month = ("00"+ (today.getMonth() + 1)).slice(-2);  // 월
   let date = ("00" + today.getDate()).slice(-2);  // 날짜
   const formatdate = year + '-' + month + '-' + date
-
-  useLayoutEffect(()=>{
-    const hostResData = async() => {
+  
+  const {state} = useContext(Context)
+  const hostResData = async() => {
     try{
-      setLoading(true);
-      //axios를 이용하여 해당 url에서 갑을 받아온다.
-      const response = await axios.get(
-        'http://210.114.18.175:8080/ht/host/list'
-      )
-      //받아온 값을 hostDatas에 넣어준다.
-      setHostDatas(response.data.data);
-      setFirHostDatas(response.data.data[0].hostIp)
+    setLoading(true);
+    //axios를 이용하여 해당 url에서 갑을 받아온다.
+    const response = await axios.post(
+      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
+    )
+    //받아온 값을 setMiterData에 넣어준다.
+    
+    setHostDatas(response.data.data);
+    setFirHostDatas(response.data.data[0].hostIp)
+
     }catch(e){
-      //에러시 flag를 달아서 이동
-      setError(e);
-      console.log(e)
+    //에러시 flag를 달아서 이동
+    setError(e);
     }
-      //로딩 실패시 flag를 달아서 이동
-      setLoading(false);
-    };
-      hostResData();
-  }, []);
+    //로딩 실패시 flag를 달아서 이동
+    setLoading(false);
+  };
+
 
   const [inputs, setInputs] = useState({
     startDate: formatdate,
@@ -206,8 +208,8 @@ function Correlation() {
 
   //선학님이 DB넘겨주는것 확인하고 fields key값 변경하기.
   const fields = [
-    {key:'kill_chain_phases',_style:{width:'20%'}, label: "kill_chain_phases"},
-    {key:'external_ids',_style:{width:'20%'}, label: "Mattrix T Value"}
+    {key:'kill_chain_phases',_style:{width:'20%'}, label: "Kill Chain Phases"},
+    {key:'external_ids',_style:{width:'20%'}, label: "Mitre ID"}
   ]
 
   //Table 조건을 다걸고 axios쪽으로 값을 넘겨준다.
@@ -323,11 +325,12 @@ function Correlation() {
         setPrivilege(response.data.data.attack_matrix[3])
         setDefense(response.data.data.attack_matrix[4])
         setCredential(response.data.data.attack_matrix[5])
-        setDiscovery(response.data.data.attack_matrix[6])
-        setCollection(response.data.data.attack_matrix[7])
-        setCommand(response.data.data.attack_matrix[8])
+        setDiscovery(response.data.data.attack_matrix[6])   
+        setLateralMove(response.data.data.attack_matrix[7])
+        setCollection(response.data.data.attack_matrix[8])
         setExfiltration(response.data.data.attack_matrix[9])
-        setImpact(response.data.data.attack_matrix[10])
+        setCommand(response.data.data.attack_matrix[10])
+        setImpact(response.data.data.attack_matrix[11])
     }catch(e){
         //에러시 flag를 달아서 이동
         setError(e);
@@ -374,14 +377,17 @@ function Correlation() {
   const[discocolor, setDiscoColor] =useState("matrixtable")
   const[discosearched, setDiscoSearched] =useState(null);
 
+  const[lateralcolor, setlateralcolor] =useState("matrixtable")
+  const[lateralsearched, setlateralSearched] =useState(null);
+
   const[collcolor, setCollcolor] =useState("matrixtable")
   const[collsearched, setCollSearched] =useState(null);
+  
+  const[exfcolor, setExfColor] =useState("matrixtable")
+  const[exfsearched, setExfSearched] =useState(null);
 
   const[commcolor, setCommcolor] =useState("matrixtable")
   const[commsearched, setCommSearched] =useState(null);
-
-  const[exfcolor, setExfColor] =useState("matrixtable")
-  const[exfsearched, setExfSearched] =useState(null);
 
   const[impaccolor, setImpaccolor] =useState("matrixtable")
   const[impacsearched, setImpacSearched] =useState(null);
@@ -396,6 +402,7 @@ function Correlation() {
     setDefenColor("matrixtable")
     setCredicolor("matrixtable")
     setDiscoColor("matrixtable")
+    setlateralcolor("matrixtable")
     setCollcolor("matrixtable")
     setCommcolor("matrixtable")
     setExfColor("matrixtable")
@@ -410,6 +417,7 @@ function Correlation() {
     setCrediSearched(null)
     setDiscoSearched(null)
     setDiscoSearched(null)
+    setlateralSearched(null)
     setCollSearched(null)
     setCommSearched(null)
     setExfSearched(null)
@@ -498,6 +506,17 @@ function Correlation() {
           if(external.indexOf(items.external_ids) !== -1){
             setDiscoColor("searchT")
             setDiscoSearched("searched")
+          }
+        })
+      })
+
+      //Lateral 비교
+      LateralMove.forEach(function(element) {
+        corrSpotChange.forEach(function(items){
+          const external = element.external_ids
+          if(external.indexOf(items.external_ids) !== -1){
+            setlateralcolor("searchT")
+            setlateralSearched("searched")
           }
         })
       })
@@ -652,6 +671,19 @@ function Correlation() {
         })
       })
 
+       // LateralMove 비교
+       LateralMove.forEach(function(element) {
+        AttSpotChange1.forEach(function(items){
+          const external = element.external_ids
+          if(external.indexOf(items) !== -1){
+            setlateralcolor("attckGroupT")
+            if(discosearched === "searched"){
+              setlateralSearched("matchT")
+            }
+          }
+        })
+      })
+      
       //Collection 비교
       Collection.forEach(function(element) {
         AttSpotChange1.forEach(function(items){
@@ -806,6 +838,22 @@ function Correlation() {
           }
         })
       })
+
+    // LateralMove 비교
+    LateralMove.forEach(function(element) {
+      AttSpotChange1.forEach(function(items){
+        const external = element.external_ids
+        if(external.indexOf(items) !== -1){
+          setlateralcolor("attckGroupT")
+          if(discosearched === "searched"){
+            setlateralSearched("matchT")
+          }
+        }
+      })
+    })
+    
+
+
 
       //Collection 비교
       Collection.forEach(function(element) {
@@ -962,6 +1010,22 @@ function Correlation() {
         })
       })
 
+    // LateralMove 비교
+    LateralMove.forEach(function(element) {
+      AttSpotChange1.forEach(function(items){
+        const external = element.external_ids
+        if(external.indexOf(items) !== -1){
+          setlateralcolor("attckGroupT")
+          if(discosearched === "searched"){
+            setlateralSearched("matchT")
+          }
+        }
+      })
+    })
+    
+
+
+
       //Collection 비교
       Collection.forEach(function(element) {
         AttSpotChange1.forEach(function(items){
@@ -1020,10 +1084,12 @@ function Correlation() {
   //로딩관련 예외처리를 해준다. --> 페이지 만들어졌을때 변경 하기 
   if(loading) return <Loading/>;
   if(error) return <Page404/>
+  //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
+  if(!hostDatas) return hostResData();
+  if(!frisuidDatas[0]) return submitValue();
   if(!initialAccess) return SubmitMatrix();
 
-  //Host Ip를 받는 부분은 페이지 로딩시 바로 이루어져야 하므로 useEffect를 사용하여 값을 전달.
-  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
+
  
   return (
     <>
@@ -1099,13 +1165,8 @@ function Correlation() {
                {/*사용자와 유사한 공격그룹을 보여주는 section*/}
                <CRow>
                 <section className="restbtn">
-                
                   <CButton title="ATTCK Map초기화" onClick={resetMattrix} color="info" target="초기화">초기화</CButton>
-           
-               
                    <CButton title="ATTCK Map 상세보기" value={`switch ${toggleState}`}onClick={toggle} color="info">{switchtitle}</CButton>
-           
-               
                 </section>
               </CRow>
                
@@ -1150,7 +1211,9 @@ function Correlation() {
                     <CRow> 
                       <CCol className= {initcolor} value={initsearched}>
                         <section className="title">
-                          <h5 value="initial-access">Initial-access</h5>
+                          <CHeaderNavLink to="/abnormal/initial">
+                            <h5 value="initial-access">Initial-access</h5>
+                          </CHeaderNavLink>
                         </section>
                         {initialAccess.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1163,7 +1226,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={execolor} value={exesearched}>
                         <section className="title">
-                          <h5 value="execution">Execution</h5>
+                          <CHeaderNavLink to="/abnormal/execution">
+                           <h5 value="execution">Execution</h5>
+                          </CHeaderNavLink>
                         </section>
                         {Execution.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1177,7 +1242,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={persiscolor} value={persissearched}>
                         <section className="title"> 
-                          <h5 value="persistence">Persistence</h5>
+                          <CHeaderNavLink to="/abnormal/persistence">
+                           <h5 value="persistence">Persistence</h5>
+                          </CHeaderNavLink>
                         </section>
                         {Persistence.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1190,7 +1257,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={preEcolor} value={presearched}>
                         <section className="title">
-                          <h5>Privilege Escalation</h5>
+                          <CHeaderNavLink to="/abnormal/privilege">
+                            <h5>Privilege Escalation</h5>
+                          </CHeaderNavLink>
                         </section>
                         {Privilege.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1203,7 +1272,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={defencolor} value={defensearched}>
                         <section className="title">
-                          <h5>Defense Evasion</h5>
+                          <CHeaderNavLink to="/abnormal/defense">
+                            <h5>Defense Evasion</h5>
+                          </CHeaderNavLink>
                         </section>
                         {Defense.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1216,7 +1287,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={credicolor} value={credisearched}>
                         <section className="title">
-                          <h5>Credential Access</h5>
+                          <CHeaderNavLink to="/abnormal/credential">
+                            <h5>Credential Access</h5>
+                          </CHeaderNavLink>
                         </section>
                         {Credential.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1229,7 +1302,9 @@ function Correlation() {
                       </CCol>    
                       <CCol className={discocolor} value={discosearched}>
                         <section className="title">
-                          <h5>Discovery</h5>
+                          <CHeaderNavLink to="/abnormal/discovery">
+                           <h5>Discovery</h5>
+                          </CHeaderNavLink>
                         </section>
                         {Discovery.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1240,9 +1315,26 @@ function Correlation() {
                           
                         })}
                       </CCol>
+                      <CCol className={lateralcolor} value={lateralsearched}>
+                        <section className="title">
+                          <CHeaderNavLink to="/abnormal/lateral">
+                            <h5>Lateral Movement</h5>
+                          </CHeaderNavLink>
+                        </section>
+                        {LateralMove.map((item, index) => {
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"LateralMove"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"LateralMove"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                          
+                        })}
+                      </CCol>
                       <CCol className={collcolor} value={collsearched}>
                         <section className="title">
+                          <CHeaderNavLink to="/abnormal/collection">
                           <h5>Collection</h5>
+                          </CHeaderNavLink>
                         </section>
                         {Collection.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1253,9 +1345,25 @@ function Correlation() {
                           
                         })}
                       </CCol>
+                      <CCol className={exfcolor} value={exfsearched}>
+                        <section className="title">
+                          <CHeaderNavLink to="/abnormal/exfiltration">
+                            <h5>Exfiltration</h5>
+                          </CHeaderNavLink>
+                        </section>
+                        {Exfiltration.map((item, index) => {
+                          if(item.external_ids[0].length > 6){
+                            return  <CPopover key={"Exfiltration"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }else{
+                            return  <CPopover key={"Exfiltration"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
+                          }
+                        })}
+                      </CCol>
                       <CCol className={commcolor} value={commsearched}>
                         <section className="title">
-                          <h5>Command and Control</h5>
+                          <CHeaderNavLink to="/abnormal/command">
+                            <h5>Command and Control</h5>
+                          </CHeaderNavLink>
                         </section>
                         {Command.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1266,21 +1374,11 @@ function Correlation() {
                          
                         })}
                       </CCol>
-                      <CCol className={exfcolor} value={exfsearched}>
-                        <section className="title">
-                          <h5>Exfiltration</h5>
-                        </section>
-                        {Exfiltration.map((item, index) => {
-                          if(item.external_ids[0].length > 6){
-                            return  <CPopover key={"Exfiltration"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className="submatrix" value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
-                          }else{
-                            return  <CPopover key={"Exfiltration"+index} header='Description' content={item.description} placement="right" trigger="click"><div name={item.external_ids[0]} className={item.className} value={item.external_ids[0]}> ({item.external_ids[0]})<br/>{item.name} </div></CPopover>
-                          }
-                        })}
-                      </CCol>
                       <CCol className= {impaccolor} value={impacsearched}>
                         <section className="title">
+                          <CHeaderNavLink to="/abnormal/impact">
                           <h5>Impact</h5>
+                          </CHeaderNavLink>
                         </section>
                         {Impact.map((item, index) => {
                           if(item.external_ids[0].length > 6){

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useContext,useEffect} from 'react'
 import {
   CCardBody,
   CRow,
@@ -15,6 +15,8 @@ import axios from "axios";
 //페이지 Import
 import Page404 from '../pages/page404/Page404'
 import Loading from '../pages/Loading/Loading'
+import Context from "../Context"
+
 
 function Monitoring () {
   //host Ip받아오는 부분
@@ -76,35 +78,36 @@ function Monitoring () {
     setNetswitchtitle(netswitchtitle === "START" ? "STOP" : "START");
   }
 
+  useEffect(()=>{
+    setTimeout(function run(){
+      setFlag(true)
+      setTimeout(run,5000);
+    },5000)
+  }, []);
+
 
   //host ip 받아오기
-  useEffect(()=>{
-    const hostResData = async() => {
-      try{
-        setLoading(true);
-        //axios를 이용하여 해당 url에서 갑을 받아온다.
-        const response = await axios.get(
-            'http://210.114.18.175:8080/ht/host/list'
-        )
-        //받아온 값을 hostDatas에 넣어준다.
-        setHostDatas(response.data.data);
-        setFirHostDatas(response.data.data[0].hostIp)
-      }catch(e){
-        //에러시 flag를 달아서 이동
-        setError(e);
-        console.log(e)
-      }
-        //로딩 실패시 flag를 달아서 이동
-        setLoading(false);
-    }; 
+  const {state} = useContext(Context) 
+  const hostResData = async() => {
+    try{
+    setLoading(true);
+    //axios를 이용하여 해당 url에서 갑을 받아온다.
+    const response = await axios.post(
+      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
+    )
+    //받아온 값을 setMiterData에 넣어준다.
+    
+    setHostDatas(response.data.data);
+    setFirHostDatas(response.data.data[0].hostIp)
 
-      setTimeout(function run(){
-        setFlag(true)
-        setTimeout(run,5000);
-      },5000)
+    }catch(e){
+    //에러시 flag를 달아서 이동
+    setError(e);
+    }
+    //로딩 실패시 flag를 달아서 이동
+    setLoading(false);
+  };
 
-    hostResData();
-  }, []);
 
   function totalFlag(){
     proceslotation()
@@ -434,7 +437,7 @@ function netlotation() {
 
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
-  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
+  if(!hostDatas) return  hostResData();
   if(flag) return totalFlag()
 
   return (

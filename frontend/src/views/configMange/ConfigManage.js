@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useContext } from 'react'
 import {
   CCard,
   CCardBody,
@@ -24,6 +24,8 @@ import Tree from 'react-animated-tree'
 import Clock from '../Clock/Clock'
 import Page404 from '../pages/page404/Page404'
 import Loading from '../pages/Loading/Loading'
+import Context from "../Context"
+
 
 
 function ConfigManage() {
@@ -89,27 +91,27 @@ function ConfigManage() {
   const formatdate = year + '-' + month + '-' + date
 
   //host ip 받아오기
-  useEffect(()=>{
-    const hostResData = async() => {
-      try{
-        setLoading(true);
-        //axios를 이용하여 해당 url에서 갑을 받아온다.
-        const response = await axios.get(
-            'http://210.114.18.175:8080/ht/host/list'
-        )
-        //받아온 값을 hostDatas에 넣어준다.
-        setHostDatas(response.data.data);
-        setFirHostDatas(response.data.data[0].hostIp)
-      }catch(e){
-        //에러시 flag를 달아서 이동
-        setError(e);
-        console.log(e)
-      }
-        //로딩 실패시 flag를 달아서 이동
-        setLoading(false);
-      };
-    hostResData();
-  }, []);
+  const {state} = useContext(Context)
+
+  const hostResData = async() => {
+    try{
+    setLoading(true);
+    //axios를 이용하여 해당 url에서 갑을 받아온다.
+    const response = await axios.post(
+      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
+    )
+    //받아온 값을 setMiterData에 넣어준다.
+    
+    setHostDatas(response.data.data);
+    setFirHostDatas(response.data.data[0].hostIp)
+
+    }catch(e){
+    //에러시 flag를 달아서 이동
+    setError(e);
+    }
+    //로딩 실패시 flag를 달아서 이동
+    setLoading(false);
+  };
   
   const[inputs, setInputs] = useState({
     startDate: formatdate,
@@ -492,10 +494,17 @@ function ConfigManage() {
     setLoading(false);
   }
 
+  function reset() {
+    getDircList(firsthostDatas, defaultTreeName)
+    ConfigChangeDirList(formatdate,formatdate,firsthostDatas)
+    setConfigDatas(null)
+  }
+
+
 
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
-  if(!hostDatas) return <div>일치하는 데이터가 없습니다.</div>;
+  if(!hostDatas) return hostResData();
   if(treeSource.length <= 2) return submitTreeLog()
   
 
@@ -507,7 +516,7 @@ function ConfigManage() {
             <CCardBody>
             <Clock/>
               <CRow className="searchtoolbar"> 
-             <CCol md={2}></CCol>
+           
                 
                 <CCol>
                   <CFormGroup row>
@@ -533,16 +542,38 @@ function ConfigManage() {
                   </CFormGroup>
                 </CCol>
                 <CCol sm={1}>
-                  <CButton className="btmholl" color="info" onClick={() =>submitTreeLog()}>검색</CButton>
+                  <CButton className="btmholl" color="info" onClick={() => submitTreeLog()}>검색</CButton>
                 </CCol>
                 <CCol >
-                  <CButton  className="btmholl" onClick={SubmitIntegrity} color="info">Integrity Check</CButton>
+                  <CButton  className="btmholl" onClick={() => SubmitIntegrity()} color="info">Integrity Check</CButton>
+                </CCol>
+                <CCol sm={1}>
+                  <CButton  className="btmholl" onClick={() => reset()} color="info">초기화</CButton>
                 </CCol>
               </CRow>
            
 
               <CRow>
                 
+              
+              <CCol className="folderTree" md={2}>
+                <h5 className="textBold">변경 파일 리스트</h5>
+
+                <ul>
+                  {configChangeHistory.map((item,index) =>{
+                    if(!configChangeHistory[0]){
+                      return <li>변경된 파일이 없습니다.</li>
+                    }else{
+                      if (item.length > 30) {
+                        const enditem = item.substr(0, 30) + "...";
+                        return <li title={item} key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {enditem}</li>
+                      }else{
+                        return <li title={item} key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {item}</li>
+                      }
+                    }
+                  })}
+                </ul>
+              </CCol>
               <CCol className="folderTree" md={2}>
                 <CButton color="info"onClick={()=>submitTreeLog()}>최상위 폴더 이동</CButton>
                 <Tree content={treeSource.name} type={<button className="treeBtn folderimage" value={treeSource.name}>📁</button>} open>
@@ -564,24 +595,6 @@ function ConfigManage() {
                 </Tree>
             
                
-              </CCol>
-              <CCol className="folderTree" md={2}>
-                <h5 className="textBold">변경 파일 리스트</h5>
-
-                <ul>
-                  {configChangeHistory.map((item,index) =>{
-                    if(!configChangeHistory[0]){
-                      return <li>변경된 파일이 없습니다.</li>
-                    }else{
-                      if (item.length > 30) {
-                        const enditem = item.substr(0, 30) + "...";
-                        return <li title={item} key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {enditem}</li>
-                      }else{
-                        return <li title={item} key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {item}</li>
-                      }
-                    }
-                  })}
-                </ul>
               </CCol>
               <CCol md={8}>
                 <CDataTable
@@ -747,17 +760,17 @@ function ConfigManage() {
                                         <strong>a2:</strong>{parser.body_a3}, <strong>a3: </strong>{parser.body_a3},<strong>arch: </strong>{parser.body_arch}, <strong>auid: </strong>{parser.body_auid},
                                         <strong>comm: </strong>{parser.body_comm}, <strong>egid: </strong>{parser.body_egid}, <strong>euid:</strong>{parser.body_euid}, <strong>event_time: </strong>{parser.body_event_time},   
                                         <strong>exe: </strong>{parser.body_exe}, <strong>exit: </strong>{parser.body_exit}, <strong>fsgid: </strong>{parser.body_fsgid}, <strong>fsuid: </strong>{parser.body_fsuid},   
-                                        <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name}, <strong>items: </strong>{parser.body_items}, <strong>key: </strong>{parser.body_key},  
+                                        <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host name: </strong>{parser.body_host_name}, <strong>items: </strong>{parser.body_items}, <strong>key: </strong>{parser.body_key},  
                                         <strong>pid: </strong>{parser.body_pid}, <strong>ppid: </strong>{parser.body_ppid}, <strong>ses: </strong>{parser.body_ses}, <strong>sgid: </strong>{parser.body_sgid},    
                                         <strong>success: </strong>{parser.body_success}, <strong>suid: </strong>{parser.body_suid}, <strong>syscall: </strong>{parser.body_syscall}, <strong>tty: </strong>{parser.body_tty},   
                                         <strong>uid: </strong>{parser.body_uid}, <strong>header_msg: </strong>{parser.header_msg}
                                       </td>
                                     </tr>
-                          }else if(parser.headerType === "CWD"){
+                          }else if(parser.headerType === "PROCTITLE"){
                             return  <tr key={"history"+index}  className="historytr">
                                       <td className="itemTimeValue">{timeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
                                       <td className="totalLog">
-                                        <strong>cwd: </strong>{parser.body_cwd}, <strong>event_time: </strong>{parser.body_event_time},
+                                        <strong>cwd: </strong>{parser.body_proctitle}, <strong>event_time: </strong>{parser.body_event_time},
                                         <strong>host_ip:</strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name}, <strong>header_msg: </strong>{parser.header_msg},
                                       </td>
                                     </tr>
@@ -777,7 +790,7 @@ function ConfigManage() {
                             return  <tr key={"history"+index}  className="historytr">
                                       <td className="itemTimeValue">{timeValue}<br/><strong>header_message:type:</strong>{parser.headerType}</td>
                                       <td className="totalLog">
-                                        <strong>a0:</strong>{parser.body_a0}, <strong>body_a1: </strong>{parser.body_a1}, <strong>argc: </strong>{parser.body_argc},
+                                        <strong>a0:</strong>{parser.body_a0}, <strong>a1: </strong>{parser.body_a1}, <strong>argc: </strong>{parser.body_argc},
                                         <strong>event_time:</strong>{parser.body_event_time}, <strong>host_ip: </strong>{parser.body_host_ip}, <strong>host_name: </strong>{parser.body_host_name},
                                         <strong>header_msg:</strong>{parser.header_msg}
                                       </td>
