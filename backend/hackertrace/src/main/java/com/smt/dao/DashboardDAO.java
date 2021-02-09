@@ -84,6 +84,8 @@ public class DashboardDAO {
 			resultList = statsCol.find(findQuery).into(new ArrayList<>());
 	
 			result.put("updateTime", resultList.get(0).get("updateTime"));
+			result.put("startDate", startDate);
+			result.put("endDate", endDate);
 			
 			for (KillChainPhases phases : KillChainPhases.values()) {
 				  //TODO : change mongodb query
@@ -194,6 +196,8 @@ public class DashboardDAO {
 			
 			result.put("count", String.valueOf(sum));
 			result.put("updateTime", updateTime);
+			result.put("startDate", startDate);
+			result.put("endDate", endDate);
 			
 		}catch(Exception e) {
 			e.printStackTrace();
