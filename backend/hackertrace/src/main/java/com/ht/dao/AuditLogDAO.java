@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -50,18 +51,9 @@ public class AuditLogDAO {
 		findQuery.put("$or", keyQueryList);
 		
 		//LIKE query
-		if(vo.getSearchType() != "") {
-			
-			String keyName = "";
-			if(vo.getSearchType().equals("type")) {
-				keyName = "header_";
-			}else if(vo.getSearchType().equals("msg")){
-				keyName = "header_message:";
-			}else {
-				keyName = "body_";
-			}
-		
-			findQuery.put(keyName+vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
+		System.out.println(vo.getSearchWord());
+		if(StringUtils.isNotEmpty(vo.getSearchWord())) {
+			findQuery.put(vo.getSearchType(), Pattern.compile(vo.getSearchWord(), Pattern.CASE_INSENSITIVE) );
 		}
 		
 		findQuery.put("body_event_time", MogoDBUtil.getDateTermFindQuery(vo.getStartDate(), vo.getEndDate()) );
@@ -71,10 +63,10 @@ public class AuditLogDAO {
 		List<Document> docList  = new ArrayList<>();
 		System.out.println(findQuery.toJson());
 		docList = audtiLogListCol.find(findQuery)
-				   						   .sort(sortDoc)
-									       .limit(vo.getPageSize())
-									       .skip(vo.getPageNumber()-1)
-									       .into(new ArrayList<>());
+	   						     .sort(sortDoc)
+						         .limit(vo.getPageSize())
+						         .skip(vo.getPageNumber()-1)
+						         .into(new ArrayList<>());
 		
 		return docList;
 		
