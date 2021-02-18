@@ -16,6 +16,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import axios from "axios"
 import Context from "../../Context"
+import HOSTIPNAME from "../../../config"
 
 const Login = () => { 
   const [loginData, setLoginData] = useState({
@@ -39,14 +40,14 @@ const Login = () => {
   const Loginfunc = async(password,userId) => {
     try{
       const response = await axios.post(
-        "http://210.114.18.175:8080/ht/login/user",
+        `http://${HOSTIPNAME}/ht/login/user`,
         {
           password: password,
           userId: userId
         }
       )
       if(response.data.return_code === 0){
-        return document.location.href="/" 
+        return document.location.href="#/dashboard" 
       }else{
         alert("아이디또는 비밀번호가 틀렸습니다.")
       }

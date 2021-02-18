@@ -16,7 +16,7 @@ import axios from "axios";
 import Page404 from '../pages/page404/Page404'
 import Loading from '../pages/Loading/Loading'
 import Context from "../Context"
-
+import HOSTIPNAME, {Monitortime} from "../../config"
 
 function Monitoring () {
   //host Ip받아오는 부분
@@ -81,8 +81,8 @@ function Monitoring () {
   useEffect(()=>{
     setTimeout(function run(){
       setFlag(true)
-      setTimeout(run,5000);
-    },5000)
+      setTimeout(run,Monitortime);
+    },Monitortime)
   }, []);
 
 
@@ -93,7 +93,7 @@ function Monitoring () {
     setLoading(true);
     //axios를 이용하여 해당 url에서 갑을 받아온다.
     const response = await axios.post(
-      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
+      `http://${HOSTIPNAME}/ht/host/list/user?adminUserId=${state.userId}`
     )
     //받아온 값을 setMiterData에 넣어준다.
     
@@ -110,14 +110,14 @@ function Monitoring () {
 
 
   function totalFlag(){
-    proceslotation()
-    cpulotation()
-    memolotation()
-    storlotation() 
-    netlotation()
+    proceslotation(startDate, endDate, selectHostIp)
+    cpulotation(cpuselectHostIp,cpustartDate,cpuendDate)
+    memolotation(memostartDate, memoendDate, memoselectHostIp)
+    storlotation(storstartDate, storendDate, storselectHostIp) 
+    netlotation(netstartDate, netendDate, netselectHostIp)
   }
 
-function proceslotation() {
+function proceslotation(startDate, endDate,selectHostIp) {
   if(toggleState){
     if(!selectHostIp){
       ProcessAxios(startDate, endDate, firsthostDatas)
@@ -205,7 +205,7 @@ function netlotation() {
       
       //Process 데이터 Axios
       const process = await axios.post(
-        'http://210.114.18.175:8080/ht/monitor/log/list',
+        `http://${HOSTIPNAME}/ht/monitor/log/list`,
         {
           endDate     : endDate,
           hostIp      : selectHostIp,
@@ -252,7 +252,7 @@ function netlotation() {
       
        //CPU 데이터 Axios
        const cpudata = await axios.post(
-        'http://210.114.18.175:8080/ht/monitor/log/list',
+        `http://${HOSTIPNAME}/ht/monitor/log/list`,
         {
           endDate     : cpuendDate,
           hostIp      : cpuselectHostIp,
@@ -291,7 +291,7 @@ function netlotation() {
     if(!memoselectHostIp){
       MemoryAxios(memostartDate, memoendDate, firsthostDatas)
     }else{
-      MemoryAxios(memostartDate, memoendDate, memoselectHostIp )
+      MemoryAxios(memostartDate, memoendDate, memoselectHostIp)
     }
   }
 
@@ -300,7 +300,7 @@ function netlotation() {
       
      //MEMORY 데이터 Axios
      const memory = await axios.post(
-      'http://210.114.18.175:8080/ht/monitor/log/list',
+      `http://${HOSTIPNAME}/ht/monitor/log/list`,
       {
         endDate     : memoendDate,
         hostIp      : memoselectHostIp,
@@ -338,7 +338,7 @@ function netlotation() {
     if(!storselectHostIp){
       StorageAxios(storstartDate, storendDate,  firsthostDatas)
     }else{
-      StorageAxios( storstartDate, storendDate, storselectHostIp )
+      StorageAxios(storstartDate, storendDate, storselectHostIp)
     }
   }
 
@@ -346,7 +346,7 @@ function netlotation() {
     try{
        //Storage 데이터 Axios
        const storage = await axios.post(
-        'http://210.114.18.175:8080/ht/monitor/log/list',
+        `http://${HOSTIPNAME}/ht/monitor/log/list`,
         {
           endDate     : storendDate,
           hostIp      : storselectHostIp,
@@ -385,7 +385,7 @@ function netlotation() {
     if(!netselectHostIp){
       NetworkAxios(netstartDate, netendDate, firsthostDatas)
     }else{
-      NetworkAxios(netstartDate, netendDate, netselectHostIp )
+      NetworkAxios(netstartDate, netendDate, netselectHostIp)
     }
   }
 
@@ -393,7 +393,7 @@ function netlotation() {
     try{      
        //Network 데이터 Axios
        const Network = await axios.post(
-        'http://210.114.18.175:8080/ht/monitor/log/list',
+        `http://${HOSTIPNAME}/ht/monitor/log/list`,
         {
           endDate     : netendDate,
           hostIp      : netselectHostIp,
@@ -446,6 +446,9 @@ function netlotation() {
       <CCol>
         <CCard>
           <CCardBody>
+         
+          <CButton className="resetbtn" onClick={()=>window.location.reload()} color="info" target="초기화">초기화</CButton><br/>
+          
           <CButton title="CPU 실시간 로딩" value={`switch ${cputoggleState}`} onClick={cputoggle} color="info">{cpuswitchtitle}</CButton>
           <CRow className="searchtoolbar"> 
             <CCol md={4}><h2 className="textMonitor">CPU</h2></CCol>

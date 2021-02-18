@@ -29,6 +29,6 @@ function App(){
           </React.Suspense>
       </HashRouter>
   );
-  }
+}
 
 export default App;

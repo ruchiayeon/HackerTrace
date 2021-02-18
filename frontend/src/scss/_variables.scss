@@ -287,7 +287,7 @@ hr{
 
 //modal style 
 .modal-dialog{
-  max-width: 50% !important;
+  max-width: 60% !important;
   margin: 3rem auto!important;
 }
 .modal-body{
@@ -399,6 +399,14 @@ hr{
 .folderTree .treeview>div{
   border-left: 1px dashed rgba(0, 0, 0, 0.4)!important;
 }
+.coloring{
+  background: #0066ff46!important;
+}
+
+
+.treeview>div svg{
+  opacity: 0!important;
+}
 .contentsList{
   list-style:decimal-leading-zero;
 }
@@ -413,6 +421,7 @@ hr{
   text-align: left;
   cursor: pointer;
 }
+
 .folderTree li{
   transition: 0.3s ease-in-out;
   border-radius: 0px;
@@ -427,6 +436,13 @@ hr{
   padding-left: 0rem;
 }
 
+.changeDirListcolor{
+  border: none;
+  padding: 0.5rem 0;
+  text-align: left;
+  cursor: pointer;
+  background: #0066ff46;
+}
 .ulListStyle{
   padding: 0 1rem;
   border-left: 1px dashed #afafaf;
@@ -513,4 +529,12 @@ strong{
 
 .dropdown-menu{    
   inset: 49px auto auto -8px !important;
+}
+.resetbtn{
+  position: absolute;
+  right: 1.5rem;
+}
+
+.dashrest{
+  text-align: right;
 }

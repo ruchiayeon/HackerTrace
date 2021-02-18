@@ -19,6 +19,7 @@ import {
 import axios from 'axios'
 import ReactDiffViewer from 'react-diff-viewer'
 import Tree from 'react-animated-tree'
+import HOSTIPNAME from "../../config"
 
 //페이지 import
 import Clock from '../Clock/Clock'
@@ -90,6 +91,9 @@ function ConfigManage() {
   let date = ("00" + today.getDate()).slice(-2);  // 날짜
   const formatdate = year + '-' + month + '-' + date
 
+  const [clickValue, setClickvalue] = useState("/")
+
+
   //host ip 받아오기
   const {state} = useContext(Context)
 
@@ -98,7 +102,7 @@ function ConfigManage() {
     setLoading(true);
     //axios를 이용하여 해당 url에서 갑을 받아온다.
     const response = await axios.post(
-      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
+      `http://${HOSTIPNAME}/ht/host/list/user?adminUserId=${state.userId}`
     )
     //받아온 값을 setMiterData에 넣어준다.
     
@@ -135,7 +139,7 @@ function ConfigManage() {
     try{
       setLoading(true);
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/config/directory',
+        `http://${HOSTIPNAME}/ht/config/directory`,
         { 
           hostIp        : selectHostIp,
           topDirectory  : changeTreeName
@@ -170,6 +174,8 @@ function ConfigManage() {
 
   //검색 버튼 및 Value값 넘겨주는 부분
   function submitTreeLog(){
+    setRowDatas1([null])
+    setRowDatas2([null])
     if(!selectHostIp){
       if(!startDate || !endDate){
         alert("검색 날짜를 지정해주십시오.")
@@ -206,7 +212,7 @@ function ConfigManage() {
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/config/log/list',
+        `http://${HOSTIPNAME}/ht/config/log/list`,
         { 
           startDate : startDate,
           endDate   : endDate,
@@ -234,35 +240,48 @@ function ConfigManage() {
   const [rowDatas2, setRowDatas2] = useState([null])
   const [filedate1, setfiledate1] = useState(null)
   const [filedate2, setfiledate2] = useState(null)
+  const [countCheck, setCountCheck] = useState(0)
 
   //Integrity check해서 modal에서 Diff하기
   function toggleModal(item,index){
-
-    if(!rowDatas1[0]){
-      setRowDatas1(item._id)
-      setfiledate1(item.logTime)
-    }else if(!rowDatas2[0] && rowDatas1 !== rowDatas2){
-      setRowDatas2(item._id)
-      setfiledate2(item.logTime)
-    }else if(rowDatas1 !== item._id){
-      setRowDatas1(item._id)
-      setfiledate1(item.logTime)
-    }else if(rowDatas2 !== item._id){
-      setRowDatas2(item._id)
-      setfiledate2(item.logTime)
-    }
+    
+      
+      if(!rowDatas1[0]){
+        setRowDatas1(item._id)
+        setfiledate1(item.logTime)
+        setCountCheck(countCheck+1)
+      }else if(!rowDatas2[0] && rowDatas1 !== rowDatas2){
+        setRowDatas2(item._id)
+        setfiledate2(item.logTime)
+        setCountCheck(countCheck+1)
+      }else if(rowDatas1 !== item._id){
+        setRowDatas1(item._id)
+        setfiledate1(item.logTime)
+        setCountCheck(countCheck+1)
+      }else if(rowDatas2 !== item._id){
+        setRowDatas2(item._id)
+        setfiledate2(item.logTime)
+        setCountCheck(countCheck+1)
+      }
+    
   }
 
   function SubmitIntegrity(){
-    if(!rowDatas1[0] | !rowDatas2[0]){
-      alert("Integrity 대상을 클릭하십시오.")
+    if(countCheck === 2){
+      if(!rowDatas1[0] | !rowDatas2[0] | rowDatas1 === rowDatas2){
+        alert("비교 대상을 다시 설정하시오.")
+      }else{
+        IntegrityCheck(rowDatas1, rowDatas2)
+        setConfigChange(!configChange);
+        setCountCheck(0)
+        setRowDatas1([null])
+        setRowDatas2([null])
+      }
     }else{
-      IntegrityCheck(rowDatas1, rowDatas2)
-      setConfigChange(!configChange);
-      setRowDatas1([null])
-      setRowDatas2([null])
-    }
-    
+      alert("비교 대상 2개를 선택해주십시오.")
+      submitTreeLog()
+      setCountCheck(0)
+    }   
   }
   
   //Integrity Check Axios
@@ -271,14 +290,14 @@ function ConfigManage() {
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/config/origin-log/contents',
+        `http://${HOSTIPNAME}/ht/config/origin-log/contents`,
         { 
           logObjId: rowDatas1,
           orgObjId: rowDatas2
         }
       )
-      const oldValue = response.data.data[0].contents.toString()
-      const newValue = response.data.data[1].contents.toString()
+      const oldValue = response.data.data[1].contents.toString()
+      const newValue = response.data.data[0].contents.toString()
       if(oldValue === newValue){
         setIntegrityNull("선택한 형상이 동일합니다.")
         setOldCode(oldValue.replace(/,/gi,"\r\n"))
@@ -302,7 +321,7 @@ function ConfigManage() {
   const ConfigChangeDirList =  async(startDate,endDate,selectHostIp) =>{
     try{
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/config/log/paths',
+        `http://${HOSTIPNAME}/ht/config/log/paths`,
         {
           endDate: endDate,
           hostIp: selectHostIp,
@@ -340,6 +359,7 @@ function ConfigManage() {
   }
 
   function changeListSendTreeValue(item, index){
+    setClickvalue(item)
     if(!item){
       alert("검색을 먼저 해주십시오.")
     }else{
@@ -366,6 +386,8 @@ function ConfigManage() {
 
   //선택한 파일의 형상변경 이력 로그 검색
   function submitValue(index){
+    setRowDatas1([null])
+    setRowDatas2([null])
     const fileName = treeFilesSource[index];
     const filePath = treeSource.name;
     if(!selectHostIp){
@@ -386,14 +408,14 @@ function ConfigManage() {
     try{
       setLoading(true);
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/config/view/contents',
+        `http://${HOSTIPNAME}/ht/config/view/contents`,
         {
           objId: rowId
         }
       )
       
       if(response.data.data[0].contents.length === 0 ){
-        setContentsView([{contents:null}])
+        setContentsView([null])
       }else {
         setContentsView(response.data.data[0].contents)
       }
@@ -431,7 +453,7 @@ function ConfigManage() {
     try{
       setLoading(true);
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/config/audit/history/ses',
+        `http://${HOSTIPNAME}/ht/config/audit/history/ses`,
         {
           afterTerm: afterTerm,
           beforeTerm: beforeTerm,
@@ -468,7 +490,7 @@ function ConfigManage() {
     try{
       setLoading(true);
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/config/audit/history',
+        `http://${HOSTIPNAME}/ht/config/audit/history`,
         {
           afterTerm: afterTerm,
           beforeTerm: beforeterm,
@@ -498,6 +520,10 @@ function ConfigManage() {
     getDircList(firsthostDatas, defaultTreeName)
     ConfigChangeDirList(formatdate,formatdate,firsthostDatas)
     setConfigDatas(null)
+    setInputs({
+      startDate: formatdate,
+      endDate: formatdate,
+    })
   }
 
 
@@ -566,9 +592,18 @@ function ConfigManage() {
                     }else{
                       if (item.length > 30) {
                         const enditem = item.substr(0, 30) + "...";
-                        return <li title={item} key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {enditem}</li>
+                        if(clickValue === item){
+                          return <li title={item} key={item+index} className='changeDirListcolor' onClick={()=>changeListSendTreeValue(item,index)}>📄 {enditem}</li>
+                        }else{
+                          return <li title={item} key={item+index} className='changeDirList' onClick={()=>changeListSendTreeValue(item,index)}>📄 {enditem}</li>
+                        }
+                        
                       }else{
-                        return <li title={item} key={item+index} className="changeDirList" onClick={()=>changeListSendTreeValue(item,index)}>📄 {item}</li>
+                        if(clickValue === item){
+                          return <li title={item} key={item+index} className='changeDirListcolor' onClick={()=>changeListSendTreeValue(item,index)}>📄 {item}</li>
+                        }else{
+                          return <li title={item} key={item+index} className='changeDirList' onClick={()=>changeListSendTreeValue(item,index)}>📄 {item}</li>
+                        }
                       }
                     }
                   })}
@@ -585,12 +620,18 @@ function ConfigManage() {
                     }
                   })}
                   {treeFilesSource.map((item,index) => {
-                    if(treeFilesSource.length === 0){
+                     const timeformating = clickValue.lastIndexOf("/") 
+                     const timeValue = clickValue.substr(timeformating,clickValue.length)
+
+                    if(!treeFilesSource[0]){
                       return null
                     }else{
-                      return <Tree key={item+index} content={item} type={<button className="treeBtn folderimage" value={item} onClick={()=>submitValue(index)}>📄</button>}/>
+                      if(timeValue === "/"+item){
+                        return <div className="coloring"><Tree key={item+index} content={item} type={<button className="treeBtn folderimage" value={item} onClick={()=>submitValue(index)}>📄</button>}/></div>
+                      }else{
+                        return <Tree key={item+index} content={item} type={<button className="treeBtn folderimage" value={item} onClick={()=>submitValue(index)}>📄</button>}/>
+                      }
                     }
-                  
                   })}
                 </Tree>
             
@@ -611,7 +652,10 @@ function ConfigManage() {
                           <CInputCheckbox 
                           id="checkbox" 
                           name="checkbox"
-                          onClick={()=>{toggleModal(item, index)}}
+                          
+                          onClick={()=>{
+                            toggleModal(item,index)                 
+                          }}
                           />
                         </td>
                         )
@@ -621,7 +665,6 @@ function ConfigManage() {
                       return (
                         <td className="py-2">
                           <CButton 
-                        
                           value="option1" 
                           color="info"
                           onClick={()=>{submitHistoryView(item, index)}}
@@ -656,16 +699,16 @@ function ConfigManage() {
                 </CModalHeader>
                 <CModalBody>   
                   <h5>{IntegrityNull}</h5>
-                  <ReactDiffViewer oldValue={oldCode} newValue={newCode} splitView={false} showDiffOnly={true}/>
-                </CModalBody>
-                <CModalFooter>
                   <div className="footerlogCount">
                     <CRow>
-                      <div className="redLegend"/><p>{filedate1}</p>
-                      <div className="greenLegend"/><p>{filedate2}</p>
+                      <CCol><p>{filedate1}</p></CCol>
+                      <CCol><p>{filedate2}</p></CCol>
                     </CRow>
                   </div>
-                
+                  <ReactDiffViewer oldValue={oldCode} newValue={newCode} splitView={true} showDiffOnly={true}/>
+                </CModalBody>
+                <CModalFooter>
+
                   <CButton 
                     color="secondary" 
                     onClick={() => setConfigChange(false)}
@@ -795,8 +838,6 @@ function ConfigManage() {
                                         <strong>header_msg:</strong>{parser.header_msg}
                                       </td>
                                     </tr>
-                          }else{
-                            console.log(parser.headerType)
                           }
                         }
 

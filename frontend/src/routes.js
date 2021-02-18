@@ -4,7 +4,6 @@ import React from 'react';
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
 const ConfigManage = React.lazy(() => import('./views/configMange/ConfigManage'));
 const Correlation = React.lazy(() => import('./views/Correlation/Correlation'));
-const LoginPage = React.lazy(() => import('./views/pages/login/Login'));
 const Monitor = React.lazy(() => import('./views/Monitoring/Monitoring'))
 
 //Abnormal Sub Page
@@ -25,15 +24,11 @@ const Impact = React.lazy(() => import('./views/Abnormal/subPages/Impact'));
 
 const routes = [
   //MainPage 
-  { path: '/', exact: true, name: 'HOME' },
   { path: '/dashboard', name: '대시보드', component: Dashboard },
   { path: '/config', name: '유저행위', component: ConfigManage },
   { path: '/monitor', name: '모니터링', component: Monitor},
   { path: '/correlation', name: '상관분석', component: Correlation },
   
-  //User Login & Setting
-  { path: '/loginPage', name: 'LoginPage', component: LoginPage },
-  { path: '/logoutPage', name: 'LogoutPage', component: LoginPage },
 
   //subPage
   { path: '/abnormal/initial', name: '감사로그 / Initial Access', component: InitialAccess },

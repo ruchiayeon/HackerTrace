@@ -11,14 +11,14 @@ import {
   CInput,
   CSelect,
   CButton,
-  CPopover,
-  CHeaderNavLink
+  CPopover
 } from '@coreui/react'
 
 //import MatrixTable from './MatrixTable'
 import Loading from '../pages/Loading/Loading'
 import Page404 from '../pages/page404/Page404';
 import Context from "../Context"
+import HOSTIPNAME from "../../config"
 
 function Correlation() {
 
@@ -63,7 +63,7 @@ function Correlation() {
     setLoading(true);
     //axios를 이용하여 해당 url에서 갑을 받아온다.
     const response = await axios.post(
-      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
+      `http://${HOSTIPNAME}/ht/host/list/user?adminUserId=${state.userId}`
     )
     //받아온 값을 setMiterData에 넣어준다.
     
@@ -82,7 +82,7 @@ function Correlation() {
   const [inputs, setInputs] = useState({
     startDate: formatdate,
     endDate: formatdate,
-    selectHostColum: "",
+    selectHostColum: firsthostDatas,
     selectSESSColum : ""
   });
 
@@ -128,7 +128,7 @@ function Correlation() {
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
-          'http://210.114.18.175:8080/ht/mitre/condition/uid',
+          `http://${HOSTIPNAME}/ht/mitre/condition/uid`,
           {
             endDate   : endDate,
             startDate : startDate,
@@ -177,7 +177,7 @@ function Correlation() {
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
-          'http://210.114.18.175:8080/ht/mitre/condition/ses',
+          `http://${HOSTIPNAME}/ht/mitre/condition/ses`,
           {
             endDate   : endDate,
             startDate : startDate,
@@ -227,7 +227,7 @@ function Correlation() {
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/mitre/list',
+        `http://${HOSTIPNAME}/ht/mitre/list`,
         { endDate   : endDate,
           startDate : startDate,
           hostIp    : selectHostColum,
@@ -315,7 +315,7 @@ function Correlation() {
 
         //axios를 이용하여 해당 url에서 값을 받아온다.
         const response = await axios.get(
-            `http://210.114.18.175:8080/ht/mitre/matrix?isSubT=${value}`
+            `http://${HOSTIPNAME}/ht/mitre/matrix?isSubT=${value}`
         )
 
         //각 section당 값
@@ -423,6 +423,8 @@ function Correlation() {
     setExfSearched(null)
     setImpacSearched(null)
   }
+
+  
 
   //사용자 검색결과 보여주기
   async function resultMatrix(){
@@ -577,7 +579,7 @@ function Correlation() {
     const AttSpotChange1 = matchAttGroupDatas[0].attack_group_external_ids;
     
     if(!AttSpotChange1 || AttSpotChange1 ==='n'){
-      alert('아래 검색 조건을 먼저 선택해주세요.')
+      alert('위 검색 조건을 먼저 선택해주세요.')
     }else{
       resultMatrix();
       //Initial-access
@@ -1100,21 +1102,21 @@ function Correlation() {
               {/*상관분석 관련 검색하는 테이블을 표기한다. Axios쪽에 넘겨야하는 Value가 useEffect에 정의되어있다. 확인 필.*/}
               <div className="searchtoolbar">
                 <CRow>
-                  <CCol sm="6" md="2">
+                  <CCol>
                     <CFormGroup row>
                       <CCol  md="12">
                         <CInput type="date" id="startDate" placeholder="start_date" onChange={handlerChange} value={startDate} name='startDate'/>
                       </CCol>
                     </CFormGroup>
                   </CCol>
-                  <CCol sm="6"md="2">
+                  <CCol>
                     <CFormGroup row>
                       <CCol md="12">
                         <CInput type="date" id="endDate" placeholder="end_date" onChange={handlerChange} value={endDate} name='endDate'/>
                       </CCol>
                     </CFormGroup>
                   </CCol>   
-                  <CCol sm="6" md="2">
+                  <CCol md="2">
                     <CFormGroup>
                       <CSelect custom name="selectHostColum" onChange={handlerChange} value={selectHostColum} id="selectHostColum">
                         {hostDatas.map((item, index) => {
@@ -1126,9 +1128,9 @@ function Correlation() {
                   <CCol md="2"> 
                     <CButton onClick={submitValue} color="info">uid | session 확인</CButton>
                   </CCol>
-                  <CCol md="4">
+                  <CCol md="5">
                     <CRow>
-                      <CCol md="4"sm="3">
+                      <CCol md={4}>
                       <CFormGroup>
                         <CSelect custom name="selectUIDColum" onChange={deephandlerChange} value={selectUIDColum} id="selectUIDColum">
                           {uidDatas.map((item, index) => {
@@ -1137,7 +1139,7 @@ function Correlation() {
                         </CSelect>
                       </CFormGroup>
                       </CCol>
-                      <CCol md="5"sm="3">
+                      <CCol md={4}>
                       <CFormGroup>
                         <CSelect custom name="selectSESSColum" onChange={handlerChange} value={selectSESSColum} id="selectSESSColum">
                            {sessDatas.map((item, index) => {
@@ -1146,9 +1148,11 @@ function Correlation() {
                         </CSelect>
                       </CFormGroup>
                       </CCol>
-                      <CCol md="3"sm="2">
+                      <CCol md={2}>
                         <CButton onClick={submitTableValue} color="info">검색</CButton>
-                        
+                      </CCol>
+                      <CCol md={2}>
+                        <CButton onClick={()=>window.location.reload()} color="info" target="초기화">초기화</CButton>
                       </CCol>
                     </CRow>
                   </CCol>
@@ -1165,8 +1169,8 @@ function Correlation() {
                {/*사용자와 유사한 공격그룹을 보여주는 section*/}
                <CRow>
                 <section className="restbtn">
-                  <CButton title="ATTCK Map초기화" onClick={resetMattrix} color="info" target="초기화">초기화</CButton>
-                   <CButton title="ATTCK Map 상세보기" value={`switch ${toggleState}`}onClick={toggle} color="info">{switchtitle}</CButton>
+                  <CButton title="ATTCK Map초기화" onClick={resetMattrix} color="info" target="초기화">ATTCK Map 초기화</CButton>
+                  <CButton title="ATTCK Map 상세보기" value={`switch ${toggleState}`}onClick={toggle} color="info">{switchtitle}</CButton>
                 </section>
               </CRow>
                
@@ -1211,9 +1215,9 @@ function Correlation() {
                     <CRow> 
                       <CCol className= {initcolor} value={initsearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/initial">
+                          
                             <h5 value="initial-access">Initial-access</h5>
-                          </CHeaderNavLink>
+                         
                         </section>
                         {initialAccess.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1226,9 +1230,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={execolor} value={exesearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/execution">
+                          
                            <h5 value="execution">Execution</h5>
-                          </CHeaderNavLink>
+                         
                         </section>
                         {Execution.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1242,9 +1246,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={persiscolor} value={persissearched}>
                         <section className="title"> 
-                          <CHeaderNavLink to="/abnormal/persistence">
+                          
                            <h5 value="persistence">Persistence</h5>
-                          </CHeaderNavLink>
+                         
                         </section>
                         {Persistence.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1257,9 +1261,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={preEcolor} value={presearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/privilege">
+                          
                             <h5>Privilege Escalation</h5>
-                          </CHeaderNavLink>
+                         
                         </section>
                         {Privilege.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1272,9 +1276,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={defencolor} value={defensearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/defense">
+                          
                             <h5>Defense Evasion</h5>
-                          </CHeaderNavLink>
+                          
                         </section>
                         {Defense.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1287,9 +1291,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={credicolor} value={credisearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/credential">
+                        
                             <h5>Credential Access</h5>
-                          </CHeaderNavLink>
+                          
                         </section>
                         {Credential.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1302,9 +1306,9 @@ function Correlation() {
                       </CCol>    
                       <CCol className={discocolor} value={discosearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/discovery">
+                      
                            <h5>Discovery</h5>
-                          </CHeaderNavLink>
+                          
                         </section>
                         {Discovery.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1317,9 +1321,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={lateralcolor} value={lateralsearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/lateral">
+                          
                             <h5>Lateral Movement</h5>
-                          </CHeaderNavLink>
+                          
                         </section>
                         {LateralMove.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1332,9 +1336,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={collcolor} value={collsearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/collection">
+                          
                           <h5>Collection</h5>
-                          </CHeaderNavLink>
+                      
                         </section>
                         {Collection.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1347,9 +1351,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={exfcolor} value={exfsearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/exfiltration">
+                          
                             <h5>Exfiltration</h5>
-                          </CHeaderNavLink>
+                          
                         </section>
                         {Exfiltration.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1361,9 +1365,9 @@ function Correlation() {
                       </CCol>
                       <CCol className={commcolor} value={commsearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/command">
+                     
                             <h5>Command and Control</h5>
-                          </CHeaderNavLink>
+                        
                         </section>
                         {Command.map((item, index) => {
                           if(item.external_ids[0].length > 6){
@@ -1376,9 +1380,9 @@ function Correlation() {
                       </CCol>
                       <CCol className= {impaccolor} value={impacsearched}>
                         <section className="title">
-                          <CHeaderNavLink to="/abnormal/impact">
+                      
                           <h5>Impact</h5>
-                          </CHeaderNavLink>
+                          
                         </section>
                         {Impact.map((item, index) => {
                           if(item.external_ids[0].length > 6){

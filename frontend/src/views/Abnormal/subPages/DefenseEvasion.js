@@ -17,6 +17,7 @@ import Clock from '../../Clock/Clock'
 import Page404 from '../../pages/page404/Page404'
 import Loading from '../../pages/Loading/Loading'
 import Context from "../../Context"
+import HOSTIPNAME from "../../../config"
 
 function DefenseEvasion() {
 
@@ -43,7 +44,7 @@ function DefenseEvasion() {
     setLoading(true);
     //axios를 이용하여 해당 url에서 갑을 받아온다.
     const response = await axios.post(
-      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
+      `http://${HOSTIPNAME}/ht/host/list/user?adminUserId=${state.userId}`
     )
     //받아온 값을 setMiterData에 넣어준다.
     
@@ -104,7 +105,7 @@ function DefenseEvasion() {
       setLoading(true);
       //axios를 이용하여 해당 url에서 값을 받아온다.
       const response = await axios.post(
-        'http://210.114.18.175:8080/ht/audit-daemon/log/list',
+        `http://${HOSTIPNAME}/ht/audit-daemon/log/list`,
         { 
           startDate : startDate,
           endDate   : endDate,
@@ -132,6 +133,18 @@ function DefenseEvasion() {
     //로딩 실패시 flag를 달아서 이동
     setLoading(false);
   };
+
+  function reset(){
+    setInputs({
+      search:'',
+      startDate:formatdate ,
+      endDate:formatdate,
+      selectColum:'uid',
+      selectHostIp: firsthostDatas
+    })
+    tableAxiosData(startDate, endDate, selectColum, search, firsthostDatas,pageNumbers)
+  }
+
   if(loading) return <Loading/>;;
   if(error) return <Page404/>;
   if(!hostDatas) return hostResData();
@@ -163,7 +176,7 @@ function DefenseEvasion() {
                   <CCol md="2"></CCol>
                   <CCol md="6">
                     <CRow>
-                      <CCol md="4">
+                      <CCol md="3">
                         <CFormGroup>
                           <CSelect custom name="selectColum" onChange={handlerChange} value={selectColum} id="selectColum">
                             <option value='body_success'>Success</option>
@@ -175,7 +188,7 @@ function DefenseEvasion() {
                           </CSelect>
                         </CFormGroup>
                       </CCol>
-                      <CCol md="4">
+                      <CCol md="3">
                         <CFormGroup>
                           <CSelect custom name="selectHostIp" onChange={handlerChange} value={selectHostIp} id="selectHostIp">
                             {hostDatas.map((item, index) => {
@@ -191,6 +204,9 @@ function DefenseEvasion() {
                             <CButton color="info" onClick={submitValue}>검색</CButton>
                           </CInputGroupAppend>
                         </CInputGroup>
+                      </CCol>
+                      <CCol>
+                        <CButton color="info" onClick={()=>reset()}>초기화</CButton>
                       </CCol>
                     </CRow>
                   </CCol>

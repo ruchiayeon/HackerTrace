@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react'
+import React, {useContext, useEffect, useState} from 'react'
 import {
   CCard,
   CCardBody,
@@ -15,6 +15,7 @@ import { CChartLine } from '@coreui/react-chartjs'
 import Page404 from "../pages/page404/Page404"
 import Loading from "../pages/Loading/Loading"
 import Context from "../Context"
+import HOSTIPNAME, {Dashboardtime} from "../../config"
 
 
 function Dashboard() {
@@ -40,32 +41,29 @@ function Dashboard() {
   const [updat, setupdate] = useState(null)
   const [chartDatas, setChartDatas] = useState(null);
   const [chartDate, setchartDate] = useState(null);
+  const [flag, setFlag] = useState(false)
 
-
-  //change file path
- 
+  //change file path 
   //input data handeling 전혀 코딩 안함
   
-    const hostResData = async() => {
-    try{
-    setLoading(true);
-    //axios를 이용하여 해당 url에서 갑을 받아온다.
-    const response = await axios.post(
-      `http://210.114.18.175:8080/ht/host/list/user?adminUserId=${state.userId}`
-    )
-    //받아온 값을 setMiterData에 넣어준다.
-    
-    setHostDatas(response.data.data);
-    setFrisHostDatas(response.data.data[0].hostIp)
+  const hostResData = async() => {
+  try{
+  setLoading(true);
+  //axios를 이용하여 해당 url에서 갑을 받아온다.
+  const response = await axios.post(
+    `http://${HOSTIPNAME}/ht/host/list/user?adminUserId=${state.userId}`
+  )
+  //받아온 값을 setMiterData에 넣어준다.
+  setHostDatas(response.data.data);
+  setFrisHostDatas(response.data.data[0].hostIp)
 
-    }catch(e){
-    //에러시 flag를 달아서 이동
-    setError(e);
-    }
-    //로딩 실패시 flag를 달아서 이동
-    setLoading(false);
-    };
-    
+  }catch(e){
+  //에러시 flag를 달아서 이동
+  setError(e);
+  }
+  //로딩 실패시 flag를 달아서 이동
+  setLoading(false);
+  };
 
 
   const[inputs, setInputs] = useState({
@@ -88,16 +86,19 @@ function Dashboard() {
     if(!selectHostIp){
       AbnormalDash(frishostDatas)
       ImportChart(frishostDatas)
+      setFlag(false)
     }else{
       AbnormalDash(selectHostIp)
       ImportChart(selectHostIp)
+      setFlag(false)
     }
   }
+
   const AbnormalDash = async(selectHostIp) => {
     try{
       setLoading(true);
       const response = await axios.post(
-        `http://210.114.18.175:8080/ht/dashboard/statics/mitre-attack`,
+        `http://${HOSTIPNAME}/ht/dashboard/statics/mitre-attack`,
         {
           hostIp : selectHostIp
         }
@@ -113,7 +114,7 @@ function Dashboard() {
     try{
       setLoading(true);
       const response = await axios.post(
-        `http://210.114.18.175:8080/ht/dashboard/statics/chart/config`,
+        `http://${HOSTIPNAME}/ht/dashboard/statics/chart/config`,
         {
           hostIp : selectHostIp
         }
@@ -130,7 +131,7 @@ function Dashboard() {
       setchartDate(arryLegend)
       setChartDatas(arrayData)
       const responseCount = await axios.post(
-        'http://210.114.18.175:8080/ht/dashboard/statics/config',
+        `http://${HOSTIPNAME}/ht/dashboard/statics/config`,
         {
           hostIp: selectHostIp
         }
@@ -216,12 +217,21 @@ function Dashboard() {
     }
   )()
 
+   
+  // 일정 시간에 업데이트됨.
+  useEffect(()=>{
+    setTimeout(function run(){
+      setFlag(true)
+      setTimeout(run,Dashboardtime);
+    },Dashboardtime)
+  }, []);
+
 
   if(loading) return <Loading/>;
   if(error) return <Page404/>;
   if(!hostDatas) return hostResData();
   if(!abnormalData) return submitAbnormal();
-
+  if(flag) return submitAbnormal(selectHostIp)
 
   return (
     <>
@@ -236,6 +246,7 @@ function Dashboard() {
           </CFormGroup>
         </CCol>
       </div>
+      
       {/*형상관리 template */}
       <CCard>
         <CCardBody>
@@ -297,7 +308,6 @@ function Dashboard() {
             <CCardBody>
               <CRow>
                 <CCol >
-             
                   <h4 className="abnormalTitle">감사로그</h4>
                   <h6>업데이트 일자 : {abnormalData[0].updateTime}</h6>
                   <CDataTable
